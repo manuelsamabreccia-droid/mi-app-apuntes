@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>App de Apuntes Pro</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+  overflow: hidden;
+}
+
+#toolbar {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(10px);
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+button {
+  border: none;
+  margin: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #ffffff;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.1);
+}
+
+#canvas {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* BLOQUES */
+.block {
+  position: absolute;
+  padding: 10px;
+  min-width: 120px;
+  min-height: 80px;
+  cursor: move;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  transition: 0.2s;
+}
+
+.block:hover {
+  transform: scale(1.02);
+}
+
+/* estilos */
+.square {
+  background: #ffffff;
+  border-radius: 15px;
+}
+
+.circle {
+  background: #ffd6e0;
+  border-radius: 50%;
+  text-align: center;
+}
+
+textarea {
+  width: 100%;
+  height: 70px;
+  border: none;
+  outline: none;
+  background: transparent;
+  resize: none;
+}
+
+input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div id="toolbar">
+  <button onclick="addBlock('square')">🟦 Cuadro</button>
+  <button onclick="addBlock('circle')">⚪ Círculo</button>
+  <button onclick="addText()">✏️ Texto</button>
+</div>
+
+<div id="canvas"></div>
+
+<script>
+let canvas = document.getElementById("canvas");
+
+// Cargar datos
+window.onload = () => {
+  let saved = localStorage.getItem("blocks");
+  if (saved) {
+    JSON.parse(saved).forEach(createBlock);
+  }
+};
+
+function save() {
+  let data = [];
+  document.querySelectorAll(".block").forEach(el => {
+    data.push({
+      type: el.dataset.type,
+      html: el.innerHTML,
+      x: el.style.left,
+      y: el.style.top
+    });
+  });
+  localStorage.setItem("blocks", JSON.stringify(data));
+}
+
+// CREAR BLOQUES
+function addBlock(type) {
+  createBlock({
+    type: type,
+    x: "100px",
+    y: "100px",
+    html: `<textarea placeholder="Escribí..."></textarea>`
+  });
+}
+
+function addText() {
+  createBlock({
+    type: "square",
+    x: "150px",
+    y: "150px",
+    html: `<textarea placeholder="Texto libre..."></textarea>`
+  });
+}
+
+function createBlock(data) {
+  let el = document.createElement("div");
+  el.className = `block ${data.type}`;
+  el.dataset.type = data.type;
+  el.style.left = data.x;
+  el.style.top = data.y;
+  el.innerHTML = data.html;
+
+  makeDraggable(el);
+  canvas.appendChild(el);
+
+  el.oninput = save;
+  save();
+}
+
+// DRAG
+function makeDraggable(el) {
+  let offsetX, offsetY;
+
+  el.onmousedown = function(e) {
+    offsetX = e.clientX - el.offsetLeft;
+    offsetY = e.clientY - el.offsetTop;
+
+    document.onmousemove = function(e) {
+      el.style.left = (e.clientX - offsetX) + "px";
+      el.style.top = (e.clientY - offsetY) + "px";
+    };
+
+    document.onmouseup = function() {
+      document.onmousemove = null;
+      save();
+    };
+  };
+}
+</script>
+
+</body>
+</html>

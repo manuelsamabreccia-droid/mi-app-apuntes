@@ -101,10 +101,17 @@ input {
 <div id="canvas"></div>
 
 <script>
-let canvas = document.getElementById("canvas");
+let canvas;
 
 // Cargar datos
 window.onload = () => {
+  canvas = document.getElementById("canvas");
+
+  let saved = localStorage.getItem("blocks");
+  if (saved) {
+    JSON.parse(saved).forEach(createBlock);
+  }
+};
   let saved = localStorage.getItem("blocks");
   if (saved) {
     JSON.parse(saved).forEach(createBlock);

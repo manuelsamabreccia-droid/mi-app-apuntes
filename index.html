@@ -2,156 +2,173 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>App de Apuntes Pro</title>
-
+  <title>App de Apuntes Pro - V2</title>
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      margin: 0; font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
-      overflow: hidden;
+      overflow: hidden; height: 100vh;
     }
 
-    #toolbar {
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255,255,255,0.8);
-      backdrop-filter: blur(10px);
-      padding: 10px;
-      border-radius: 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      z-index: 1000; /* Evita que los bloques tapen los botones */
+    /* PANTALLA DE INICIO / LOGIN */
+    #login-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.9); backdrop-filter: blur(15px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 2000;
     }
+    .login-box {
+      background: white; padding: 40px; border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;
+    }
+    input[type="text"], input[type="password"] {
+      padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; width: 250px;
+    }
+
+    /* BARRA DE HERRAMIENTAS ARRASTRABLE */
+    #toolbar {
+      position: fixed; top: 20px; left: 20px;
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+      padding: 5px 15px; border-radius: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      z-index: 1000; cursor: grab; display: flex; align-items: center;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    #toolbar:active { cursor: grabbing; }
+    .drag-handle { margin-right: 10px; color: #999; cursor: grab; }
 
     button {
-      border: none;
-      margin: 5px;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      background: #ffffff;
-      transition: 0.2s;
+      border: none; margin: 5px; padding: 10px 15px;
+      border-radius: 15px; cursor: pointer; background: white;
+      transition: 0.2s; font-weight: 500;
     }
+    button:hover { background: #f0f0f0; transform: translateY(-2px); }
+    .btn-save { background: #4CAF50; color: white; }
+    .btn-logout { background: #ff4d4d; color: white; }
 
-    button:hover {
-      transform: scale(1.1);
+    /* MENU CONTEXTUAL (CLICK DERECHO) */
+    #context-menu {
+      position: fixed; background: white; border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: none; z-index: 3000;
+      padding: 5px 0; min-width: 120px;
     }
-
-    #canvas {
-      width: 100vw;
-      height: 100vh;
-      position: relative;
+    .menu-item {
+      padding: 10px 20px; cursor: pointer; transition: 0.2s;
     }
+    .menu-item:hover { background: #ff4d4d; color: white; }
 
-    /* BLOQUES */
+    /* CANVAS Y BLOQUES */
+    #canvas { width: 100vw; height: 100vh; position: relative; display: none; }
     .block {
-      position: absolute;
-      padding: 10px;
-      min-width: 120px;
-      min-height: 80px;
-      cursor: move;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-      transition: transform 0.2s; /* Solo transicionar el transform, no la posición */
+      position: absolute; padding: 10px; min-width: 140px; min-height: 90px;
+      cursor: move; box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+      transition: transform 0.1s;
     }
-
-    .block:hover {
-      transform: scale(1.02);
-    }
-
-    /* estilos */
-    .square {
-      background: #ffffff;
-      border-radius: 15px;
-    }
-
-    .circle {
-      background: #ffd6e0;
-      border-radius: 50%;
-      text-align: center;
-      display: flex;
-      align-items: center;
-    }
-
+    .square { background: #ffffff; border-radius: 12px; }
+    .circle { background: #ffd6e0; border-radius: 50%; display: flex; align-items: center; }
     textarea {
-      width: 100%;
-      height: 70px;
-      border: none;
-      outline: none;
-      background: transparent;
-      resize: none;
-    }
-
-    input {
-      width: 100%;
-      border: none;
-      outline: none;
-      background: transparent;
-      text-align: center;
+      width: 100%; height: 80px; border: none; outline: none;
+      background: transparent; resize: none; font-size: 14px;
     }
   </style>
 </head>
-
 <body>
 
+<div id="login-screen">
+  <div class="login-box">
+    <h2>Mis Apuntes Pro</h2>
+    <input type="text" id="username" placeholder="Nombre de usuario">
+    <input type="password" id="password" placeholder="Contraseña">
+    <br>
+    <button onclick="login()" class="btn-save">Entrar / Crear Cuenta</button>
+  </div>
+</div>
+
+<div id="context-menu">
+  <div class="menu-item" onclick="deleteSelected()">🗑️ Borrar elemento</div>
+</div>
+
 <div id="toolbar">
+  <span class="drag-handle">⠿</span>
   <button onclick="addBlock('square')">🟦 Cuadro</button>
   <button onclick="addBlock('circle')">⚪ Círculo</button>
-  <button onclick="addText()">✏️ Texto</button>
+  <button onclick="saveNotes()" class="btn-save">💾 Guardar</button>
+  <button onclick="logout()" class="btn-logout">Salir</button>
 </div>
 
 <div id="canvas"></div>
 
 <script>
-  // Inicializamos el canvas directamente
+  let currentUser = null;
+  let elementToDelete = null;
   const canvas = document.getElementById("canvas");
+  const toolbar = document.getElementById("toolbar");
+  const contextMenu = document.getElementById("context-menu");
 
-  // Cargar datos con un try-catch para evitar que errores bloqueen la página
-  window.onload = () => {
-    let saved = localStorage.getItem("blocks");
-    if (saved) {
-      try {
-        let parsedData = JSON.parse(saved);
-        if (Array.isArray(parsedData)) {
-          parsedData.forEach(createBlock);
-        }
-      } catch (error) {
-        console.error("Datos corruptos en localStorage, limpiando...", error);
-        localStorage.removeItem("blocks");
-      }
-    }
-  };
+  // --- 1. SISTEMA DE LOGIN ---
+  function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    if(!user || !pass) return alert("Completa los datos");
 
-  function save() {
-    let data = [];
-    document.querySelectorAll(".block").forEach(el => {
-      data.push({
-        type: el.dataset.type,
-        html: el.innerHTML,
-        x: el.style.left,
-        y: el.style.top
-      });
-    });
-    localStorage.setItem("blocks", JSON.stringify(data));
+    currentUser = user;
+    document.getElementById("login-screen").style.display = "none";
+    canvas.style.display = "block";
+    loadNotes();
   }
 
-  // CREAR BLOQUES
+  function logout() {
+    location.reload();
+  }
+
+  // --- 2. BARRA DE HERRAMIENTAS ARRASTRABLE ---
+  let tbDragging = false;
+  let tbX, tbY;
+
+  toolbar.addEventListener("mousedown", (e) => {
+    if(e.target.tagName === 'BUTTON') return;
+    tbDragging = true;
+    tbX = e.clientX - toolbar.offsetLeft;
+    tbY = e.clientY - toolbar.offsetTop;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if(!tbDragging) return;
+    toolbar.style.left = (e.clientX - tbX) + "px";
+    toolbar.style.top = (e.clientY - tbY) + "px";
+    toolbar.style.transform = "none"; // Quitar centrado inicial
+  });
+
+  document.addEventListener("mouseup", () => tbDragging = false);
+
+  // --- 3. CLICK DERECHO (BORRAR) ---
+  window.addEventListener("contextmenu", (e) => {
+    const block = e.target.closest(".block");
+    if(block) {
+      e.preventDefault();
+      elementToDelete = block;
+      contextMenu.style.display = "block";
+      contextMenu.style.left = e.clientX + "px";
+      contextMenu.style.top = e.clientY + "px";
+    } else {
+      contextMenu.style.display = "none";
+    }
+  });
+
+  window.onclick = () => contextMenu.style.display = "none";
+
+  function deleteSelected() {
+    if(elementToDelete) {
+      elementToDelete.remove();
+      saveNotes();
+    }
+  }
+
+  // --- 4. GESTIÓN DE NOTAS ---
   function addBlock(type) {
     createBlock({
-      type: type,
-      x: "100px",
-      y: "100px",
+      type: type, x: "150px", y: "150px",
       html: `<textarea placeholder="Escribí..."></textarea>`
-    });
-  }
-
-  function addText() {
-    createBlock({
-      type: "square",
-      x: "150px",
-      y: "150px",
-      html: `<textarea placeholder="Texto libre..."></textarea>`
     });
   }
 
@@ -166,50 +183,53 @@
     makeDraggable(el);
     canvas.appendChild(el);
 
-    // Solución al guardado de texto: Sincronizar el valor tecleado con el HTML interno
-    let textarea = el.querySelector("textarea");
-    if (textarea) {
-      textarea.addEventListener("input", function() {
-        this.innerHTML = this.value;
-        save();
-      });
+    let txt = el.querySelector("textarea");
+    if(txt) {
+      txt.value = txt.innerHTML; // Cargar texto previo si existe
+      txt.oninput = () => { txt.innerHTML = txt.value; };
     }
-
-    save();
   }
 
-  // DRAG (Arrastrar)
   function makeDraggable(el) {
-    let offsetX, offsetY;
-    let isDragging = false;
-
+    let ox, oy, isD = false;
     el.addEventListener("mousedown", (e) => {
-      // No arrastrar si estamos haciendo clic en el área de texto
-      if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
-
-      isDragging = true;
-      offsetX = e.clientX - el.offsetLeft;
-      offsetY = e.clientY - el.offsetTop;
-      
-      // Traer el bloque al frente al seleccionarlo
+      if(e.target.tagName === "TEXTAREA") return;
+      isD = true;
+      ox = e.clientX - el.offsetLeft;
+      oy = e.clientY - el.offsetTop;
       document.querySelectorAll(".block").forEach(b => b.style.zIndex = 1);
       el.style.zIndex = 2;
     });
-
     document.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-      el.style.left = (e.clientX - offsetX) + "px";
-      el.style.top = (e.clientY - offsetY) + "px";
+      if(!isD) return;
+      el.style.left = (e.clientX - ox) + "px";
+      el.style.top = (e.clientY - oy) + "px";
     });
+    document.addEventListener("mouseup", () => { isD = false; });
+  }
 
-    document.addEventListener("mouseup", () => {
-      if (isDragging) {
-        isDragging = false;
-        save(); // Guardar nueva posición
-      }
+  function saveNotes() {
+    let data = [];
+    document.querySelectorAll(".block").forEach(el => {
+      data.push({
+        type: el.dataset.type,
+        html: el.innerHTML,
+        x: el.style.left,
+        y: el.style.top
+      });
     });
+    // Guardamos bajo una llave única por usuario
+    localStorage.setItem("notes_" + currentUser, JSON.stringify(data));
+    alert("¡Apuntes guardados!");
+  }
+
+  function loadNotes() {
+    let saved = localStorage.getItem("notes_" + currentUser);
+    if(saved) {
+      canvas.innerHTML = "";
+      JSON.parse(saved).forEach(createBlock);
+    }
   }
 </script>
-
 </body>
 </html>

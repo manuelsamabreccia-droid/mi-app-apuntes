@@ -161,23 +161,25 @@ function createBlock(data) {
 // DRAG
 function makeDraggable(el) {
   let offsetX, offsetY;
+  let isDragging = false;
 
-  el.onmousedown = function(e) {
+  el.addEventListener("mousedown", (e) => {
+    if (e.target.tagName === "TEXTAREA") return;
+
+    isDragging = true;
     offsetX = e.clientX - el.offsetLeft;
     offsetY = e.clientY - el.offsetTop;
+  });
 
-    document.onmousemove = function(e) {
-      el.style.left = (e.clientX - offsetX) + "px";
-      el.style.top = (e.clientY - offsetY) + "px";
-    };
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
 
-    document.onmouseup = function() {
-      document.onmousemove = null;
-      save();
-    };
-  };
+    el.style.left = (e.clientX - offsetX) + "px";
+    el.style.top = (e.clientY - offsetY) + "px";
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+    save();
+  });
 }
-</script>
-
-</body>
-</html>

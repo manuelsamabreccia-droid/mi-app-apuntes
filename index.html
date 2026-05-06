@@ -1,93 +1,96 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>App de Apuntes Pro</title>
+  <meta charset="UTF-8">
+  <title>App de Apuntes Pro</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
-  overflow: hidden;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+      overflow: hidden;
+    }
 
-#toolbar {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(10px);
-  padding: 10px;
-  border-radius: 20px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
+    #toolbar {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(10px);
+      padding: 10px;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      z-index: 1000; /* Evita que los bloques tapen los botones */
+    }
 
-button {
-  border: none;
-  margin: 5px;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  background: #ffffff;
-  transition: 0.2s;
-}
+    button {
+      border: none;
+      margin: 5px;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #ffffff;
+      transition: 0.2s;
+    }
 
-button:hover {
-  transform: scale(1.1);
-}
+    button:hover {
+      transform: scale(1.1);
+    }
 
-#canvas {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-}
+    #canvas {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
 
-/* BLOQUES */
-.block {
-  position: absolute;
-  padding: 10px;
-  min-width: 120px;
-  min-height: 80px;
-  cursor: move;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  transition: 0.2s;
-}
+    /* BLOQUES */
+    .block {
+      position: absolute;
+      padding: 10px;
+      min-width: 120px;
+      min-height: 80px;
+      cursor: move;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      transition: transform 0.2s; /* Solo transicionar el transform, no la posición */
+    }
 
-.block:hover {
-  transform: scale(1.02);
-}
+    .block:hover {
+      transform: scale(1.02);
+    }
 
-/* estilos */
-.square {
-  background: #ffffff;
-  border-radius: 15px;
-}
+    /* estilos */
+    .square {
+      background: #ffffff;
+      border-radius: 15px;
+    }
 
-.circle {
-  background: #ffd6e0;
-  border-radius: 50%;
-  text-align: center;
-}
+    .circle {
+      background: #ffd6e0;
+      border-radius: 50%;
+      text-align: center;
+      display: flex;
+      align-items: center;
+    }
 
-textarea {
-  width: 100%;
-  height: 70px;
-  border: none;
-  outline: none;
-  background: transparent;
-  resize: none;
-}
+    textarea {
+      width: 100%;
+      height: 70px;
+      border: none;
+      outline: none;
+      background: transparent;
+      resize: none;
+    }
 
-input {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  text-align: center;
-}
-</style>
+    input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
@@ -101,90 +104,111 @@ input {
 <div id="canvas"></div>
 
 <script>
-let canvas;
+  // Inicializamos el canvas directamente
+  const canvas = document.getElementById("canvas");
 
-// Cargar datos
-window.onload = () => {
-  canvas = document.getElementById("canvas");
+  // Cargar datos con un try-catch para evitar que errores bloqueen la página
+  window.onload = () => {
+    let saved = localStorage.getItem("blocks");
+    if (saved) {
+      try {
+        let parsedData = JSON.parse(saved);
+        if (Array.isArray(parsedData)) {
+          parsedData.forEach(createBlock);
+        }
+      } catch (error) {
+        console.error("Datos corruptos en localStorage, limpiando...", error);
+        localStorage.removeItem("blocks");
+      }
+    }
+  };
 
-  let saved = localStorage.getItem("blocks");
-  if (saved) {
-    JSON.parse(saved).forEach(createBlock);
-  }
-};
-
-function save() {
-  let data = [];
-  document.querySelectorAll(".block").forEach(el => {
-    data.push({
-      type: el.dataset.type,
-      html: el.innerHTML,
-      x: el.style.left,
-      y: el.style.top
+  function save() {
+    let data = [];
+    document.querySelectorAll(".block").forEach(el => {
+      data.push({
+        type: el.dataset.type,
+        html: el.innerHTML,
+        x: el.style.left,
+        y: el.style.top
+      });
     });
-  });
-  localStorage.setItem("blocks", JSON.stringify(data));
-}
+    localStorage.setItem("blocks", JSON.stringify(data));
+  }
 
-// CREAR BLOQUES
-function addBlock(type) {
-  createBlock({
-    type: type,
-    x: "100px",
-    y: "100px",
-    html: `<textarea placeholder="Escribí..."></textarea>`
-  });
-}
+  // CREAR BLOQUES
+  function addBlock(type) {
+    createBlock({
+      type: type,
+      x: "100px",
+      y: "100px",
+      html: `<textarea placeholder="Escribí..."></textarea>`
+    });
+  }
 
-function addText() {
-  createBlock({
-    type: "square",
-    x: "150px",
-    y: "150px",
-    html: `<textarea placeholder="Texto libre..."></textarea>`
-  });
-}
+  function addText() {
+    createBlock({
+      type: "square",
+      x: "150px",
+      y: "150px",
+      html: `<textarea placeholder="Texto libre..."></textarea>`
+    });
+  }
 
-function createBlock(data) {
-  let el = document.createElement("div");
-  el.className = `block ${data.type}`;
-  el.dataset.type = data.type;
-  el.style.left = data.x;
-  el.style.top = data.y;
-  el.innerHTML = data.html;
+  function createBlock(data) {
+    let el = document.createElement("div");
+    el.className = `block ${data.type}`;
+    el.dataset.type = data.type;
+    el.style.left = data.x;
+    el.style.top = data.y;
+    el.innerHTML = data.html;
 
-  makeDraggable(el);
-  canvas.appendChild(el);
+    makeDraggable(el);
+    canvas.appendChild(el);
 
-  el.oninput = save;
-  save();
-}
+    // Solución al guardado de texto: Sincronizar el valor tecleado con el HTML interno
+    let textarea = el.querySelector("textarea");
+    if (textarea) {
+      textarea.addEventListener("input", function() {
+        this.innerHTML = this.value;
+        save();
+      });
+    }
 
-// DRAG
-function makeDraggable(el) {
-  let offsetX, offsetY;
-  let isDragging = false;
-
-  el.addEventListener("mousedown", (e) => {
-    if (e.target.tagName === "TEXTAREA") return;
-
-    isDragging = true;
-    offsetX = e.clientX - el.offsetLeft;
-    offsetY = e.clientY - el.offsetTop;
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-
-    el.style.left = (e.clientX - offsetX) + "px";
-    el.style.top = (e.clientY - offsetY) + "px";
-  });
-
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
     save();
-  });
-}
+  }
+
+  // DRAG (Arrastrar)
+  function makeDraggable(el) {
+    let offsetX, offsetY;
+    let isDragging = false;
+
+    el.addEventListener("mousedown", (e) => {
+      // No arrastrar si estamos haciendo clic en el área de texto
+      if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
+
+      isDragging = true;
+      offsetX = e.clientX - el.offsetLeft;
+      offsetY = e.clientY - el.offsetTop;
+      
+      // Traer el bloque al frente al seleccionarlo
+      document.querySelectorAll(".block").forEach(b => b.style.zIndex = 1);
+      el.style.zIndex = 2;
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      el.style.left = (e.clientX - offsetX) + "px";
+      el.style.top = (e.clientY - offsetY) + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        save(); // Guardar nueva posición
+      }
+    });
+  }
 </script>
 
 </body>

@@ -112,11 +112,6 @@ window.onload = () => {
     JSON.parse(saved).forEach(createBlock);
   }
 };
-  let saved = localStorage.getItem("blocks");
-  if (saved) {
-    JSON.parse(saved).forEach(createBlock);
-  }
-};
 
 function save() {
   let data = [];

@@ -2,154 +2,122 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Apuntes Pro V4 - Studio Edition</title>
+  <title>Apuntes Pro V5 - Ultimate</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  
   <style>
-    :root {
-      --bg-color: #f5f7fa;
-      --bg-gradient: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-      --text-color: #333;
-      --toolbar-bg: rgba(255, 255, 255, 0.95);
-      --box-bg: white;
-      --line-color: #555;
-    }
-
-    /* MODO OSCURO */
-    body.dark-mode {
-      --bg-color: #1a1a1a;
-      --bg-gradient: linear-gradient(135deg, #1a1a1a, #2d3436);
-      --text-color: #f0f0f0;
-      --toolbar-bg: rgba(40, 40, 40, 0.95);
-      --box-bg: #333;
-      --line-color: #aaa;
-    }
-
-    body {
-      margin: 0; font-family: 'Segoe UI', sans-serif;
-      background: var(--bg-gradient); color: var(--text-color);
-      overflow: auto; /* Permite scroll si el lienzo crece */
-      width: 100vw; height: 100vh; user-select: none;
-      transition: background 0.3s;
-    }
-
-    /* PANTALLAS */
-    .screen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 2000; transition: 0.3s;
-    }
+    :root { --bg-color: #f5f7fa; --bg-gradient: linear-gradient(135deg, #f5f7fa, #c3cfe2); --text-color: #333; --toolbar-bg: rgba(255, 255, 255, 0.95); --box-bg: white; --line-color: #555; }
+    body.dark-mode { --bg-color: #1a1a1a; --bg-gradient: linear-gradient(135deg, #1a1a1a, #2d3436); --text-color: #f0f0f0; --toolbar-bg: rgba(40, 40, 40, 0.95); --box-bg: #333; --line-color: #aaa; }
+    
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-gradient); color: var(--text-color); overflow: auto; width: 100vw; height: 100vh; user-select: none; transition: background 0.3s; }
+    
+    /* PANTALLAS BÁSICAS */
+    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
     .hidden { display: none !important; }
-    
-    .box {
-      background: var(--box-bg); padding: 40px; border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; max-width: 80%;
-      color: var(--text-color);
-    }
+    .box { background: var(--box-bg); padding: 40px; border-radius: 20px; text-align: center; color: var(--text-color); }
     input[type="text"] { padding: 12px; margin: 10px; border: 1px solid #ddd; border-radius: 10px; width: 250px; }
-    
     .project-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 20px;}
-    .project-card {
-      padding: 20px; background: #e0c3fc; border-radius: 15px; cursor: pointer;
-      font-weight: bold; transition: 0.2s; color: #333;
-    }
-    .project-card:hover { transform: translateY(-5px); background: #d0a3fc; }
+    .project-card { padding: 20px; background: #e0c3fc; border-radius: 15px; cursor: pointer; font-weight: bold; color: #333; }
 
-    /* BARRA DE HERRAMIENTAS V4 */
+    /* BARRA DE HERRAMIENTAS ADAPTABLE Y ORDENABLE */
     #toolbar-container {
       position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-      background: var(--toolbar-bg); backdrop-filter: blur(10px);
-      border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-      z-index: 1000; display: flex; align-items: center; padding: 5px;
-      border: 1px solid rgba(128,128,128,0.2);
+      background: var(--toolbar-bg); backdrop-filter: blur(10px); border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; padding: 5px;
+      transition: all 0.3s ease;
     }
+    .toolbar { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    #toolbar-container.vertical .toolbar { flex-direction: column; }
+    #toolbar-container.collapsed { width: 40px; height: 40px; overflow: hidden; padding: 0; border-radius: 50%; justify-content: center; cursor: pointer; }
+    #toolbar-container.collapsed .toolbar { display: none; }
+    #toolbar-container.collapsed .toggle-btn { display: block; width: 100%; height: 100%; line-height: 40px; text-align: center; }
     
-    .toolbar { display: flex; align-items: center; gap: 5px; }
     .drag-handle { padding: 5px 10px; cursor: grab; color: #aaa; font-size: 18px; }
+    .toggle-btn { cursor: pointer; padding: 5px 10px; font-weight: bold; color: #555; display: none; }
+    #toolbar-container:not(.collapsed) .toggle-btn { display: block; }
     
-    button {
-      border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;
-      background: transparent; color: var(--text-color); transition: 0.2s; font-weight: 500; font-size: 13px;
-    }
-    button:hover { background: rgba(128,128,128,0.1); }
-    .btn-action { background: #4CAF50; color: white; }
-    .btn-action:hover { background: #45a049; }
+    /* Botones Ordenables */
+    .tool-btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: grab; background: transparent; color: var(--text-color); font-weight: 500; font-size: 13px; display: flex; align-items: center;}
+    .tool-btn:hover { background: rgba(128,128,128,0.1); }
+    .tool-btn.dragging { opacity: 0.5; background: rgba(0,0,0,0.1); }
     
-    /* MENÚS DESPLEGABLES (DROPDOWNS) */
-    .dropdown { position: relative; display: inline-block; }
-    .dropdown-content {
-      display: none; position: absolute; background-color: var(--box-bg);
-      min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-      z-index: 1001; border-radius: 10px; overflow: hidden; top: 100%; left: 0;
-    }
-    .dropdown-content button {
-      color: var(--text-color); padding: 12px 16px; width: 100%;
-      text-align: left; border-radius: 0;
-    }
+    /* MENÚS DESPLEGABLES */
+    .dropdown { position: relative; display: inline-block; cursor: grab; }
+    .dropdown-content { display: none; position: absolute; background-color: var(--box-bg); min-width: 160px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 1001; border-radius: 10px; overflow: hidden; top: 100%; left: 0; }
+    #toolbar-container.vertical .dropdown-content { top: 0; left: 100%; }
+    .dropdown-content button { color: var(--text-color); padding: 12px 16px; width: 100%; text-align: left; border: none; background: transparent; cursor: pointer;}
+    .dropdown-content button:hover { background: rgba(128,128,128,0.2); }
     .dropdown:hover .dropdown-content { display: block; }
     
-    input[type="color"] { border: none; border-radius: 5px; width: 30px; height: 30px; cursor: pointer; background: transparent;}
-
-    /* CANVAS Y FORMAS */
-    #canvas { 
-      width: 3000px; /* Lienzo gigante para poder expandirse */
-      height: 3000px; 
-      position: absolute; top: 0; left: 0; 
-      transform-origin: top left;
-    }
+    /* CANVAS Y FIGURAS */
+    #canvas { width: 4000px; height: 4000px; position: absolute; top: 0; left: 0; transform-origin: top left; }
     #svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
     
     .block {
-      position: absolute; padding: 15px; min-width: 120px; min-height: 80px;
-      cursor: move; box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-      z-index: 1; border: 2px solid transparent;
-      resize: both; overflow: auto; /* Permite redimensionar la forma */
-      display: flex; align-items: center; justify-content: center;
+      position: absolute; padding: 20px; min-width: 120px; min-height: 80px; box-sizing: border-box;
+      cursor: move; box-shadow: 0 8px 16px rgba(0,0,0,0.15); z-index: 1; border: 2px solid transparent;
+      resize: both; overflow: auto; display: flex; align-items: center; justify-content: center;
     }
-    .block.selected { border: 2px dashed #4CAF50; box-shadow: 0 0 15px rgba(76, 175, 80, 0.5); z-index: 3;}
+    .block.selected { border: 2px dashed #4CAF50 !important; box-shadow: 0 0 15px rgba(76, 175, 80, 0.5); z-index: 3;}
+    .block.multi-selected { border: 2px dashed #2196F3 !important; }
     
-    /* Tipos de Formas */
     .square { border-radius: 10px; }
-    .circle { border-radius: 50%; }
-    .diamond { transform: rotate(45deg); }
+    /* Fix para Círculo Perfecto */
+    .circle { border-radius: 50%; aspect-ratio: 1 / 1; min-width: 140px; min-height: 140px; resize: none; overflow: hidden;}
+    .diamond { transform: rotate(45deg); resize: none;}
     .diamond textarea { transform: rotate(-45deg); }
-    .post-it { background: #fff740 !important; border-radius: 0 0 15px 0; box-shadow: 3px 3px 10px rgba(0,0,0,0.2); }
+    .post-it { background: #fff740 !important; border-radius: 0 0 15px 0; }
 
-    textarea {
-      width: 90%; height: 90%; border: none; outline: none; background: transparent;
-      resize: none; font-size: 14px; text-align: center; font-family: inherit; color: inherit;
-    }
+    textarea { width: 100%; height: 100%; border: none; outline: none; background: transparent; resize: none; font-size: 14px; text-align: center; font-family: inherit; color: inherit; box-sizing: border-box;}
     
-    .connecting-mode { cursor: crosshair !important; border: 2px dashed #ff9800 !important; }
+    /* MENÚ CLICK DERECHO PERSONALIZADO */
+    #context-menu { position: fixed; background: var(--box-bg); color: var(--text-color); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; z-index: 5000; flex-direction: column; overflow: hidden; border: 1px solid #ddd;}
+    #context-menu button { padding: 10px 20px; border: none; background: transparent; cursor: pointer; text-align: left; width: 100%; color: inherit;}
+    #context-menu button:hover { background: rgba(128,128,128,0.2); }
+    .color-picker-container { padding: 10px 20px; display: flex; align-items: center; gap: 10px; cursor: pointer;}
+    .color-picker-container:hover { background: rgba(128,128,128,0.2); }
+    .color-picker-container input { border: none; background: transparent; width: 25px; height: 25px; cursor: pointer;}
+
+    /* GUÍAS INTELIGENTES (ALINEACIÓN) */
+    .guide { position: absolute; background: #ff5252; z-index: 999; display: none; pointer-events: none; }
+    .guide-v { width: 1px; height: 4000px; top: 0; }
+    .guide-h { height: 1px; width: 4000px; left: 0; }
   </style>
 </head>
 <body>
 
+<div id="context-menu">
+  <button onclick="startVisualConnection()">🔗 Conectar con...</button>
+  <label class="color-picker-container">
+    🎨 Color <input type="color" id="block-color-picker" onchange="changeBlockColor(this.value)">
+  </label>
+  <button onclick="deleteTargetBlock()" style="color: #ff4d4d;">🗑️ Eliminar Forma</button>
+</div>
+
+<div id="guide-v" class="guide guide-v"></div>
+<div id="guide-h" class="guide guide-h"></div>
+
 <div id="login-screen" class="screen">
   <div class="box">
-    <h2>Apuntes Pro Studio</h2>
-    <input type="text" id="username" placeholder="Tu nombre o dispositivo">
-    <br><button class="btn-action" onclick="login()">Entrar</button>
+    <h2>Apuntes Pro V5</h2><input type="text" id="username" placeholder="Tu nombre"><br>
+    <button style="background:#4CAF50; color:white; padding:10px 20px; border:none; border-radius:10px;" onclick="login()">Entrar</button>
   </div>
 </div>
 
 <div id="dashboard-screen" class="screen hidden">
   <div class="box" style="background: transparent; box-shadow: none;">
-    <h2 id="user-greeting" style="color: white; text-shadow: 1px 1px 5px rgba(0,0,0,0.5);">Tus Proyectos</h2>
-    <button class="btn-action" onclick="createNewProject()">+ Nuevo Apunte</button>
-    <button onclick="logout()" style="background: rgba(255,255,255,0.8);">Cambiar Usuario</button>
+    <h2 id="user-greeting" style="color: white;">Proyectos</h2>
+    <button style="background:#4CAF50; color:white; padding:10px; border:none; border-radius:10px;" onclick="createNewProject()">+ Nuevo Apunte</button>
     <div id="project-list" class="project-grid"></div>
   </div>
 </div>
 
 <div id="toolbar-container" class="hidden">
-  <div class="drag-handle">⠿</div>
+  <div class="drag-handle" title="Mover Barra">⠿</div>
+  <div class="toggle-btn" onclick="toggleToolbar()" title="Ocultar/Mostrar">◀</div>
   
-  <div class="toolbar">
-    
-    <div class="dropdown">
-      <button>🔳 Formas ▼</button>
+  <div class="toolbar" id="toolbar-items">
+    <div class="dropdown tool-btn" draggable="true">
+      🔳 Formas ▼
       <div class="dropdown-content">
         <button onclick="addBlock('square')">🟦 Cuadrado</button>
         <button onclick="addBlock('circle')">⚪ Círculo</button>
@@ -158,325 +126,338 @@
       </div>
     </div>
 
-    <div class="dropdown">
-      <button>🧠 Plantillas ▼</button>
+    <div class="dropdown tool-btn" draggable="true">
+      🧠 Plantillas ▼
       <div class="dropdown-content">
-        <button onclick="createTemplate('esquema')">📊 Esquema Jerárquico</button>
-        <button onclick="createTemplate('mapa_mental')">🕸️ Mapa Mental</button>
-        <button onclick="createTemplate('cuadro_comparativo')">⚖️ Cuadro Comparativo</button>
+        <button onclick="createTemplate('esquema')">📊 Crear Esquema Nuevo</button>
+        <button onclick="formatSelectedAsSchema()">🪄 Organizar Selección</button>
       </div>
     </div>
 
-    <input type="color" id="color-picker" title="Color de figura" value="#ffffff">
-    <button onclick="startConnecting()" title="Unir dos figuras con una línea">🔗 Conectar</button>
-    
-    <div style="width: 1px; height: 20px; background: #ccc; margin: 0 5px;"></div> <div class="dropdown">
-      <button>⚙️ Opciones ▼</button>
+    <div class="dropdown tool-btn" draggable="true">
+      ⚙️ Opciones ▼
       <div class="dropdown-content">
         <button onclick="toggleDarkMode()">🌙 Modo Oscuro</button>
-        <button onclick="exportToImage()">🖼️ Descargar como Imagen</button>
-        <button onclick="exportJSON()">💾 Exportar Archivo (.json)</button>
+        <button onclick="exportToImage()">🖼️ Guardar Imagen</button>
+        <button onclick="saveProject()">💾 Guardar Archivo</button>
+        <button onclick="backToDashboard()">🏠 Salir</button>
       </div>
     </div>
-
-    <button class="btn-action" onclick="saveProject()">Guardar</button>
-    <button onclick="backToDashboard()">🏠 Inicio</button>
   </div>
 </div>
 
-<div id="canvas">
-  <svg id="svg-layer"></svg>
-</div>
+<div id="canvas"><svg id="svg-layer"></svg></div>
 
 <script>
-  // SISTEMA BÁSICO
-  let appData = JSON.parse(localStorage.getItem("apuntes_v4")) || {};
-  let currentUser = null;
-  let currentProject = null;
+  let appData = JSON.parse(localStorage.getItem("apuntes_v5")) || {};
+  let currentUser = null, currentProject = null;
   
-  // VARIABLES DEL LIENZO
   let connections = [];
-  let connectingMode = false;
-  let nodeToConnect = null;
-  let selectedBlock = null; // Para saber qué borrar con el teclado
+  let multiSelection = []; // Para formatear varios bloques
+  let targetBlock = null; // Bloque al que se le hizo click derecho
+  
+  // Variables Conexión Visual
+  let isVisualConnecting = false;
+  let tempLine = null;
 
-  const canvas = document.getElementById("canvas");
-  const svgLayer = document.getElementById("svg-layer");
+  const canvas = document.getElementById("canvas"), svgLayer = document.getElementById("svg-layer");
+  const ctxMenu = document.getElementById("context-menu");
+  const guideV = document.getElementById("guide-v"), guideH = document.getElementById("guide-h");
 
-  // --- 1. INICIO Y DASHBOARD ---
+  // --- 1. LOGIN & DASHBOARD ---
   function login() {
-    const user = document.getElementById("username").value.trim();
-    if(!user) return;
-    currentUser = user;
-    if(!appData[currentUser]) appData[currentUser] = { projects: {} };
-    document.getElementById("login-screen").classList.add("hidden");
-    showDashboard();
+    let u = document.getElementById("username").value.trim(); if(!u) return;
+    currentUser = u; if(!appData[currentUser]) appData[currentUser] = { projects: {} };
+    document.getElementById("login-screen").classList.add("hidden"); showDashboard();
   }
-
   function showDashboard() {
-    document.getElementById("user-greeting").innerText = `Proyectos de ${currentUser}`;
     document.getElementById("dashboard-screen").classList.remove("hidden");
-    document.getElementById("toolbar-container").classList.add("hidden");
-    canvas.style.display = "none";
-    
-    let list = document.getElementById("project-list");
-    list.innerHTML = "";
-    for(let projName in appData[currentUser].projects) {
-      let div = document.createElement("div");
-      div.className = "project-card";
-      div.innerText = projName;
-      div.onclick = () => openProject(projName);
-      list.appendChild(div);
+    document.getElementById("toolbar-container").classList.add("hidden"); canvas.style.display = "none";
+    let list = document.getElementById("project-list"); list.innerHTML = "";
+    for(let p in appData[currentUser].projects) {
+      let d = document.createElement("div"); d.className = "project-card"; d.innerText = p;
+      d.onclick = () => openProject(p); list.appendChild(d);
     }
   }
-
   function createNewProject() {
-    let name = prompt("Nombre del proyecto:");
-    if(name && !appData[currentUser].projects[name]) {
-      appData[currentUser].projects[name] = { blocks: [], connections: [] };
-      saveData(); openProject(name);
-    }
+    let n = prompt("Nombre:");
+    if(n && !appData[currentUser].projects[n]) { appData[currentUser].projects[n] = { blocks: [], connections: [] }; saveData(); openProject(n); }
   }
-
-  function openProject(name) {
-    currentProject = name;
-    document.getElementById("dashboard-screen").classList.add("hidden");
-    document.getElementById("toolbar-container").classList.remove("hidden");
-    canvas.style.display = "block";
-    
-    // Centrar la vista en el medio del lienzo gigante
-    window.scrollTo(1000, 1000); 
-    loadProjectData();
+  function openProject(n) {
+    currentProject = n; document.getElementById("dashboard-screen").classList.add("hidden");
+    document.getElementById("toolbar-container").classList.remove("hidden"); canvas.style.display = "block";
+    window.scrollTo(1500, 1500); loadProjectData();
   }
-
   function backToDashboard() { saveProject(); currentProject = null; showDashboard(); }
-  function logout() { location.reload(); }
-  function saveData() { localStorage.setItem("apuntes_v4", JSON.stringify(appData)); }
+  function saveData() { localStorage.setItem("apuntes_v5", JSON.stringify(appData)); }
 
-  // --- 2. FORMAS Y LIENZO ---
-  function addBlock(type, x, y, color = document.getElementById("color-picker").value, text = "") {
-    // Si no se dan coordenadas, poner en el centro de la pantalla actual del usuario
-    let spawnX = x || (window.scrollX + window.innerWidth / 2 - 60) + "px";
-    let spawnY = y || (window.scrollY + window.innerHeight / 2 - 40) + "px";
-    
-    let id = "b_" + Date.now() + Math.floor(Math.random()*1000);
+  // --- 2. BARRA DE HERRAMIENTAS ADAPTABLE Y ORDENABLE ---
+  const tbContainer = document.getElementById("toolbar-container");
+  function toggleToolbar() {
+    tbContainer.classList.toggle("collapsed");
+    let btn = tbContainer.querySelector('.toggle-btn');
+    btn.innerText = tbContainer.classList.contains("collapsed") ? "▶" : "◀";
+  }
+
+  let tbDrag = false, tbOx, tbOy;
+  document.querySelector(".drag-handle").addEventListener("mousedown", e => {
+    tbDrag = true; let rect = tbContainer.getBoundingClientRect(); tbOx = e.clientX - rect.left; tbOy = e.clientY - rect.top;
+  });
+  document.addEventListener("mousemove", e => {
+    if(tbDrag) {
+      let x = e.clientX - tbOx, y = e.clientY - tbOy;
+      tbContainer.style.left = x + "px"; tbContainer.style.top = y + "px"; tbContainer.style.transform = "none";
+      // Adaptar Vertical/Horizontal
+      if(x < window.innerWidth * 0.1 || x > window.innerWidth * 0.8) tbContainer.classList.add("vertical");
+      else tbContainer.classList.remove("vertical");
+    }
+  });
+  document.addEventListener("mouseup", () => tbDrag = false);
+
+  // Ordenar Barra (Drag & Drop HTML5)
+  const draggables = document.querySelectorAll('.tool-btn');
+  const tbItems = document.getElementById('toolbar-items');
+  draggables.forEach(d => {
+    d.addEventListener('dragstart', () => d.classList.add('dragging'));
+    d.addEventListener('dragend', () => d.classList.remove('dragging'));
+  });
+  tbItems.addEventListener('dragover', e => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(tbItems, e.clientY, e.clientX);
+    const draggable = document.querySelector('.dragging');
+    if (afterElement == null) tbItems.appendChild(draggable);
+    else tbItems.insertBefore(draggable, afterElement);
+  });
+  function getDragAfterElement(container, y, x) {
+    const isVert = tbContainer.classList.contains('vertical');
+    const draggableElements = [...container.querySelectorAll('.tool-btn:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = isVert ? y - box.top - box.height / 2 : x - box.left - box.width / 2;
+      if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+      else return closest;
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  // --- 3. FORMAS Y LIENZO ---
+  function addBlock(type, x, y, color = "#ffffff", text = "") {
+    let spawnX = x || (window.scrollX + window.innerWidth / 2) + "px";
+    let spawnY = y || (window.scrollY + window.innerHeight / 2) + "px";
+    let id = "b_" + Date.now();
     createDOMBlock({ id, type, x: spawnX, y: spawnY, color, text, w: "", h: "" });
   }
 
   function createDOMBlock(data) {
     let el = document.createElement("div");
-    el.className = `block ${data.type}`;
-    el.id = data.id;
-    el.dataset.type = data.type;
-    el.style.left = data.x;
-    el.style.top = data.y;
-    if(data.w) el.style.width = data.w;
-    if(data.h) el.style.height = data.h;
-    
-    // El Post-it tiene un color fijo a menos que se fuerce
-    el.style.backgroundColor = (data.type === 'post-it' && !data.color) ? "" : data.color || "#ffffff";
+    el.className = `block ${data.type}`; el.id = data.id; el.dataset.type = data.type;
+    el.style.left = data.x; el.style.top = data.y;
+    if(data.w) el.style.width = data.w; if(data.h) el.style.height = data.h;
+    el.style.backgroundColor = data.color;
     el.innerHTML = `<textarea placeholder="Escribir...">${data.text || ""}</textarea>`;
     
-    // Selección y Conexión
-    el.addEventListener("mousedown", (e) => {
-      // Manejo de selección
-      if(selectedBlock) selectedBlock.classList.remove("selected");
-      selectedBlock = el;
-      el.classList.add("selected");
+    // CLICK DERECHO (Menú Propio)
+    el.addEventListener("contextmenu", (e) => {
+      e.preventDefault(); targetBlock = el;
+      document.getElementById("block-color-picker").value = rgb2hex(el.style.backgroundColor);
+      ctxMenu.style.display = "flex";
+      ctxMenu.style.left = e.clientX + "px"; ctxMenu.style.top = e.clientY + "px";
+    });
 
-      // Modo conectar
-      if(connectingMode) {
-        if(!nodeToConnect) {
-          nodeToConnect = el.id; el.classList.add("connecting-mode");
-        } else if (nodeToConnect !== el.id) {
-          connections.push({ from: nodeToConnect, to: el.id });
-          document.getElementById(nodeToConnect).classList.remove("connecting-mode");
-          nodeToConnect = null; connectingMode = false; drawLines();
-        }
+    // SELECCIÓN MÚLTIPLE (Con Shift)
+    el.addEventListener("mousedown", (e) => {
+      if(isVisualConnecting) { finishVisualConnection(el.id); return; }
+      if(e.target.tagName === "TEXTAREA" || e.button === 2) return; // Evitar si es click derecho o escribiendo
+
+      if(e.shiftKey) {
+        el.classList.toggle("multi-selected");
+        if(el.classList.contains("multi-selected")) multiSelection.push(el);
+        else multiSelection = multiSelection.filter(b => b !== el);
+      } else {
+        document.querySelectorAll(".block").forEach(b => b.classList.remove("multi-selected"));
+        multiSelection = [el]; el.classList.add("multi-selected");
       }
     });
 
-    // Observador para redimensionar (si el usuario estira la forma, las líneas se actualizan)
-    new ResizeObserver(() => drawLines()).observe(el);
-
-    makeDraggable(el);
-    canvas.appendChild(el);
+    makeDraggable(el); canvas.appendChild(el);
   }
 
-  // --- 3. PLANTILLAS DE ESTUDIO (NUEVO) ---
-  function createTemplate(type) {
-    let sX = window.scrollX + window.innerWidth / 2;
-    let sY = window.scrollY + 100;
+  // Cerrar menú click derecho al hacer click fuera
+  document.addEventListener("click", (e) => { if(!e.target.closest("#context-menu")) ctxMenu.style.display = "none"; });
 
-    if(type === 'esquema') {
-      let mainId = "b_" + Date.now();
-      createDOMBlock({ id: mainId, type: "square", x: sX-60+"px", y: sY+"px", color: "#ffd6e0", text: "Tema Principal" });
-      for(let i=0; i<3; i++) {
-        let subId = "b_" + Date.now() + i;
-        createDOMBlock({ id: subId, type: "square", x: (sX - 250 + (i*200))+"px", y: sY+150+"px", color: "#e0c3fc", text: `Subtema ${i+1}` });
-        connections.push({ from: mainId, to: subId });
-      }
-    } 
-    else if (type === 'mapa_mental') {
-      let mainId = "b_" + Date.now();
-      createDOMBlock({ id: mainId, type: "circle", x: sX-60+"px", y: sY+150+"px", color: "#ffeaa7", text: "Idea Central" });
-      let positions = [[-200, 0], [200, 0], [0, -180], [0, 180]]; // Izq, Der, Arriba, Abajo
-      positions.forEach((pos, i) => {
-        let subId = "b_" + Date.now() + i;
-        createDOMBlock({ id: subId, type: "circle", x: (sX-60+pos[0])+"px", y: (sY+150+pos[1])+"px", color: "#a29bfe", text: `Concepto` });
-        connections.push({ from: mainId, to: subId });
-      });
-    }
-    else if (type === 'cuadro_comparativo') {
-      // 2 Columnas grandes tipo tabla
-      createDOMBlock({ id: "b_"+Date.now(), type: "square", x: sX-300+"px", y: sY+"px", color: "#81ecec", text: "Concepto A", w: "250px", h: "60px" });
-      createDOMBlock({ id: "b_"+Date.now()+1, type: "square", x: sX+50+"px", y: sY+"px", color: "#fab1a0", text: "Concepto B", w: "250px", h: "60px" });
-      createDOMBlock({ id: "b_"+Date.now()+2, type: "square", x: sX-300+"px", y: sY+80+"px", color: "#ffffff", text: "Diferencia 1...", w: "250px", h: "200px" });
-      createDOMBlock({ id: "b_"+Date.now()+3, type: "square", x: sX+50+"px", y: sY+80+"px", color: "#ffffff", text: "Diferencia 1...", w: "250px", h: "200px" });
-    }
-    drawLines();
+  // Funciones del Menú Propio
+  function deleteTargetBlock() {
+    if(!targetBlock) return;
+    connections = connections.filter(c => c.from !== targetBlock.id && c.to !== targetBlock.id);
+    targetBlock.remove(); targetBlock = null; drawLines(); ctxMenu.style.display = "none";
+  }
+  function changeBlockColor(color) {
+    if(targetBlock) { targetBlock.style.backgroundColor = color; targetBlock.style.borderColor = "transparent"; }
   }
 
-  // --- 4. CONEXIONES Y ARRASTRE ---
-  function startConnecting() { connectingMode = true; nodeToConnect = null; }
+  // --- 4. CONEXIÓN VISUAL DINÁMICA ---
+  function startVisualConnection() {
+    isVisualConnecting = true; ctxMenu.style.display = "none";
+    
+    tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    tempLine.setAttribute("stroke", "#ff9800"); tempLine.setAttribute("stroke-width", "3");
+    tempLine.setAttribute("stroke-dasharray", "5,5");
+    svgLayer.appendChild(tempLine);
+
+    let rect = targetBlock.getBoundingClientRect();
+    let startX = rect.left + window.scrollX + rect.width/2;
+    let startY = rect.top + window.scrollY + rect.height/2;
+    tempLine.setAttribute("x1", startX); tempLine.setAttribute("y1", startY);
+
+    document.body.style.cursor = "crosshair";
+  }
+
+  // Actualizar línea temporal con el ratón
+  document.addEventListener("mousemove", (e) => {
+    if(isVisualConnecting && tempLine) {
+      tempLine.setAttribute("x2", e.clientX + window.scrollX);
+      tempLine.setAttribute("y2", e.clientY + window.scrollY);
+    }
+  });
+
+  function finishVisualConnection(targetId) {
+    if(targetBlock.id !== targetId) {
+      connections.push({ from: targetBlock.id, to: targetId });
+      drawLines();
+    }
+    cancelVisualConnection();
+  }
+
+  function cancelVisualConnection() {
+    isVisualConnecting = false; document.body.style.cursor = "default";
+    if(tempLine) { tempLine.remove(); tempLine = null; }
+  }
+
+  document.addEventListener("keydown", (e) => { if(e.key === "Escape") cancelVisualConnection(); });
 
   function drawLines() {
+    // Mantener línea temporal si existe
+    let temp = document.getElementById("svg-layer").lastChild;
+    let isTemp = temp && temp.tagName === "line" && temp.getAttribute("stroke-dasharray");
+    
     svgLayer.innerHTML = "";
     connections.forEach(conn => {
-      let el1 = document.getElementById(conn.from);
-      let el2 = document.getElementById(conn.to);
+      let el1 = document.getElementById(conn.from), el2 = document.getElementById(conn.to);
       if(el1 && el2) {
-        let rect1 = el1.getBoundingClientRect();
-        let rect2 = el2.getBoundingClientRect();
-        // Ajustamos al scroll actual
-        let x1 = rect1.left + window.scrollX + rect1.width / 2;
-        let y1 = rect1.top + window.scrollY + rect1.height / 2;
-        let x2 = rect2.left + window.scrollX + rect2.width / 2;
-        let y2 = rect2.top + window.scrollY + rect2.height / 2;
+        let r1 = el1.getBoundingClientRect(), r2 = el2.getBoundingClientRect();
+        let x1 = r1.left + window.scrollX + r1.width/2, y1 = r1.top + window.scrollY + r1.height/2;
+        let x2 = r2.left + window.scrollX + r2.width/2, y2 = r2.top + window.scrollY + r2.height/2;
 
         let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-        line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+        line.setAttribute("x1", x1); line.setAttribute("y1", y1); line.setAttribute("x2", x2); line.setAttribute("y2", y2);
         line.setAttribute("stroke", document.body.classList.contains('dark-mode') ? "#aaa" : "#555");
-        line.setAttribute("stroke-width", "3");
-        svgLayer.appendChild(line);
+        line.setAttribute("stroke-width", "3"); svgLayer.appendChild(line);
       }
     });
+    if(isTemp) svgLayer.appendChild(temp);
   }
 
+  // --- 5. ARRASTRE Y GUÍAS INTELIGENTES (SNAPPING) ---
   function makeDraggable(el) {
-    let ox, oy, isDragging = false;
+    let isDrag = false, ox, oy;
     el.addEventListener("mousedown", (e) => {
-      // Evitar arrastrar si toco la esquina de redimensionar o estoy escribiendo
-      if(e.target.tagName === "TEXTAREA" || connectingMode) return;
-      if(e.offsetX > el.offsetWidth - 20 && e.offsetY > el.offsetHeight - 20) return; 
-
-      isDragging = true;
-      ox = e.clientX - el.getBoundingClientRect().left;
-      oy = e.clientY - el.getBoundingClientRect().top;
+      if(e.target.tagName === "TEXTAREA" || e.button === 2 || isVisualConnecting) return;
+      if(e.offsetX > el.offsetWidth - 20 && e.offsetY > el.offsetHeight - 20) return; // Resize
+      isDrag = true; 
+      let rect = el.getBoundingClientRect();
+      ox = e.clientX - rect.left; oy = e.clientY - rect.top;
+      document.querySelectorAll(".block").forEach(b => b.style.zIndex = 1); el.style.zIndex = 2;
     });
 
     document.addEventListener("mousemove", (e) => {
-      if(!isDragging) return;
-      // Posición absoluta sumando el scroll actual
-      el.style.left = (e.clientX - ox + window.scrollX) + "px";
-      el.style.top = (e.clientY - oy + window.scrollY) + "px";
-      drawLines();
-    });
+      if(!isDrag) return;
+      let newX = e.clientX - ox + window.scrollX;
+      let newY = e.clientY - oy + window.scrollY;
 
-    document.addEventListener("mouseup", () => isDragging = false);
-  }
+      // Smart Snapping (Alineación)
+      let snapV = false, snapH = false;
+      document.querySelectorAll(".block").forEach(other => {
+        if(other === el) return;
+        let oRect = other.getBoundingClientRect();
+        let oX = oRect.left + window.scrollX;
+        let oY = oRect.top + window.scrollY;
 
-  // Deseleccionar al hacer click en el fondo
-  document.addEventListener("mousedown", (e) => {
-    if(e.target.id === "canvas" || e.target.id === "svg-layer") {
-      if(selectedBlock) { selectedBlock.classList.remove("selected"); selectedBlock = null; }
-      if(connectingMode) { connectingMode = false; if(nodeToConnect) document.getElementById(nodeToConnect).classList.remove("connecting-mode"); }
-    }
-  });
-
-  // --- 5. ATAJOS DE TECLADO (NUEVO) ---
-  document.addEventListener("keydown", (e) => {
-    // Borrar figura con Suprimir o Backspace
-    if((e.key === "Delete" || e.key === "Backspace") && selectedBlock) {
-      // Si estamos escribiendo adentro, no borrar la figura, solo el texto
-      if(document.activeElement.tagName === "TEXTAREA") return;
-      
-      connections = connections.filter(c => c.from !== selectedBlock.id && c.to !== selectedBlock.id);
-      selectedBlock.remove();
-      selectedBlock = null;
-      drawLines();
-    }
-    // Guardar rápido con Ctrl + S
-    if((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault(); saveProject(); alert("Guardado rápido");
-    }
-  });
-
-  // --- 6. OPCIONES EXTRA (NUEVO) ---
-  function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-    drawLines(); // Para actualizar el color de las líneas
-  }
-
-  function exportToImage() {
-    document.getElementById("toolbar-container").style.display = "none";
-    if(selectedBlock) selectedBlock.classList.remove("selected");
-    
-    // Toma foto usando html2canvas
-    html2canvas(document.body).then(canvas => {
-      let link = document.createElement('a');
-      link.download = `${currentProject}_Apunte.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-      document.getElementById("toolbar-container").style.display = "flex";
-    });
-  }
-
-  function exportJSON() {
-    saveProject();
-    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData[currentUser].projects[currentProject]));
-    let dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `${currentProject}_backup.json`);
-    dlAnchorElem.click();
-  }
-
-  // --- 7. GUARDAR / CARGAR ---
-  function saveProject() {
-    if(!currentProject) return;
-    let blocksData = [];
-    document.querySelectorAll(".block").forEach(el => {
-      blocksData.push({
-        id: el.id, type: el.dataset.type,
-        x: el.style.left, y: el.style.top,
-        w: el.style.width, h: el.style.height,
-        color: el.style.backgroundColor,
-        text: el.querySelector("textarea").value
+        // Snapping Vertical (Eje X)
+        if(Math.abs(newX - oX) < 15) { newX = oX; snapV = true; guideV.style.left = newX + "px"; guideV.style.display = "block"; }
+        // Snapping Horizontal (Eje Y)
+        if(Math.abs(newY - oY) < 15) { newY = oY; snapH = true; guideH.style.top = newY + "px"; guideH.style.display = "block"; }
       });
+
+      if(!snapV) guideV.style.display = "none";
+      if(!snapH) guideH.style.display = "none";
+
+      el.style.left = newX + "px"; el.style.top = newY + "px";
+      drawLines();
     });
-    appData[currentUser].projects[currentProject] = { blocks: blocksData, connections: connections };
-    saveData();
+
+    document.addEventListener("mouseup", () => { isDrag = false; guideV.style.display = "none"; guideH.style.display = "none"; });
   }
 
+  // --- 6. FORMATEAR COMO ESQUEMA ---
+  function formatSelectedAsSchema() {
+    if(multiSelection.length < 2) return alert("Mantén presionada la tecla 'Shift' y haz clic en al menos 2 bloques para organizarlos.");
+    
+    // El primero que se seleccionó es la raíz
+    let root = multiSelection[0];
+    let children = multiSelection.slice(1);
+    
+    let startX = parseInt(root.style.left);
+    let startY = parseInt(root.style.top);
+    
+    // Ordenar hijos en fila debajo del padre
+    let spacing = 200;
+    let totalWidth = (children.length - 1) * spacing;
+    let currentX = startX - (totalWidth / 2);
+
+    children.forEach(child => {
+      child.style.left = currentX + "px";
+      child.style.top = (startY + 150) + "px";
+      currentX += spacing;
+      
+      // Conectar automáticamente si no están conectados
+      let exists = connections.find(c => c.from === root.id && c.to === child.id);
+      if(!exists) connections.push({ from: root.id, to: child.id });
+    });
+    
+    drawLines();
+    multiSelection.forEach(b => b.classList.remove("multi-selected"));
+    multiSelection = [];
+  }
+
+  // Nueva Plantilla
+  function createTemplate(type) {
+    let sX = window.scrollX + window.innerWidth / 2, sY = window.scrollY + 100;
+    if(type === 'esquema') {
+      let mainId = "b_"+Date.now(); createDOMBlock({ id: mainId, type: "square", x: sX+"px", y: sY+"px", color: "#ffd6e0", text: "Tema" });
+      for(let i=0; i<3; i++) {
+        let subId = "b_"+Date.now()+i; createDOMBlock({ id: subId, type: "square", x: (sX-200+(i*200))+"px", y: sY+150+"px", color: "#e0c3fc", text: "Subtema" });
+        connections.push({ from: mainId, to: subId });
+      }
+    } drawLines();
+  }
+
+  // Utilitarios
+  function toggleDarkMode() { document.body.classList.toggle("dark-mode"); drawLines(); }
+  function exportToImage() { tbContainer.style.display = "none"; html2canvas(document.body).then(c => { let l = document.createElement('a'); l.download = `Apunte.png`; l.href = c.toDataURL(); l.click(); tbContainer.style.display = "flex"; }); }
+  function rgb2hex(rgb) { if(!rgb || rgb.indexOf("rgb") === -1) return "#ffffff"; let r = rgb.match(/\d+/g); return "#" + ((1<<24)+(+r[0]<<16)+(+r[1]<<8)+(+r[2])).toString(16).slice(1); }
+
+  // Guardar y Cargar
+  function saveProject() {
+    if(!currentProject) return; let blocksData = [];
+    document.querySelectorAll(".block").forEach(el => {
+      blocksData.push({ id: el.id, type: el.dataset.type, x: el.style.left, y: el.style.top, w: el.style.width, h: el.style.height, color: el.style.backgroundColor, text: el.querySelector("textarea").value });
+    });
+    appData[currentUser].projects[currentProject] = { blocks: blocksData, connections: connections }; saveData();
+  }
   function loadProjectData() {
-    canvas.innerHTML = '<svg id="svg-layer"></svg>';
-    connections = [];
-    let projData = appData[currentUser].projects[currentProject];
-    if(projData && projData.blocks) {
-      projData.blocks.forEach(createDOMBlock);
-      connections = projData.connections || [];
-      setTimeout(drawLines, 100); 
-    }
+    canvas.innerHTML = '<svg id="svg-layer"></svg>'; connections = [];
+    let pd = appData[currentUser].projects[currentProject];
+    if(pd && pd.blocks) { pd.blocks.forEach(createDOMBlock); connections = pd.connections || []; setTimeout(drawLines, 100); }
   }
-
-  // Arrastrar barra de herramientas
-  let tbDrag = false, tbX, tbY;
-  const tb = document.getElementById("toolbar-container");
-  document.querySelector(".drag-handle").addEventListener("mousedown", e => { tbDrag = true; tbX = e.clientX - tb.offsetLeft; tbY = e.clientY - tb.offsetTop; });
-  document.addEventListener("mousemove", e => { if(tbDrag){ tb.style.left = (e.clientX - tbX) + "px"; tb.style.top = (e.clientY - tbY) + "px"; tb.style.transform = "none"; } });
-  document.addEventListener("mouseup", () => tbDrag = false);
-
 </script>
 </body>
 </html>

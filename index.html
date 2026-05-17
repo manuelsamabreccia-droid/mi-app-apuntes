@@ -2,82 +2,77 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Apuntes Pro - Premium Studio V3</title>
+  <title>Apuntes Pro - Studio V4 (Engine Fix)</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
     :root {
-      --bg-app: #f5f7fa; --bg-box: #ffffff; --text-main: #333333; --border-color: rgba(0,0,0,0.08); --accent: #2196F3;
+      --bg-app: #f5f7fa; --bg-box: #ffffff; --text-main: #333333; --border-color: rgba(0,0,0,0.08);
     }
-    /* Estilos para el Modo Oscuro */
     body.dark-mode {
-      --bg-app: #1e1e24; --bg-box: #2a2b36; --text-main: #f5f7fa; --border-color: rgba(255,255,255,0.1); --accent: #90caf9;
+      --bg-app: #141419; --bg-box: #22232e; --text-main: #f5f7fa; --border-color: rgba(255,255,255,0.1);
     }
     
     body { margin: 0; padding: 0; background-color: var(--bg-app); overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; transition: background 0.3s; color: var(--text-main); }
     .hidden { display: none !important; }
     
-    /* PANTALLA DE INICIO (WORKSPACE) */
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9000; }
-    .auth-box { background: var(--bg-box); padding: 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center; width: 320px; color: var(--text-main); transition: background 0.3s; }
+    /* WORKSPACE SCREEN */
+    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9000; }
+    .auth-box { background: var(--bg-box); padding: 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; width: 320px; color: var(--text-main); }
     .auth-box h2 { margin-top: 0; font-size: 24px; }
     .auth-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border-color); background: var(--bg-app); color: var(--text-main); border-radius: 8px; box-sizing: border-box; outline: none; }
-    .auth-box button { width: 100%; padding: 12px; border: none; background: #4CAF50; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .auth-box button { width: 100%; padding: 12px; border: none; background: #4CAF50; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; }
     
     .project-list { max-height: 150px; overflow-y: auto; margin: 15px 0; padding: 0; list-style: none; }
     .project-item { padding: 10px; background: var(--bg-app); margin-bottom: 5px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; color: var(--text-main); }
     .project-item:hover { opacity: 0.8; }
 
-    /* BARRA DE HERRAMIENTAS */
-    #toolbar { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: var(--bg-box); padding: 8px 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 100; display: flex; gap: 8px; align-items: center; border: 1px solid var(--border-color); transition: background 0.3s; }
+    /* NAVBAR */
+    #toolbar { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: var(--bg-box); padding: 8px 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 100; display: flex; gap: 8px; align-items: center; border: 1px solid var(--border-color); }
     .btn { padding: 8px 14px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
     .btn:hover { background: rgba(128,128,128,0.15); }
     .btn-active { background: #ffeaa7 !important; color: #333 !important; font-weight: bold; }
 
-    /* DROPDOWN UNIFICADO */
+    /* DROPDOWN FORMAS */
     .dropdown { position: relative; display: inline-block; }
     .dropdown-content { display: none; position: absolute; background: var(--bg-box); min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; top: 100%; left: 0; overflow: hidden; border: 1px solid var(--border-color); }
     .dropdown-content button { width: 100%; padding: 10px 15px; background: transparent; border: none; text-align: left; color: var(--text-main); cursor: pointer; font-size: 13px; }
     .dropdown-content button:hover { background: rgba(128,128,128,0.15); }
     .dropdown:hover .dropdown-content { display: block; }
 
-    /* MODO TEXTO TIPO WORD (PANEL INTEGRADO) */
-    #word-wrapper { position: fixed; top: 75px; right: -450px; width: 420px; height: calc(100vh - 90px); background: var(--bg-box); box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 90; transition: right 0.4s ease; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; border-left: 1px solid var(--border-color); }
+    /* PANEL WORD */
+    #word-wrapper { position: fixed; top: 75px; right: -450px; width: 420px; height: calc(100vh - 90px); background: var(--bg-box); box-shadow: -5px 0 25px rgba(0,0,0,0.2); z-index: 90; transition: right 0.4s ease; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; border-left: 1px solid var(--border-color); }
     #word-wrapper.open { right: 0; }
     #word-editor { flex: 1; background: var(--bg-app); color: var(--text-main); border-radius: 8px; padding: 20px; outline: none; overflow-y: auto; font-size: 15px; line-height: 1.6; border: 1px solid var(--border-color); cursor: text; }
 
-    /* MENÚ CLICK DERECHO PRO */
-    #context-menu { position: fixed; background: var(--bg-box); border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); border: 1px solid var(--border-color); display: none; flex-direction: column; padding: 5px 0; z-index: 9999; min-width: 190px; color: var(--text-main); }
+    /* CONTEXT MENU */
+    #context-menu { position: fixed; background: var(--bg-box); border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.25); border: 1px solid var(--border-color); display: none; flex-direction: column; padding: 5px 0; z-index: 9999; min-width: 190px; color: var(--text-main); }
     #context-menu .menu-item { padding: 10px 15px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
     #context-menu .menu-item:hover { background: rgba(128,128,128,0.15); }
     #context-menu select, #context-menu input { padding: 2px; font-size: 12px; max-width: 90px; background: var(--bg-app); color: var(--text-main); border: 1px solid var(--border-color); }
-    #context-menu .divider { height: 1px; background: var(--border-color); margin: 5px 0; }
+    .divider { height: 1px; background: var(--border-color); margin: 5px 0; }
 
-    /* BOTÓN MODO OSCURO FLOTANTE */
-    #dark-toggle-btn { position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--bg-box); border: 1px solid var(--border-color); padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 16px; }
-    
-    /* TOAST DE GUARDADO */
+    #dark-toggle-btn { position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--bg-box); border: 1px solid var(--border-color); padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); font-size: 16px; }
     #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; padding: 10px 25px; border-radius: 20px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 10000; display: none; }
   </style>
 </head>
 <body>
 
-<button id="dark-toggle-btn" onclick="toggleDarkMode()" title="Cambiar Modo Vista">🌙</button>
-
-<div id="toast">💾 ¡Cambios guardados en tu cuaderno!</div>
+<button id="dark-toggle-btn" onclick="toggleDarkMode()">🌙</button>
+<div id="toast">💾 ¡Progreso guardado con éxito!</div>
 
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
     <h2>Mis Apuntes Pro</h2>
-    <input type="text" id="username" placeholder="Usuario (Tu nombre)">
-    <input type="password" id="password" placeholder="Contraseña">
-    <button onclick="handleAuth()">Entrar al Espacio</button>
+    <input type="text" id="username" placeholder="Nombre de usuario">
+    <input type="password" id="password" placeholder="Contraseña real">
+    <button onclick="handleAuth()">Ingresar al Espacio</button>
   </div>
   
   <div class="auth-box hidden" id="project-step">
-    <h2 style="margin-bottom:5px;">Tus Cuadernos</h2>
+    <h2 style="margin-bottom:5px;">Tus Proyectos</h2>
     <p id="welcome-text" style="margin:0 0 15px 0; font-size:12px; opacity:0.7;"></p>
     <ul class="project-list" id="project-list-container"></ul>
-    <input type="text" id="new-project-name" placeholder="Nombre de nuevo apunte...">
+    <input type="text" id="new-project-name" placeholder="Nombre del nuevo apunte...">
     <button onclick="handleCreateProject()" style="background:#2196F3;">+ Crear Nuevo</button>
   </div>
 </div>
@@ -86,8 +81,8 @@
   <div class="menu-item">
     <span>Letra</span>
     <select id="menu-font" onchange="updateSelectedTextProp('fontFamily', this.value)">
-      <option value="Segoe UI">Segoe / Arial</option>
-      <option value="Times New Roman">Times</option>
+      <option value="Segoe UI">Segoe UI</option>
+      <option value="Times New Roman">Times New</option>
       <option value="Courier New">Courier</option>
     </select>
   </div>
@@ -105,7 +100,7 @@
   <div class="menu-item" onclick="toggleStyle('fontWeight', 'bold')"><b>N</b> Negrita</div>
   <div class="menu-item" onclick="toggleStyle('fontStyle', 'italic')"><i>K</i> Cursiva</div>
   <div class="divider"></div>
-  <div class="menu-item" onclick="toggleGlowEffect()" style="font-weight: bold; color: #ff007f;">✨ Activar/Quitar Brillo</div>
+  <div class="menu-item" onclick="toggleGlowEffect()" style="font-weight: bold; color: #ff007f;">✨ Alternar Brillo</div>
   <div class="divider"></div>
   <div class="menu-item" onclick="startConnectingFromMenu()" style="color: #ff9800; font-weight: bold;">🔗 Conectar Objeto</div>
   <div class="divider"></div>
@@ -126,9 +121,7 @@
   <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
   <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Modo Conectar: OFF</button>
   <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
-  
-  <button class="btn" id="btn-word" onclick="toggleWordPanel()" style="background: rgba(156, 39, 176, 0.15);">📝 Modo Texto (Word)</button>
-  
+  <button class="btn" id="btn-word" onclick="toggleWordPanel()" style="background: rgba(156, 39, 176, 0.15);">📝 Modo Documento (Word)</button>
   <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
   <button class="btn" onclick="saveToDatabase()" style="background: #4CAF50; color: white;">💾 Guardar</button>
   <button class="btn" onclick="exitToWorkspace()" style="background: #f44336; color: white;">🏠 Salir</button>
@@ -137,12 +130,12 @@
 <canvas id="mainCanvas"></canvas>
 
 <div id="word-wrapper">
-  <h3 style="margin-top: 0;">Notas del Proyecto (Estilo Word)</h3>
-  <div id="word-editor" contenteditable="true" placeholder="Escribe tus apuntes formales aquí..."></div>
+  <h3 style="margin-top: 0;">Editor de Texto Integrado</h3>
+  <div id="word-editor" contenteditable="true" placeholder="Redacta tus apuntes formales aquí..."></div>
 </div>
 
 <script>
-  let db = JSON.parse(localStorage.getItem("apuntes_v8_db")) || { users: {} };
+  let db = JSON.parse(localStorage.getItem("apuntes_v9_db")) || { users: {} };
   let currentUser = null, currentProject = null;
   let canvas, isConnectMode = false, connectSourceObj = null, rightClickedObject = null;
   let connections = [];
@@ -150,31 +143,31 @@
   window.onload = function() {
     canvas = new fabric.Canvas('mainCanvas', {
       width: window.innerWidth, height: window.innerHeight,
-      backgroundColor: '#f5f7fa', fireRightClick: true, stopContextMenu: true,
-      devicePixelRatio: window.devicePixelRatio // <- NITIDEZ HD PARA EVITAR LETRAS BORROSAS
+      backgroundColor: '#f5f7fa', fireRightClick: true, stopContextMenu: true
     });
+    // Forzar renderizado de alta nitidez en pantallas Retina / HD
+    canvas.setPixelRatio(window.devicePixelRatio || 1);
     setupCanvasEvents();
     if(localStorage.getItem("dark_mode_enabled") === "true") { toggleDarkMode(true); }
   };
 
   window.addEventListener('resize', () => { if(canvas) { canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); } });
 
-  // --- MODO OSCURO GLOBAL ---
   function toggleDarkMode(force = false) {
     let body = document.body;
-    if(!force) { body.classList.toggle("dark-mode"); } 
-    else { body.classList.add("dark-mode"); }
+    if(!force) body.classList.toggle("dark-mode");
+    else body.classList.add("dark-mode");
     
     let isDark = body.classList.contains("dark-mode");
     localStorage.setItem("dark_mode_enabled", isDark);
     document.getElementById("dark-toggle-btn").innerText = isDark ? "☀️" : "🌙";
     
     if(canvas) {
-      canvas.setBackgroundColor(isDark ? '#1e1e24' : '#f5f7fa', canvas.renderAll.bind(canvas));
+      canvas.setBackgroundColor(isDark ? '#141419' : '#f5f7fa', canvas.renderAll.bind(canvas));
     }
   }
 
-  // --- WORKSPACE Y SALIDA CORRECTA ---
+  // WORKSPACE ENGINE
   function handleAuth() {
     let u = document.getElementById("username").value.trim();
     let p = document.getElementById("password").value.trim();
@@ -204,7 +197,7 @@
 
   function handleCreateProject() {
     let name = document.getElementById("new-project-name").value.trim(); if(!name) return;
-    if(db.users[currentUser].projects[name]) return alert("Ya existe.");
+    if(db.users[currentUser].projects[name]) return alert("Ya existe este cuaderno.");
     db.users[currentUser].projects[name] = { objects: [], connections: [], wordText: "" };
     saveDB(); renderProjectList(); openProject(name);
   }
@@ -222,82 +215,95 @@
     document.getElementById("auth-screen").classList.remove("hidden");
     document.getElementById("toolbar").classList.add("hidden");
     document.getElementById("word-wrapper").classList.remove("open");
+    document.getElementById("btn-word").classList.remove("btn-active");
     canvas.clear();
-    showProjectWorkspace(); // Redirección limpia al menú inicial
+    showProjectWorkspace();
   }
 
-  function saveDB() { localStorage.setItem("apuntes_v8_db", JSON.stringify(db)); }
+  function saveDB() { localStorage.setItem("apuntes_v9_db", JSON.stringify(db)); }
 
-  // --- PANEL ESTILO WORD ---
   function toggleWordPanel() {
     let panel = document.getElementById("word-wrapper");
     let btn = document.getElementById("btn-word");
     panel.classList.toggle("open");
-    if(panel.classList.contains("open")) { btn.classList.add("btn-active"); } 
-    else { btn.classList.remove("btn-active"); }
+    btn.classList.toggle("btn-active", panel.classList.contains("open"));
   }
 
-  // --- CREAR BLOQUES UNIFICADOS ---
+  // NUEVO MOTOR DE OBJETOS SIMULTÁNEOS (ADIÓS GRUPOS BUGUEADOS)
   function addUnifiedBlock(type, options = {}) {
     let left = options.left || 250; let top = options.top || 250;
-    let id = options.id || "obj_" + Date.now() + Math.floor(Math.random()*50);
+    let id = options.id || "block_" + Date.now() + Math.floor(Math.random()*100);
     let savedText = options.text !== undefined ? options.text : "";
-    let shape, textObj;
 
-    textObj = new fabric.IText(savedText, {
-      fontSize: options.fontSize || 14, fontFamily: options.fontFamily || 'Segoe UI',
-      fill: options.textColor || '#333', textAlign: 'center', originX: 'center', originY: 'center',
-      fontWeight: options.fontWeight || 'normal', fontStyle: options.fontStyle || 'normal'
+    let textObj = new fabric.IText(savedText, {
+      fontSize: options.fontSize || 15, fontFamily: options.fontFamily || 'Segoe UI',
+      fill: options.textColor || '#333333', textAlign: 'center', originX: 'center', originY: 'center',
+      left: left, top: top, fontWeight: options.fontWeight || 'normal', fontStyle: options.fontStyle || 'normal',
+      selectable: false, evented: false, isLinkedText: true
     });
 
     if (type === 'text-only') {
       if(savedText === "") textObj.text = "Escribe aquí...";
-      textObj.set({ left, top, id, customType: 'text-only' });
+      textObj.set({ selectable: true, evented: true, isLinkedText: false, id: id, customType: 'text-only' });
       textObj.on('editing:entered', () => { if(textObj.text === "Escribe aquí...") { textObj.text = ""; canvas.renderAll(); } });
-      if(options.hasGlow) applyGlowToObject(textObj, options.textColor || '#333');
+      if(options.hasGlow) applyGlowToObject(textObj, textObj.fill);
       canvas.add(textObj); canvas.setActiveObject(textObj); return;
     }
 
-    if (type === 'square') { shape = new fabric.Rect({ width: 130, height: 90, fill: options.bg || '#e3fafc', rx: 10, ry: 10 }); } 
+    let shape;
+    if (type === 'square') { shape = new fabric.Rect({ width: 140, height: 95, fill: options.bg || '#e3fafc', rx: 8, ry: 8 }); } 
     else if (type === 'circle') { shape = new fabric.Circle({ radius: 55, fill: options.bg || '#ffebf0' }); } 
-    else if (type === 'post-it') { shape = new fabric.Rect({ width: 110, height: 110, fill: options.bg || '#fff740' }); }
+    else if (type === 'post-it') { shape = new fabric.Rect({ width: 120, height: 120, fill: options.bg || '#fff740' }); }
 
-    shape.set({ originX: 'center', originY: 'center' });
-    
-    let group = new fabric.Group([ shape, textObj ], { left, top, id, customType: type });
-    group.on('mousedblclick', () => { textObj.enterEditing(); textObj.hiddenTextarea.focus(); });
-    textObj.on('changed', () => { canvas.renderAll(); });
-    textObj.on('editing:exited', () => { group.addWithUpdate(); canvas.renderAll(); });
+    shape.set({
+      left: left, top: top, originX: 'center', originY: 'center',
+      id: id, customType: type, textRef: textObj,
+      scaleX: options.scaleX || 1, scaleY: options.scaleY || 1
+    });
 
-    if(options.hasGlow) applyGlowToObject(group, shape.fill);
+    textObj.shapeRef = shape;
 
-    canvas.add(group); canvas.setActiveObject(group);
+    // Al hacer doble clic en la forma, activamos limpiamente la edición del texto nativo
+    shape.on('mousedblclick', () => {
+      textObj.selectable = true; textObj.evented = true;
+      canvas.setActiveObject(textObj);
+      textObj.enterEditing();
+    });
+
+    textObj.on('editing:exited', () => {
+      textObj.selectable = false; textObj.evented = false;
+      canvas.setActiveObject(shape);
+      canvas.renderAll();
+    });
+
+    if(options.hasGlow) applyGlowToObject(shape, shape.fill);
+
+    canvas.add(shape);
+    canvas.add(textObj);
+    canvas.setActiveObject(shape);
+    updateLinkedObjects();
   }
 
-  // --- EFECTO BRILLO / GLOW DE COMPONENTES ---
+  // EFECTO BRILLO PREMIUM
   function toggleGlowEffect() {
     if(!rightClickedObject) return;
     let obj = rightClickedObject;
-    let isText = obj.customType === 'text-only';
-    
     if(obj.shadow) {
-      obj.set("shadow", null); // Quitar brillo
+      obj.set("shadow", null);
     } else {
-      let glowColor = isText ? obj.fill : obj._objects[0].fill;
-      if(glowColor === "transparent" || glowColor === "#ffffff") glowColor = "#2196F3";
-      applyGlowToObject(obj, glowColor);
+      let color = obj.customType === 'text-only' ? obj.fill : obj.fill;
+      if(color === "transparent" || color === "#ffffff" || color === "#22232e") color = "#2196F3";
+      applyGlowToObject(obj, color);
     }
     document.getElementById("context-menu").style.display = "none";
     canvas.renderAll();
   }
 
   function applyGlowToObject(obj, color) {
-    obj.set("shadow", new fabric.Shadow({
-      color: color, blur: 25, offsetX: 0, offsetY: 0, affectStroke: true
-    }));
+    obj.set("shadow", new fabric.Shadow({ color: color, blur: 25, offsetX: 0, offsetY: 0 }));
   }
 
-  // --- CONEXIONES ---
+  // SISTEMA DE CONEXIONES PERFECTO
   function toggleConnectMode() {
     isConnectMode = !isConnectMode; connectSourceObj = null;
     let btn = document.getElementById("btn-connect-mode");
@@ -312,7 +318,7 @@
 
   function createLineBetween(obj1, obj2) {
     let p1 = obj1.getCenterPoint(); let p2 = obj2.getCenterPoint();
-    let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], { stroke: '#777', strokeWidth: 3, selectable: false, evented: false });
+    let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], { stroke: '#888888', strokeWidth: 3, selectable: false, evented: false });
     canvas.add(line); canvas.sendToBack(line);
     connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
   }
@@ -321,61 +327,80 @@
     canvas.on('mouse:down', (e) => {
       let menu = document.getElementById("context-menu");
       if (e.button === 3) { // Click derecho
-        if (e.target) {
-          rightClickedObject = e.target; menu.style.display = "flex";
+        let target = e.target;
+        if(target && target.isLinkedText && target.shapeRef) target = target.shapeRef;
+        if (target) {
+          rightClickedObject = target; menu.style.display = "flex";
           menu.style.left = e.e.clientX + "px"; menu.style.top = e.e.clientY + "px";
         } else { menu.style.display = "none"; }
       } else {
         menu.style.display = "none";
-        if(isConnectMode && e.target) {
-          if(!connectSourceObj) { connectSourceObj = e.target; } 
-          else if(connectSourceObj.id !== e.target.id) {
-            createLineBetween(connectSourceObj, e.target); toggleConnectMode();
+        let target = e.target;
+        if(target && target.isLinkedText && target.shapeRef) target = target.shapeRef;
+        if(isConnectMode && target) {
+          if(!connectSourceObj) { connectSourceObj = target; } 
+          else if(connectSourceObj.id !== target.id) {
+            createLineBetween(connectSourceObj, target); toggleConnectMode();
           }
         }
       }
     });
-    canvas.on('object:moving', () => { updateLines() });
-    canvas.on('object:scaling', () => { updateLines() });
+
+    canvas.on('object:moving', () => { updateLinkedObjects(); updateLines(); });
+    canvas.on('object:scaling', () => { updateLinkedObjects(); updateLines(); });
+  }
+
+  function updateLinkedObjects() {
+    canvas.getObjects().forEach(o => {
+      if (o.textRef) {
+        o.textRef.set({ left: o.left, top: o.top });
+        o.textRef.setCoords();
+      }
+    });
   }
 
   function updateLines() {
     connections.forEach(c => {
-      let f = canvas.getObjects().find(o => o.id === c.fromId);
-      let t = canvas.getObjects().find(o => o.id === c.toId);
+      let f = canvas.getObjects().find(o => o.id === c.fromId && !o.isLinkedText);
+      let t = canvas.getObjects().find(o => o.id === c.toId && !o.isLinkedText);
       if(f && t) { let p1 = f.getCenterPoint(); let p2 = t.getCenterPoint(); c.lineRef.set({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }); }
     });
   }
 
   function updateSelectedTextProp(prop, val) {
     if(!rightClickedObject) return;
-    let t = rightClickedObject.customType === 'text-only' ? rightClickedObject : rightClickedObject._objects[1];
-    if(t) { t.set(prop, val); if(rightClickedObject.addWithUpdate) rightClickedObject.addWithUpdate(); canvas.renderAll(); }
+    let t = rightClickedObject.customType === 'text-only' ? rightClickedObject : rightClickedObject.textRef;
+    if(t) { t.set(prop, val); canvas.renderAll(); }
   }
 
   function toggleStyle(prop, styleVal) {
     if(!rightClickedObject) return;
-    let t = rightClickedObject.customType === 'text-only' ? rightClickedObject : rightClickedObject._objects[1];
-    if(t) { t.set(prop, t.get(prop) === styleVal ? 'normal' : styleVal); if(rightClickedObject.addWithUpdate) rightClickedObject.addWithUpdate(); canvas.renderAll(); }
+    let t = rightClickedObject.customType === 'text-only' ? rightClickedObject : rightClickedObject.textRef;
+    if(t) { t.set(prop, t.get(prop) === styleVal ? 'normal' : styleVal); canvas.renderAll(); }
   }
 
   function deleteCurrentObject() {
     if(!rightClickedObject) return;
-    connections = connections.filter(c => { if(c.fromId === rightClickedObject.id || c.toId === rightClickedObject.id) { canvas.remove(c.lineRef); return false; } return true; });
-    canvas.remove(rightClickedObject); document.getElementById("context-menu").style.display = "none"; canvas.renderAll();
+    let target = rightClickedObject;
+    connections = connections.filter(c => { if(c.fromId === target.id || c.toId === target.id) { canvas.remove(c.lineRef); return false; } return true; });
+    if(target.textRef) canvas.remove(target.textRef);
+    canvas.remove(target); document.getElementById("context-menu").style.display = "none"; canvas.renderAll();
   }
 
-  // --- PERSISTENCIA Y ALERTAS ---
+  // ALMACENAMIENTO DE ESTRUCTURAS SIN FALLAS
   function saveToDatabase() {
     if(!currentProject) return; let objectsData = [];
     canvas.getObjects().forEach(o => {
-      if(o.id) {
-        let isText = o.customType === 'text-only';
+      if(o.id && !o.isLinkedText) {
+        let isTextOnly = o.customType === 'text-only';
+        let t = isTextOnly ? o : o.textRef;
         objectsData.push({
           id: o.id, type: o.customType, left: o.left, top: o.top,
-          bg: isText ? null : o._objects[0].fill, text: isText ? o.text : o._objects[1].text,
-          fontSize: isText ? o.fontSize : o._objects[1].fontSize, fontFamily: isText ? o.fontFamily : o._objects[1].fontFamily,
-          textColor: isText ? o.fill : o._objects[1].fill, hasGlow: !!o.shadow
+          scaleX: o.scaleX, scaleY: o.scaleY,
+          bg: isTextOnly ? null : o.fill, text: t.text,
+          fontSize: t.fontSize, fontFamily: t.fontFamily,
+          textColor: t.fill, fontWeight: t.fontWeight, fontStyle: t.fontStyle,
+          hasGlow: !!o.shadow
         });
       }
     });
@@ -384,7 +409,6 @@
       wordText: document.getElementById("word-editor").innerHTML
     };
     saveDB();
-    // Animación visual del aviso de Guardado exitoso
     let toast = document.getElementById("toast"); toast.style.display = "block";
     setTimeout(() => { toast.style.display = "none"; }, 2000);
   }
@@ -396,8 +420,8 @@
     document.getElementById("word-editor").innerHTML = proj.wordText || "";
     setTimeout(() => {
       if(proj.connections) proj.connections.forEach(c => {
-        let o1 = canvas.getObjects().find(o => o.id === c.fromId);
-        let o2 = canvas.getObjects().find(o => o.id === c.toId);
+        let o1 = canvas.getObjects().find(o => o.id === c.fromId && !o.isLinkedText);
+        let o2 = canvas.getObjects().find(o => o.id === c.toId && !o.isLinkedText);
         if(o1 && o2) createLineBetween(o1, o2);
       });
       canvas.renderAll();

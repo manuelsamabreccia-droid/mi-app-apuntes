@@ -1,468 +1,726 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Apuntes Pro V6 - Ultimate Studio</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>
-    :root { --bg-color: #f5f7fa; --bg-gradient: linear-gradient(135deg, #f5f7fa, #c3cfe2); --text-color: #333; --toolbar-bg: rgba(255, 255, 255, 0.95); --box-bg: white; }
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-gradient); color: var(--text-color); overflow: hidden; width: 100vw; height: 100vh; user-select: none; }
-    
-    /* PANTALLAS (Login/Dashboard) */
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9000; }
-    .hidden { display: none !important; }
-    .box { background: var(--box-bg); padding: 40px; border-radius: 20px; text-align: center; color: var(--text-color); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    input[type="text"] { padding: 12px; margin: 10px; border: 1px solid #ddd; border-radius: 10px; width: 250px; outline: none;}
-    .project-card { padding: 20px; background: #e0c3fc; border-radius: 15px; cursor: pointer; font-weight: bold; color: #333; margin: 10px; display: inline-block; transition: 0.2s;}
-    .project-card:hover { transform: translateY(-3px); background: #d0a3fc; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apuntes Pro V7</title>
+<style>
+:root{
+  --bg:#f4f6fb;
+  --toolbar:#ffffffee;
+  --primary:#4f46e5;
+  --border:#d9dce5;
+  --text:#222;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  overflow:hidden;
+  font-family:Segoe UI,sans-serif;
+  background:linear-gradient(135deg,#eef2ff,#dbeafe);
+  color:var(--text);
+}
 
-    /* VISTAS PRINCIPALES (Lienzo vs Documento) */
-    #canvas-wrapper { width: 100%; height: 100%; overflow: auto; position: absolute; top: 0; left: 0; }
-    #canvas { width: 4000px; height: 4000px; position: absolute; top: 0; left: 0; }
-    #svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-    
-    #document-wrapper { width: 100%; height: 100%; background: #f0f0f0; display: flex; justify-content: center; padding-top: 80px; position: absolute; top: 0; left: 0; z-index: 50; overflow-y: auto;}
-    #document-editor { width: 800px; min-height: 1000px; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); padding: 50px; outline: none; font-family: 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 50px; border-radius: 5px; cursor: text;}
-    
-    /* BARRA SUPERIOR PRINCIPAL */
-    #toolbar-container { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: var(--toolbar-bg); backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 2000; display: flex; align-items: center; padding: 6px; border: 1px solid rgba(128,128,128,0.2); gap: 5px;}
-    .tool-btn { border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; background: transparent; color: var(--text-color); font-weight: 500; font-size: 13px; display: flex; align-items: center;}
-    .tool-btn:hover { background: rgba(128,128,128,0.15); }
-    .btn-connect { background: #ffeaa7; font-weight: bold; border: 1px solid #fdcb6e;}
-    .btn-connect.active { background: #fdcb6e; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); border: 2px solid #e17055;}
-    
-    /* DROPDOWNS */
-    .dropdown { position: relative; }
-    .dropdown-content { display: none; position: absolute; background-color: var(--box-bg); min-width: 170px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); z-index: 2001; border-radius: 10px; overflow: hidden; top: 100%; left: 0; border: 1px solid rgba(128,128,128,0.1); }
-    .dropdown-content button { color: var(--text-color); padding: 12px 16px; width: 100%; text-align: left; border: none; background: transparent; cursor: pointer; font-size: 13px;}
-    .dropdown-content button:hover { background: rgba(128,128,128,0.15); }
-    .dropdown:hover .dropdown-content { display: block; }
-    
-    /* BLOQUES (FORMAS Y TEXTO) */
-    .block {
-      position: absolute; padding: 15px; min-width: 130px; min-height: 80px; box-sizing: border-box;
-      cursor: move; box-shadow: 0 6px 14px rgba(0,0,0,0.1); z-index: 1; border: 2px solid transparent;
-      resize: both; overflow: auto; display: flex; align-items: center; justify-content: center;
-      background-color: #ffffff;
-    }
-    .block.selected { border: 2px dashed #4CAF50 !important; }
-    .block.multi-selected { border: 2px dashed #2196F3 !important; box-shadow: 0 0 12px rgba(33, 150, 243, 0.4); }
-    .block.connect-target:hover { border: 2px dashed #ff9800 !important; cursor: crosshair;}
-    
-    .square { border-radius: 12px; }
-    .circle { border-radius: 50%; aspect-ratio: 1/1; min-width: 130px; min-height: 130px; resize: none; overflow: hidden; padding: 20px; }
-    .diamond { transform: rotate(45deg); resize: none; min-width: 110px; min-height: 110px; }
-    .diamond textarea { transform: rotate(-45deg); width: 140%; height: 140%; }
-    .post-it { background-color: #fff740; border-radius: 0 0 20px 0; box-shadow: 5px 5px 15px rgba(0,0,0,0.12); }
-    .text-only { background: transparent !important; box-shadow: none !important; border: 1px dashed rgba(0,0,0,0.1); min-height: 40px;}
-    .text-only:hover { border: 1px dashed rgba(0,0,0,0.3); }
+#canvas-wrapper{
+  width:100vw;
+  height:100vh;
+  overflow:auto;
+  position:relative;
+}
 
-    textarea { width: 100%; height: 100%; border: none; outline: none; background: transparent; resize: none; font-size: 14px; text-align: center; font-family: inherit; color: inherit; box-sizing: border-box; padding: 5px; overflow: hidden;}
-    
-    /* BARRA FLOTANTE DE FORMATO DE TEXTO (Estilo Word/PowerPoint) */
-    #format-toolbar {
-      position: absolute; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      padding: 5px; display: none; z-index: 3000; gap: 5px; border: 1px solid #ddd;
-    }
-    #format-toolbar select, #format-toolbar button, #format-toolbar input { padding: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 12px; background: white;}
-    #format-toolbar button:hover { background: #f0f0f0; }
+#canvas{
+  position:relative;
+  width:5000px;
+  height:5000px;
+}
 
-    /* GUÍAS */
-    .guide { position: absolute; background: #ff4d4d; z-index: 999; display: none; pointer-events: none; }
-    .guide-v { width: 1.5px; height: 4000px; top: 0; }
-    .guide-h { height: 1.5px; width: 4000px; left: 0; }
-  </style>
+#svg-layer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+.block{
+  position:absolute;
+  min-width:120px;
+  min-height:70px;
+  padding:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:move;
+  border:2px solid transparent;
+  resize:both;
+  overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+
+.block.selected{
+  border:2px dashed var(--primary);
+}
+
+.shape-rect{
+  border-radius:14px;
+  background:white;
+}
+
+.shape-circle{
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  background:white;
+  resize:none;
+}
+
+.shape-diamond{
+  width:140px;
+  height:140px;
+  transform:rotate(45deg);
+  background:white;
+}
+
+.shape-diamond textarea{
+  transform:rotate(-45deg);
+  width:140%;
+  height:140%;
+}
+
+.shape-postit{
+  background:#fff176;
+  border-radius:0 0 22px 0;
+}
+
+.shape-text{
+  background:transparent;
+  box-shadow:none;
+  border:1px dashed rgba(0,0,0,.2);
+  resize:none;
+}
+
+textarea{
+  width:100%;
+  height:100%;
+  border:none;
+  background:transparent;
+  resize:none;
+  outline:none;
+  text-align:center;
+  font-size:16px;
+  font-family:Segoe UI,sans-serif;
+  overflow:hidden;
+}
+
+.anchor{
+  width:12px;
+  height:12px;
+  background:var(--primary);
+  border-radius:50%;
+  position:absolute;
+  display:none;
+}
+
+.block:hover .anchor{
+  display:block;
+}
+
+.anchor.top{top:-6px;left:50%;transform:translateX(-50%)}
+.anchor.bottom{bottom:-6px;left:50%;transform:translateX(-50%)}
+.anchor.left{left:-6px;top:50%;transform:translateY(-50%)}
+.anchor.right{right:-6px;top:50%;transform:translateY(-50%)}
+
+#toolbar{
+  position:fixed;
+  top:14px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--toolbar);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--border);
+  border-radius:16px;
+  display:flex;
+  gap:8px;
+  padding:10px;
+  z-index:9999;
+  box-shadow:0 10px 30px rgba(0,0,0,.12);
+  transition:.2s;
+}
+
+#toolbar.vertical{
+  flex-direction:column;
+}
+
+.tool-group{
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+button,select,input{
+  border:none;
+  padding:8px 10px;
+  border-radius:10px;
+  background:white;
+  cursor:pointer;
+  border:1px solid var(--border);
+}
+
+button:hover{
+  background:#eef2ff;
+}
+
+#toggle-toolbar{
+  position:fixed;
+  top:10px;
+  right:10px;
+  z-index:10000;
+}
+
+.context-menu{
+  position:fixed;
+  background:white;
+  border-radius:12px;
+  border:1px solid var(--border);
+  box-shadow:0 10px 20px rgba(0,0,0,.15);
+  overflow:hidden;
+  display:none;
+  z-index:20000;
+}
+
+.context-menu button{
+  width:100%;
+  border:none;
+  border-radius:0;
+  text-align:left;
+}
+
+#document-view{
+  position:fixed;
+  inset:0;
+  background:#eceff5;
+  display:none;
+  justify-content:center;
+  overflow:auto;
+  padding:90px 0;
+  z-index:8000;
+}
+
+#document-editor{
+  width:850px;
+  min-height:1200px;
+  background:white;
+  border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);
+  padding:50px;
+  outline:none;
+  line-height:1.7;
+}
+
+.guide{
+  position:absolute;
+  background:red;
+  z-index:5000;
+  pointer-events:none;
+  display:none;
+}
+
+#guide-v{
+  width:2px;
+  height:5000px;
+}
+
+#guide-h{
+  height:2px;
+  width:5000px;
+}
+
+</style>
 </head>
 <body>
 
-<div id="guide-v" class="guide guide-v"></div>
-<div id="guide-h" class="guide guide-h"></div>
+<div id="guide-v" class="guide"></div>
+<div id="guide-h" class="guide"></div>
 
-<div id="format-toolbar">
-  <select id="font-family" onchange="applyFormat('fontFamily', this.value)">
-    <option value="'Segoe UI', sans-serif">Arial / Sans</option>
-    <option value="'Times New Roman', serif">Times New Roman</option>
-    <option value="'Courier New', monospace">Courier (Máquina)</option>
-    <option value="'Comic Sans MS', cursive">Comic Sans</option>
-  </select>
-  <select id="font-size" onchange="applyFormat('fontSize', this.value)">
-    <option value="12px">12px</option><option value="14px" selected>14px</option>
-    <option value="18px">18px</option><option value="24px">24px</option>
-    <option value="32px">32px</option><option value="48px">48px</option>
-  </select>
-  <button onclick="applyFormat('fontWeight', 'bold')" style="font-weight:bold;">N</button>
-  <button onclick="applyFormat('fontStyle', 'italic')" style="font-style:italic;">K</button>
-  <input type="color" id="bg-color-picker" title="Color Fondo" onchange="applyFormat('backgroundColor', this.value)">
-  <input type="color" id="text-color-picker" title="Color Letra" onchange="applyFormat('color', this.value)" value="#333333">
-  <button onclick="deleteBlock()" style="color:red; font-weight:bold;" title="Eliminar Forma">🗑️</button>
+<button id="toggle-toolbar">⬅</button>
+
+<div id="toolbar">
+
+<div class="tool-group">
+<select id="shape-selector">
+<option value="shape-rect">Rectángulo</option>
+<option value="shape-circle">Círculo</option>
+<option value="shape-diamond">Rombo</option>
+<option value="shape-postit">Post-it</option>
+<option value="shape-text">Texto Libre</option>
+</select>
+<button onclick="createShape()">➕ Crear</button>
 </div>
 
-<div id="login-screen" class="screen">
-  <div class="box">
-    <h2>Apuntes Pro V6</h2><input type="text" id="username" placeholder="Tu nombre...">
-    <br><button style="background:#4CAF50; color:white; padding:10px 20px; border:none; border-radius:10px;" onclick="login()">Entrar</button>
-  </div>
+<div class="tool-group">
+<select id="layout-selector">
+<option value="mindmap">Mapa Mental</option>
+<option value="hierarchy">Esquema</option>
+<option value="timeline">Timeline</option>
+</select>
+<button onclick="applyLayout()">📚 Organizar</button>
 </div>
 
-<div id="dashboard-screen" class="screen hidden">
-  <div class="box" style="background: transparent; box-shadow: none;">
-    <h2 id="user-greeting" style="color: white; font-size: 30px;">Tus Apuntes</h2>
-    <button style="background:#4CAF50; color:white; padding:10px; border:none; border-radius:10px;" onclick="createNewProject()">+ Nuevo Proyecto</button>
-    <div id="project-list" style="margin-top: 20px;"></div>
-  </div>
+<div class="tool-group">
+<select id="font-family">
+<option>Segoe UI</option>
+<option>Arial</option>
+<option>Times New Roman</option>
+<option>Courier New</option>
+<option>Comic Sans MS</option>
+</select>
+
+<select id="font-size">
+<option>12</option>
+<option selected>16</option>
+<option>20</option>
+<option>28</option>
+<option>40</option>
+</select>
+
+<button onclick="formatText('bold')"><b>N</b></button>
+<button onclick="formatText('italic')"><i>K</i></button>
+<input type="color" id="bg-picker">
+<input type="color" id="text-picker" value="#000000">
 </div>
 
-<div id="toolbar-container" class="hidden">
-  <div class="dropdown tool-btn">
-    ➕ Agregar Forma ▼
-    <div class="dropdown-content">
-      <button onclick="addBlock('square', '#e3fafc')">🟦 Cuadrado</button>
-      <button onclick="addBlock('circle', '#ffebf0')">⚪ Círculo</button>
-      <button onclick="addBlock('diamond', '#e8f5e9')">🔶 Rombo</button>
-      <button onclick="addBlock('post-it', '#fff740')">📝 Post-it</button>
-      <button onclick="addBlock('text-only', 'transparent')" style="font-weight:bold;">🔤 Texto Libre (Sin fondo)</button>
-    </div>
-  </div>
+<div class="tool-group">
+<button onclick="toggleDocumentMode()">📝 Texto</button>
+<button onclick="saveProject()">💾 Guardar</button>
+</div>
 
-  <div class="dropdown tool-btn">
-    🪄 Organizar Selección ▼
-    <div class="dropdown-content">
-      <button onclick="organizeSelection('esquema')">📊 Convertir a Esquema</button>
-      <button onclick="organizeSelection('mental')">🕸️ Convertir a Mapa Mental</button>
-    </div>
-  </div>
-
-  <button id="btn-connect" class="tool-btn btn-connect" onclick="toggleConnectMode()">🔗 Modo Conectar: OFF</button>
-  
-  <select id="line-style" class="tool-btn" onchange="drawLines()" style="border: 1px solid #ccc;">
-    <option value="direct">Líneas Directas</option>
-    <option value="orthogonal">Líneas Rectas (PowerPoint)</option>
-  </select>
-
-  <div style="width:1px; height:20px; background:#ccc; margin:0 5px;"></div>
-
-  <button class="tool-btn" style="background:#2196F3; color:white;" onclick="toggleViewMode()" id="btn-view-mode">📝 Cambiar a Modo Texto</button>
-
-  <div class="dropdown tool-btn">
-    ⚙️ Guardar ▼
-    <div class="dropdown-content">
-      <button onclick="exportToImage()">🖼️ Descargar Imagen</button>
-      <button onclick="saveProject()">💾 Guardar Avance</button>
-      <button onclick="backToDashboard()" style="color:red;">🏠 Inicio</button>
-    </div>
-  </div>
 </div>
 
 <div id="canvas-wrapper">
-  <div id="canvas"><svg id="svg-layer"></svg></div>
+<div id="canvas">
+<svg id="svg-layer"></svg>
+</div>
 </div>
 
-<div id="document-wrapper" class="hidden">
-  <div id="document-editor" contenteditable="true" data-placeholder="Escribe tus apuntes largos aquí... Toca Enter para nuevos párrafos."></div>
+<div id="document-view">
+<div id="document-editor" contenteditable="true"></div>
+</div>
+
+<div class="context-menu" id="context-menu">
+<button onclick="bringToFront()">Traer al frente</button>
+<button onclick="sendToBack()">Enviar atrás</button>
+<button onclick="deleteSelected()">Eliminar</button>
 </div>
 
 <script>
-  let appData = JSON.parse(localStorage.getItem("apuntes_v6")) || {};
-  let currentUser = null, currentProject = null;
-  
-  // Variables Lienzo
-  let connections = [];
-  let multiSelection = []; 
-  let selectedBlock = null; 
-  let zIndexCounter = 10; // Para la superposición
-  let isConnectingMode = false;
-  let connectSource = null;
+const canvas=document.getElementById('canvas');
+const canvasWrapper=document.getElementById('canvas-wrapper');
+const svg=document.getElementById('svg-layer');
+const contextMenu=document.getElementById('context-menu');
 
-  const canvasWrap = document.getElementById("canvas-wrapper");
-  const canvas = document.getElementById("canvas");
-  const svgLayer = document.getElementById("svg-layer");
-  const formatToolbar = document.getElementById("format-toolbar");
+let selected=null;
+let blocks=[];
+let connections=[];
+let zCounter=1;
+let currentConnection=null;
+let toolbarHidden=false;
 
-  // --- 1. LOGIN Y DASHBOARD ---
-  function login() { let u = document.getElementById("username").value.trim(); if(!u) return; currentUser = u; if(!appData[currentUser]) appData[currentUser] = { projects: {} }; document.getElementById("login-screen").classList.add("hidden"); showDashboard(); }
-  function showDashboard() { document.getElementById("dashboard-screen").classList.remove("hidden"); document.getElementById("toolbar-container").classList.add("hidden"); canvasWrap.style.display = "none"; let list = document.getElementById("project-list"); list.innerHTML = ""; for(let p in appData[currentUser].projects) { let d = document.createElement("div"); d.className = "project-card"; d.innerText = p; d.onclick = () => openProject(p); list.appendChild(d); } }
-  function createNewProject() { let n = prompt("Título:"); if(n && !appData[currentUser].projects[n]) { appData[currentUser].projects[n] = { blocks: [], connections: [], docText: "" }; saveData(); openProject(n); } }
-  function openProject(n) { currentProject = n; document.getElementById("dashboard-screen").classList.add("hidden"); document.getElementById("toolbar-container").classList.remove("hidden"); canvasWrap.style.display = "block"; canvasWrap.scrollTo(1500, 1500); loadProjectData(); }
-  function backToDashboard() { saveProject(); currentProject = null; showDashboard(); }
-  function saveData() { localStorage.setItem("apuntes_v6", JSON.stringify(appData)); }
+function createShape(){
+  const type=document.getElementById('shape-selector').value;
 
-  // --- 2. VISTAS (LIENZO VS DOCUMENTO) ---
-  let isDocMode = false;
-  function toggleViewMode() {
-    isDocMode = !isDocMode;
-    const docWrap = document.getElementById("document-wrapper");
-    const btn = document.getElementById("btn-view-mode");
-    
-    if(isDocMode) {
-      canvasWrap.classList.add("hidden");
-      docWrap.classList.remove("hidden");
-      btn.innerHTML = "🎨 Volver al Lienzo";
-      btn.style.background = "#ff9800";
-    } else {
-      docWrap.classList.add("hidden");
-      canvasWrap.classList.remove("hidden");
-      btn.innerHTML = "📝 Cambiar a Modo Texto";
-      btn.style.background = "#2196F3";
-    }
-  }
+  const block=document.createElement('div');
+  block.className=`block ${type}`;
+  block.style.left=(canvasWrapper.scrollLeft+300)+'px';
+  block.style.top=(canvasWrapper.scrollTop+250)+'px';
+  block.style.zIndex=++zCounter;
 
-  // --- 3. CREAR Y SUPERPONER FIGURAS ---
-  function addBlock(type, color) {
-    let spawnX = (canvasWrap.scrollLeft + window.innerWidth / 2 - 60) + "px";
-    let spawnY = (canvasWrap.scrollTop + window.innerHeight / 2 - 40) + "px";
-    let id = "b_" + Date.now();
-    createDOMBlock({ id, type, x: spawnX, y: spawnY, bg: color, text: "", w: "", h: "", font: "'Segoe UI', sans-serif", fsize: "14px", fweight: "normal", fstyle: "normal", tcolor: "#333" });
-  }
+  const ta=document.createElement('textarea');
+  ta.placeholder='Escribir...';
+  block.appendChild(ta);
 
-  function createDOMBlock(d) {
-    let el = document.createElement("div");
-    el.className = `block ${d.type}`; el.id = d.id; el.dataset.type = d.type;
-    el.style.left = d.x; el.style.top = d.y; el.style.zIndex = ++zIndexCounter;
-    if(d.w) el.style.width = d.w; if(d.h) el.style.height = d.h;
-    el.style.backgroundColor = d.bg;
-    
-    let ta = document.createElement("textarea");
-    ta.value = d.text || ""; ta.placeholder = d.type === "text-only" ? "Escribe libremente..." : "Escribir...";
-    ta.style.fontFamily = d.font || "'Segoe UI', sans-serif";
-    ta.style.fontSize = d.fsize || "14px";
-    ta.style.fontWeight = d.fweight || "normal";
-    ta.style.fontStyle = d.fstyle || "normal";
-    ta.style.color = d.tcolor || "#333";
-    el.appendChild(ta);
+  addAnchors(block);
+  canvas.appendChild(block);
+  blocks.push(block);
 
-    // SISTEMA DE SELECCIÓN Y SUPERPOSICIÓN (Mandar al frente)
-    el.addEventListener("mousedown", (e) => {
-      // 1. Superposición: El que tocas sube arriba de todos
-      el.style.zIndex = ++zIndexCounter;
+  initBlock(block);
+}
 
-      // 2. Si estamos en modo conectar
-      if(isConnectingMode) {
-        handleConnectionClick(el);
-        return;
-      }
+function addAnchors(block){
+  ['top','bottom','left','right'].forEach(pos=>{
+    const a=document.createElement('div');
+    a.className=`anchor ${pos}`;
 
-      // 3. Selección y formato
-      if(e.shiftKey) {
-        el.classList.toggle("multi-selected");
-        if(el.classList.contains("multi-selected")) multiSelection.push(el);
-        else multiSelection = multiSelection.filter(b => b !== el);
-      } else {
-        document.querySelectorAll(".block").forEach(b => { b.classList.remove("multi-selected"); b.classList.remove("selected");});
-        multiSelection = [el]; el.classList.add("selected");
-        selectedBlock = el;
-        showFormatToolbar(el);
-      }
+    a.addEventListener('mousedown',(e)=>{
+      e.stopPropagation();
+      startConnection(block,e);
     });
 
-    new ResizeObserver(() => drawLines()).observe(el);
-    makeDraggable(el); canvas.appendChild(el);
+    block.appendChild(a);
+  });
+}
+
+function startConnection(block,e){
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('stroke','#555');
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke-width','3');
+  svg.appendChild(path);
+
+  currentConnection={
+    from:block,
+    path
+  };
+
+  document.addEventListener('mousemove',moveConnection);
+  document.addEventListener('mouseup',finishConnection);
+}
+
+function moveConnection(e){
+  if(!currentConnection)return;
+
+  const fromRect=currentConnection.from.getBoundingClientRect();
+
+  const x1=fromRect.left+fromRect.width/2+canvasWrapper.scrollLeft;
+  const y1=fromRect.top+fromRect.height/2+canvasWrapper.scrollTop;
+
+  const x2=e.clientX+canvasWrapper.scrollLeft;
+  const y2=e.clientY+canvasWrapper.scrollTop;
+
+  currentConnection.path.setAttribute('d',`M ${x1} ${y1} L ${x2} ${y2}`);
+}
+
+function finishConnection(e){
+  document.removeEventListener('mousemove',moveConnection);
+  document.removeEventListener('mouseup',finishConnection);
+
+  const target=document.elementFromPoint(e.clientX,e.clientY);
+  const block=target?.closest('.block');
+
+  if(block && block!==currentConnection.from){
+    connections.push({
+      from:currentConnection.from,
+      to:block,
+      path:currentConnection.path,
+      type:'free'
+    });
+    redrawConnections();
+  }else{
+    currentConnection.path.remove();
   }
 
-  // --- 4. BARRA DE FORMATO TIPO WORD ---
-  function showFormatToolbar(el) {
-    let ta = el.querySelector("textarea");
-    document.getElementById("font-family").value = ta.style.fontFamily.replace(/"/g, "'");
-    document.getElementById("font-size").value = ta.style.fontSize;
-    document.getElementById("bg-color-picker").value = rgb2hex(el.style.backgroundColor);
-    document.getElementById("text-color-picker").value = rgb2hex(ta.style.color);
-    
-    let rect = el.getBoundingClientRect();
-    formatToolbar.style.display = "flex";
-    formatToolbar.style.left = (rect.left + canvasWrap.scrollLeft) + "px";
-    formatToolbar.style.top = (rect.top + canvasWrap.scrollTop - 45) + "px";
-  }
+  currentConnection=null;
+}
 
-  function applyFormat(prop, val) {
-    if(!selectedBlock) return;
-    let ta = selectedBlock.querySelector("textarea");
-    if(prop === 'backgroundColor') selectedBlock.style.backgroundColor = val;
-    else if(prop === 'fontWeight') ta.style.fontWeight = ta.style.fontWeight === 'bold' ? 'normal' : 'bold';
-    else if(prop === 'fontStyle') ta.style.fontStyle = ta.style.fontStyle === 'italic' ? 'normal' : 'italic';
-    else ta.style[prop] = val;
-  }
+function redrawConnections(){
+  connections.forEach(c=>{
+    const r1=c.from.getBoundingClientRect();
+    const r2=c.to.getBoundingClientRect();
 
-  function deleteBlock() {
-    if(!selectedBlock) return;
-    connections = connections.filter(c => c.from !== selectedBlock.id && c.to !== selectedBlock.id);
-    selectedBlock.remove(); selectedBlock = null; formatToolbar.style.display = "none"; drawLines();
-  }
+    const x1=r1.left+r1.width/2+canvasWrapper.scrollLeft;
+    const y1=r1.top+r1.height/2+canvasWrapper.scrollTop;
 
-  // Ocultar barra si toco el fondo
-  canvasWrap.addEventListener("mousedown", (e) => {
-    if(e.target === canvas || e.target === svgLayer) {
-      document.querySelectorAll(".block").forEach(b => { b.classList.remove("selected"); b.classList.remove("multi-selected");});
-      multiSelection = []; selectedBlock = null; formatToolbar.style.display = "none";
+    const x2=r2.left+r2.width/2+canvasWrapper.scrollLeft;
+    const y2=r2.top+r2.height/2+canvasWrapper.scrollTop;
+
+    c.path.setAttribute('d',`M ${x1} ${y1} L ${x2} ${y2}`);
+  });
+}
+
+function initBlock(block){
+  let dragging=false;
+  let ox=0;
+  let oy=0;
+
+  block.addEventListener('mousedown',(e)=>{
+    if(e.target.classList.contains('anchor'))return;
+    if(e.target.tagName==='TEXTAREA')return;
+
+    dragging=true;
+    selected=block;
+    selectBlock(block);
+
+    block.style.zIndex=++zCounter;
+
+    const rect=block.getBoundingClientRect();
+    ox=e.clientX-rect.left;
+    oy=e.clientY-rect.top;
+  });
+
+  document.addEventListener('mousemove',(e)=>{
+    if(!dragging)return;
+
+    let x=e.clientX-ox+canvasWrapper.scrollLeft;
+    let y=e.clientY-oy+canvasWrapper.scrollTop;
+
+    smartGuides(block,x,y);
+
+    block.style.left=x+'px';
+    block.style.top=y+'px';
+
+    redrawConnections();
+  });
+
+  document.addEventListener('mouseup',()=>{
+    dragging=false;
+    hideGuides();
+  });
+
+  block.addEventListener('click',()=>{
+    selected=block;
+    selectBlock(block);
+  });
+
+  block.addEventListener('contextmenu',(e)=>{
+    e.preventDefault();
+    selected=block;
+    selectBlock(block);
+
+    contextMenu.style.display='block';
+    contextMenu.style.left=e.clientX+'px';
+    contextMenu.style.top=e.clientY+'px';
+  });
+
+  const ta=block.querySelector('textarea');
+
+  ta.addEventListener('input',()=>{
+    ta.style.fontFamily=document.getElementById('font-family').value;
+    ta.style.fontSize=document.getElementById('font-size').value+'px';
+  });
+}
+
+function smartGuides(block,x,y){
+  const gv=document.getElementById('guide-v');
+  const gh=document.getElementById('guide-h');
+
+  let foundV=false;
+  let foundH=false;
+
+  blocks.forEach(other=>{
+    if(other===block)return;
+
+    const ox=parseFloat(other.style.left);
+    const oy=parseFloat(other.style.top);
+
+    if(Math.abs(x-ox)<15){
+      x=ox;
+      foundV=true;
+      gv.style.left=x+'px';
+      gv.style.display='block';
+    }
+
+    if(Math.abs(y-oy)<15){
+      y=oy;
+      foundH=true;
+      gh.style.top=y+'px';
+      gh.style.display='block';
     }
   });
 
-  // --- 5. SISTEMA DE CONEXIÓN SIMPLE (Botón ON/OFF) ---
-  const btnConnect = document.getElementById("btn-connect");
-  
-  function toggleConnectMode() {
-    isConnectingMode = !isConnectingMode;
-    connectSource = null;
-    if(isConnectingMode) {
-      btnConnect.innerHTML = "🔗 Modo Conectar: ON (Toca 2 figuras)";
-      btnConnect.classList.add("active");
-      document.body.style.cursor = "crosshair";
-      document.querySelectorAll('.block').forEach(b => b.classList.add('connect-target'));
-    } else {
-      btnConnect.innerHTML = "🔗 Modo Conectar: OFF";
-      btnConnect.classList.remove("active");
-      document.body.style.cursor = "default";
-      document.querySelectorAll('.block').forEach(b => { b.classList.remove('connect-target'); b.style.border = ""; });
-    }
+  if(!foundV)gv.style.display='none';
+  if(!foundH)gh.style.display='none';
+}
+
+function hideGuides(){
+  document.getElementById('guide-v').style.display='none';
+  document.getElementById('guide-h').style.display='none';
+}
+
+function selectBlock(block){
+  document.querySelectorAll('.block').forEach(b=>b.classList.remove('selected'));
+  block.classList.add('selected');
+}
+
+function formatText(type){
+  if(!selected)return;
+
+  const ta=selected.querySelector('textarea');
+
+  if(type==='bold'){
+    ta.style.fontWeight=ta.style.fontWeight==='bold'?'normal':'bold';
   }
 
-  function handleConnectionClick(el) {
-    if(!connectSource) {
-      // Primer click (Origen)
-      connectSource = el;
-      el.style.border = "3px solid #ff9800";
-    } else {
-      // Segundo click (Destino)
-      if(connectSource.id !== el.id) {
-        connections.push({ from: connectSource.id, to: el.id });
-        drawLines();
-      }
-      // Resetear para seguir conectando otros
-      connectSource.style.border = "";
-      connectSource = null;
-      // Apagamos modo conectar automáticamente por comodidad
-      toggleConnectMode(); 
-    }
+  if(type==='italic'){
+    ta.style.fontStyle=ta.style.fontStyle==='italic'?'normal':'italic';
   }
 
-  function drawLines() {
-    svgLayer.innerHTML = "";
-    let style = document.getElementById("line-style").value;
+  ta.style.fontFamily=document.getElementById('font-family').value;
+  ta.style.fontSize=document.getElementById('font-size').value+'px';
 
-    connections.forEach(conn => {
-      let el1 = document.getElementById(conn.from), el2 = document.getElementById(conn.to);
-      if(el1 && el2) {
-        let r1 = el1.getBoundingClientRect(), r2 = el2.getBoundingClientRect();
-        // Coordenadas sumando el scroll del contenedor wrapper
-        let x1 = r1.left + canvasWrap.scrollLeft + r1.width/2;
-        let y1 = r1.top + canvasWrap.scrollTop + r1.height/2;
-        let x2 = r2.left + canvasWrap.scrollLeft + r2.width/2;
-        let y2 = r2.top + canvasWrap.scrollTop + r2.height/2;
+  selected.style.background=document.getElementById('bg-picker').value;
+  ta.style.color=document.getElementById('text-picker').value;
+}
 
-        let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("stroke", "#555");
-        path.setAttribute("stroke-width", "3");
-        path.setAttribute("fill", "none");
+function deleteSelected(){
+  if(!selected)return;
 
-        if(style === "direct") {
-          // Línea Diagonal directa
-          path.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
-        } else {
-          // Línea Ortogonal (Rectas PowerPoint)
-          let midX = (x1 + x2) / 2;
-          // Ruta: Sale X1,Y1 -> Va a MitadX,Y1 -> Va a MitadX,Y2 -> Llega a X2,Y2
-          path.setAttribute("d", `M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2} ${y2}`);
-        }
-        svgLayer.appendChild(path);
-      }
+  connections=connections.filter(c=>{
+    if(c.from===selected || c.to===selected){
+      c.path.remove();
+      return false;
+    }
+    return true;
+  });
+
+  selected.remove();
+  blocks=blocks.filter(b=>b!==selected);
+  contextMenu.style.display='none';
+}
+
+function bringToFront(){
+  if(selected)selected.style.zIndex=++zCounter;
+}
+
+function sendToBack(){
+  if(selected)selected.style.zIndex=1;
+}
+
+window.addEventListener('click',()=>{
+  contextMenu.style.display='none';
+});
+
+function applyLayout(){
+  const type=document.getElementById('layout-selector').value;
+
+  if(blocks.length<2)return;
+
+  const root=blocks[0];
+  const children=blocks.slice(1);
+
+  const rx=parseFloat(root.style.left);
+  const ry=parseFloat(root.style.top);
+
+  if(type==='mindmap'){
+    const radius=300;
+    const step=(Math.PI*2)/children.length;
+
+    children.forEach((b,i)=>{
+      const x=rx+Math.cos(step*i)*radius;
+      const y=ry+Math.sin(step*i)*radius;
+
+      b.style.left=x+'px';
+      b.style.top=y+'px';
     });
   }
 
-  // --- 6. ARRASTRE Y GUÍAS ---
-  function makeDraggable(el) {
-    let isDrag = false, ox, oy;
-    el.addEventListener("mousedown", (e) => {
-      if(e.target.tagName === "TEXTAREA" || isConnectingMode) return;
-      if(e.offsetX > el.offsetWidth - 20 && e.offsetY > el.offsetHeight - 20) return; 
-      isDrag = true; 
-      let rect = el.getBoundingClientRect();
-      ox = e.clientX - rect.left; oy = e.clientY - rect.top;
-      if(formatToolbar.style.display === "flex") formatToolbar.style.display = "none"; // esconder toolbar al mover
+  if(type==='hierarchy'){
+    let start=rx-children.length*120;
+
+    children.forEach(b=>{
+      b.style.left=start+'px';
+      b.style.top=(ry+220)+'px';
+      start+=240;
     });
+  }
 
-    document.addEventListener("mousemove", (e) => {
-      if(!isDrag) return;
-      let newX = e.clientX - ox + canvasWrap.scrollLeft;
-      let newY = e.clientY - oy + canvasWrap.scrollTop;
+  if(type==='timeline'){
+    let start=rx;
 
-      // Guías de PowerPoint
-      let snapV = false, snapH = false;
-      document.querySelectorAll(".block").forEach(other => {
-        if(other === el) return;
-        let oX = parseFloat(other.style.left), oY = parseFloat(other.style.top);
-        if(Math.abs(newX - oX) < 15) { newX = oX; snapV = true; document.getElementById('guide-v').style.left = newX + "px"; document.getElementById('guide-v').style.display = "block"; }
-        if(Math.abs(newY - oY) < 15) { newY = oY; snapH = true; document.getElementById('guide-h').style.top = newY + "px"; document.getElementById('guide-h').style.display = "block"; }
+    children.forEach(b=>{
+      b.style.left=start+'px';
+      b.style.top=ry+'px';
+      start+=260;
+    });
+  }
+
+  redrawConnections();
+}
+
+function toggleDocumentMode(){
+  const doc=document.getElementById('document-view');
+
+  if(doc.style.display==='flex'){
+    doc.style.display='none';
+  }else{
+    doc.style.display='flex';
+  }
+}
+
+function saveProject(){
+  const data={
+    blocks:blocks.map(b=>({
+      html:b.outerHTML,
+      left:b.style.left,
+      top:b.style.top,
+      z:b.style.zIndex
+    })),
+    document:document.getElementById('document-editor').innerHTML
+  };
+
+  localStorage.setItem('apuntes-pro-v7',JSON.stringify(data));
+  alert('Proyecto guardado');
+}
+
+function loadProject(){
+  const saved=JSON.parse(localStorage.getItem('apuntes-pro-v7'));
+  if(!saved)return;
+
+  document.getElementById('document-editor').innerHTML=saved.document||'';
+
+  saved.blocks.forEach(item=>{
+    const temp=document.createElement('div');
+    temp.innerHTML=item.html;
+
+    const block=temp.firstElementChild;
+
+    canvas.appendChild(block);
+    blocks.push(block);
+
+    initBlock(block);
+
+    block.querySelectorAll('.anchor').forEach(a=>{
+      a.addEventListener('mousedown',(e)=>{
+        e.stopPropagation();
+        startConnection(block,e);
       });
-      if(!snapV) document.getElementById('guide-v').style.display = "none";
-      if(!snapH) document.getElementById('guide-h').style.display = "none";
-
-      el.style.left = newX + "px"; el.style.top = newY + "px";
-      drawLines();
     });
+  });
+}
 
-    document.addEventListener("mouseup", () => { isDrag = false; document.getElementById('guide-v').style.display = "none"; document.getElementById('guide-h').style.display = "none"; if(el.classList.contains("selected")) showFormatToolbar(el);});
-  }
+loadProject();
 
-  // --- 7. ORGANIZAR SELECCIÓN EXISTENTE EN PLANTILLAS ---
-  function organizeSelection(type) {
-    if(multiSelection.length < 2) return alert("Mantén presionada la tecla SHIFT y haz clic en al menos 2 figuras para organizarlas.");
-    
-    let root = multiSelection[0];
-    let children = multiSelection.slice(1);
-    let startX = parseFloat(root.style.left);
-    let startY = parseFloat(root.style.top);
-    
-    if(type === 'esquema') {
-      let spacing = 180;
-      let totalWidth = (children.length - 1) * spacing;
-      let currentX = startX - (totalWidth / 2);
-      children.forEach(child => {
-        child.style.left = currentX + "px"; child.style.top = (startY + 150) + "px"; currentX += spacing;
-        if(!connections.find(c => c.from === root.id && c.to === child.id)) connections.push({ from: root.id, to: child.id });
-      });
-    } 
-    else if (type === 'mental') {
-      let radius = 200;
-      let angleStep = (2 * Math.PI) / children.length;
-      children.forEach((child, index) => {
-        let cx = startX + radius * Math.cos(index * angleStep);
-        let cy = startY + radius * Math.sin(index * angleStep);
-        child.style.left = cx + "px"; child.style.top = cy + "px";
-        if(!connections.find(c => c.from === root.id && c.to === child.id)) connections.push({ from: root.id, to: child.id });
-      });
-    }
-    
-    drawLines();
-    multiSelection.forEach(b => b.classList.remove("multi-selected"));
-    multiSelection = [];
-  }
+const toolbar=document.getElementById('toolbar');
 
-  // --- GUARDAR Y EXPORTAR ---
-  function rgb2hex(rgb) { if(!rgb || rgb.indexOf("rgb") === -1 || rgb === "transparent") return "#ffffff"; let r = rgb.match(/\d+/g); return "#" + ((1<<24)+(+r[0]<<16)+(+r[1]<<8)+(+r[2])).toString(16).slice(1); }
-  
-  function saveProject() {
-    if(!currentProject) return; let blocksData = [];
-    document.querySelectorAll(".block").forEach(el => {
-      let ta = el.querySelector("textarea");
-      blocksData.push({ id: el.id, type: el.dataset.type, x: el.style.left, y: el.style.top, w: el.style.width, h: el.style.height, bg: el.style.backgroundColor, text: ta.value, font: ta.style.fontFamily, fsize: ta.style.fontSize, fweight: ta.style.fontWeight, fstyle: ta.style.fontStyle, tcolor: ta.style.color, z: el.style.zIndex });
-    });
-    appData[currentUser].projects[currentProject] = { blocks: blocksData, connections: connections, docText: document.getElementById("document-editor").innerHTML }; saveData();
-  }
-  
-  function loadProjectData() {
-    canvas.innerHTML = '<svg id="svg-layer"></svg>'; connections = []; formatToolbar.style.display = "none";
-    let pd = appData[currentUser].projects[currentProject];
-    if(pd) {
-      if(pd.blocks) pd.blocks.forEach(createDOMBlock);
-      connections = pd.connections || []; 
-      document.getElementById("document-editor").innerHTML = pd.docText || "";
-      setTimeout(drawLines, 100); 
-    }
-  }
+let toolbarDrag=false;
+let tx=0;
+let ty=0;
 
-  function exportToImage() { 
-    if(isDocMode) return alert("Vuelve al lienzo para descargar la imagen.");
-    document.getElementById("toolbar-container").style.display = "none"; formatToolbar.style.display = "none"; document.querySelectorAll('.block').forEach(b => b.classList.remove('selected', 'multi-selected'));
-    html2canvas(document.getElementById("canvas-wrapper")).then(c => { let l = document.createElement('a'); l.download = `Apunte.png`; l.href = c.toDataURL(); l.click(); document.getElementById("toolbar-container").style.display = "flex"; }); 
+toolbar.addEventListener('mousedown',(e)=>{
+  if(e.target.tagName==='BUTTON' || e.target.tagName==='SELECT' || e.target.tagName==='INPUT')return;
+
+  toolbarDrag=true;
+
+  tx=e.clientX-toolbar.offsetLeft;
+  ty=e.clientY-toolbar.offsetTop;
+});
+
+window.addEventListener('mousemove',(e)=>{
+  if(!toolbarDrag)return;
+
+  toolbar.style.left=(e.clientX-tx)+'px';
+  toolbar.style.top=(e.clientY-ty)+'px';
+  toolbar.style.transform='none';
+
+  if(toolbar.offsetLeft<200 || toolbar.offsetLeft>window.innerWidth-200){
+    toolbar.classList.add('vertical');
+  }else{
+    toolbar.classList.remove('vertical');
   }
+});
+
+window.addEventListener('mouseup',()=>toolbarDrag=false);
+
+const toggleBtn=document.getElementById('toggle-toolbar');
+
+toggleBtn.addEventListener('click',()=>{
+  toolbarHidden=!toolbarHidden;
+
+  if(toolbarHidden){
+    toolbar.style.display='none';
+    toggleBtn.innerHTML='➡';
+  }else{
+    toolbar.style.display='flex';
+    toggleBtn.innerHTML='⬅';
+  }
+});
+
 </script>
 </body>
 </html>

@@ -99,6 +99,8 @@ body{
 
 textarea{
   width:100%;
+  user-select:text;
+  pointer-events:none;
   height:100%;
   border:none;
   background:transparent;
@@ -244,7 +246,7 @@ button:hover{
 
 <div id="toolbar">
 
-<div class="tool-group">
+<div class="tool-group draggable-tool-group">
 <select id="shape-selector">
 <option value="shape-rect">Rectángulo</option>
 <option value="shape-circle">Círculo</option>
@@ -255,7 +257,7 @@ button:hover{
 <button onclick="createShape()">➕ Crear</button>
 </div>
 
-<div class="tool-group">
+<div class="tool-group draggable-tool-group">
 <select id="layout-selector">
 <option value="mindmap">Mapa Mental</option>
 <option value="hierarchy">Esquema</option>
@@ -264,7 +266,7 @@ button:hover{
 <button onclick="applyLayout()">📚 Organizar</button>
 </div>
 
-<div class="tool-group">
+<div class="tool-group draggable-tool-group">
 <select id="font-family">
 <option>Segoe UI</option>
 <option>Arial</option>
@@ -287,7 +289,7 @@ button:hover{
 <input type="color" id="text-picker" value="#000000">
 </div>
 
-<div class="tool-group">
+<div class="tool-group draggable-tool-group">
 <button onclick="toggleDocumentMode()">📝 Texto</button>
 <button onclick="saveProject()">💾 Guardar</button>
 </div>
@@ -308,6 +310,7 @@ button:hover{
 <button onclick="bringToFront()">Traer al frente</button>
 <button onclick="sendToBack()">Enviar atrás</button>
 <button onclick="deleteSelected()">Eliminar</button>
+<button onclick="openTextTools()">Herramientas de Texto</button>
 </div>
 
 <script>
@@ -431,7 +434,8 @@ function initBlock(block){
 
   block.addEventListener('mousedown',(e)=>{
     if(e.target.classList.contains('anchor'))return;
-    if(e.target.tagName==='TEXTAREA')return;
+
+    e.preventDefault();
 
     dragging=true;
     selected=block;
@@ -447,6 +451,8 @@ function initBlock(block){
   document.addEventListener('mousemove',(e)=>{
     if(!dragging)return;
 
+    e.preventDefault();
+
     let x=e.clientX-ox+canvasWrapper.scrollLeft;
     let y=e.clientY-oy+canvasWrapper.scrollTop;
 
@@ -454,6 +460,8 @@ function initBlock(block){
 
     block.style.left=x+'px';
     block.style.top=y+'px';
+
+    block.style.transform='translate3d(0,0,0)';
 
     redrawConnections();
   });
@@ -524,6 +532,11 @@ function hideGuides(){
 }
 
 function selectBlock(block){
+  if(event && event.shiftKey){
+    block.classList.toggle('selected');
+    return;
+  }
+
   document.querySelectorAll('.block').forEach(b=>b.classList.remove('selected'));
   block.classList.add('selected');
 }
@@ -576,13 +589,36 @@ window.addEventListener('click',()=>{
   contextMenu.style.display='none';
 });
 
+window.addEventListener('dblclick',(e)=>{
+  const block=e.target.closest('.block');
+
+  if(block){
+    const ta=block.querySelector('textarea');
+    ta.style.pointerEvents='auto';
+    ta.focus();
+  }
+});
+
+function openTextTools(){
+  if(!selected)return;
+
+  const ta=selected.querySelector('textarea');
+
+  ta.style.fontFamily=prompt('Fuente:',ta.style.fontFamily||'Segoe UI');
+  ta.style.fontSize=prompt('Tamaño:',parseInt(ta.style.fontSize)||16)+'px';
+}
+
 function applyLayout(){
   const type=document.getElementById('layout-selector').value;
 
   if(blocks.length<2)return;
 
-  const root=blocks[0];
-  const children=blocks.slice(1);
+  const selectedBlocks=blocks.filter(b=>b.classList.contains('selected'));
+
+  const usable=selectedBlocks.length>1 ? selectedBlocks : blocks;
+
+  const root=usable[0];
+  const children=usable.slice(1);
 
   const rx=parseFloat(root.style.left);
   const ry=parseFloat(root.style.top);
@@ -676,6 +712,8 @@ function loadProject(){
 
 loadProject();
 
+initToolbarReorder();
+
 const toolbar=document.getElementById('toolbar');
 
 let toolbarDrag=false;
@@ -706,6 +744,34 @@ window.addEventListener('mousemove',(e)=>{
 });
 
 window.addEventListener('mouseup',()=>toolbarDrag=false);
+
+function initToolbarReorder(){
+  const toolbar=document.getElementById('toolbar');
+  let dragged=null;
+
+  document.querySelectorAll('.draggable-tool-group').forEach(group=>{
+    group.draggable=true;
+
+    group.addEventListener('dragstart',()=>{
+      dragged=group;
+      group.style.opacity='.5';
+    });
+
+    group.addEventListener('dragend',()=>{
+      group.style.opacity='1';
+    });
+
+    group.addEventListener('dragover',(e)=>{
+      e.preventDefault();
+    });
+
+    group.addEventListener('drop',()=>{
+      if(dragged!==group){
+        toolbar.insertBefore(dragged,group);
+      }
+    });
+  });
+}
 
 const toggleBtn=document.getElementById('toggle-toolbar');
 

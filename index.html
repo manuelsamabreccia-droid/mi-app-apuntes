@@ -1,73 +1,114 @@
 <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Apuntes Pro - Reboot (Motor Fabric.js)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <style>
+    body { 
+      margin: 0; padding: 0; 
+      background-color: #f5f7fa; 
+      overflow: hidden; /* Sin barras de scroll nativas, el lienzo es infinito ahora */
+      font-family: 'Segoe UI', sans-serif; 
+    }
+    
+    /* Barra de herramientas temporal básica */
+    #toolbar { 
+      position: fixed; top: 15px; left: 50%; transform: translateX(-50%); 
+      background: white; padding: 10px 20px; border-radius: 12px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100; 
+      display: flex; gap: 10px; border: 1px solid #ddd;
+    }
+    
+    button { 
+      padding: 8px 16px; border: none; background: #e0c3fc; 
+      border-radius: 6px; cursor: pointer; font-weight: bold; color: #333;
+      transition: background 0.2s;
+    }
+    button:hover { background: #d0a3fc; }
+    .btn-danger { background: #ff4d4d; color: white; }
+    .btn-danger:hover { background: #e60000; }
+  </style>
+</head>
+<body>
 
-function changeColor(color){
-  if(selected){
-    selected.style.background=color;
-  }
-}
+<div id="toolbar">
+  <button onclick="addRectangle()">🟦 Cuadrado</button>
+  <button onclick="addCircle()">⚪ Círculo</button>
+  <button onclick="addText()">📝 Texto Libre</button>
+  <div style="width: 2px; background: #eee; margin: 0 5px;"></div>
+  <button onclick="deleteSelected()" class="btn-danger">🗑️ Borrar</button>
+</div>
 
-function changeFontSize(size){
-  if(selected){
-    selected.querySelector('textarea').style.fontSize=size+'px';
-  }
-}
+<canvas id="mainCanvas"></canvas>
 
-window.addEventListener('click',()=>{
-  contextMenu.style.display='none';
-});
+<script>
+  // 1. INICIALIZAR EL MOTOR FABRIC.JS
+  // Aquí es donde ocurre la magia. Esto reemplaza todo el código manual de arrastrar.
+  const canvas = new fabric.Canvas('mainCanvas', {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    backgroundColor: '#f5f7fa',
+    selection: true // Esto activa la caja de selección azul arrastrando el mouse (¡como en Windows!)
+  });
 
-function toggleDocumentMode(){
-  const doc=document.getElementById('document-mode');
+  // Si el usuario cambia el tamaño de la ventana, el lienzo se ajusta solo
+  window.addEventListener('resize', () => {
+    canvas.setWidth(window.innerWidth);
+    canvas.setHeight(window.innerHeight);
+    canvas.renderAll();
+  });
 
-  if(doc.style.display==='block'){
-    doc.style.display='none';
-  }else{
-    doc.style.display='block';
-  }
-}
+  // Configuración global para que los controles (los puntitos para agrandar) se vean profesionales
+  fabric.Object.prototype.set({
+    transparentCorners: false,
+    cornerColor: '#2196F3',
+    cornerStyle: 'circle',
+    borderColor: '#2196F3',
+    cornerSize: 10,
+    padding: 5
+  });
 
-function saveProject(){
-  const blocks=[];
-
-  document.querySelectorAll('.block').forEach(b=>{
-    blocks.push({
-      html:b.outerHTML,
-      left:b.style.left,
-      top:b.style.top,
-      width:b.style.width,
-      height:b.style.height
+  // 2. FUNCIONES DE CREACIÓN DE OBJETOS
+  function addRectangle() {
+    const rect = new fabric.Rect({
+      left: 150, top: 150, width: 120, height: 80, fill: '#e3fafc',
+      rx: 10, ry: 10 // Bordes redondeados
     });
-  });
+    canvas.add(rect);
+    canvas.setActiveObject(rect); // Lo selecciona automáticamente al crearlo
+  }
 
-  data[currentUser].projects[currentProject]={
-    blocks,
-    doc:document.getElementById('document-editor').innerHTML
-  };
+  function addCircle() {
+    const circle = new fabric.Circle({
+      left: 300, top: 150, radius: 60, fill: '#ffebf0'
+    });
+    canvas.add(circle);
+    canvas.setActiveObject(circle);
+  }
 
-  persist();
+  function addText() {
+    // IText es un texto interactivo. Permite hacer doble clic para editar.
+    const text = new fabric.IText('Doble clic para escribir', {
+      left: 450, top: 150, fontFamily: 'Segoe UI', fontSize: 22, fill: '#333'
+    });
+    canvas.add(text);
+    canvas.setActiveObject(text);
+  }
 
-  alert('Proyecto guardado');
-}
+  // 3. FUNCIONES DE EDICIÓN BÁSICA
+  function deleteSelected() {
+    const activeObjects = canvas.getActiveObjects(); // Detecta si seleccionaste uno o varios
+    if (activeObjects.length) {
+      canvas.discardActiveObject(); // Deselecciona la caja invisible grupal
+      activeObjects.forEach(function(object) {
+        canvas.remove(object); // Borra cada objeto
+      });
+    }
+  }
 
-function loadProject(){
-  document.querySelectorAll('.block').forEach(b=>b.remove());
-
-  const project=data[currentUser].projects[currentProject];
-
-  if(!project)return;
-
-  (project.blocks||[]).forEach(item=>{
-    const div=document.createElement('div');
-    div.outerHTML=item.html;
-
-    const block=canvas.lastElementChild;
-
-    if(block)initBlock(block);
-  });
-
-  document.getElementById('document-editor').innerHTML=project.doc||'';
-}
+  // Pre-cargar una forma de bienvenida
+  addText();
 </script>
-
 </body>
 </html>

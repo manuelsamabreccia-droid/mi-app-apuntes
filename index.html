@@ -2,62 +2,91 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Apuntes Pro - Sistema Unificado</title>
+  <title>Apuntes Pro - Premium Studio V3</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
-    body { margin: 0; padding: 0; background-color: #f5f7fa; overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; }
+    :root {
+      --bg-app: #f5f7fa; --bg-box: #ffffff; --text-main: #333333; --border-color: rgba(0,0,0,0.08); --accent: #2196F3;
+    }
+    /* Estilos para el Modo Oscuro */
+    body.dark-mode {
+      --bg-app: #1e1e24; --bg-box: #2a2b36; --text-main: #f5f7fa; --border-color: rgba(255,255,255,0.1); --accent: #90caf9;
+    }
+    
+    body { margin: 0; padding: 0; background-color: var(--bg-app); overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; transition: background 0.3s; color: var(--text-main); }
     .hidden { display: none !important; }
     
-    /* PANTALLA DE INICIO (WORKSPACE & CUENTAS PERSISTENTES) */
-    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(40,44,52,0.6); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9000; }
-    .auth-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); text-align: center; width: 320px; }
-    .auth-box h2 { margin-top: 0; color: #333; font-size: 24px; }
-    .auth-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
-    .auth-box button { width: 100%; padding: 12px; border: none; background: #4CAF50; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; }
-    .auth-box button:hover { background: #45a049; }
+    /* PANTALLA DE INICIO (WORKSPACE) */
+    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9000; }
+    .auth-box { background: var(--bg-box); padding: 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center; width: 320px; color: var(--text-main); transition: background 0.3s; }
+    .auth-box h2 { margin-top: 0; font-size: 24px; }
+    .auth-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border-color); background: var(--bg-app); color: var(--text-main); border-radius: 8px; box-sizing: border-box; outline: none; }
+    .auth-box button { width: 100%; padding: 12px; border: none; background: #4CAF50; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px; }
     
     .project-list { max-height: 150px; overflow-y: auto; margin: 15px 0; padding: 0; list-style: none; }
-    .project-item { padding: 10px; background: #f0f0f0; margin-bottom: 5px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; }
-    .project-item:hover { background: #e0e0e0; }
+    .project-item { padding: 10px; background: var(--bg-app); margin-bottom: 5px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .project-item:hover { opacity: 0.8; }
 
-    /* BARRA DE HERRAMIENTAS SUPERIOR */
-    #toolbar { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); padding: 8px 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 100; display: flex; gap: 8px; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
-    .btn { padding: 8px 14px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #444; display: flex; align-items: center; gap: 4px; }
-    .btn:hover { background: #f0f0f0; }
-    .btn-active { background: #ffeaa7 !important; border: 1px solid #fdcb6e; font-weight: bold; }
+    /* BARRA DE HERRAMIENTAS */
+    #toolbar { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: var(--bg-box); padding: 8px 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 100; display: flex; gap: 8px; align-items: center; border: 1px solid var(--border-color); transition: background 0.3s; }
+    .btn { padding: 8px 14px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
+    .btn:hover { background: rgba(128,128,128,0.15); }
+    .btn-active { background: #ffeaa7 !important; color: #333 !important; font-weight: bold; }
 
-    /* MENÚ CONTEXTUAL (CLICK DERECHO POWERPOINT) */
-    #context-menu { position: fixed; background: white; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); border: 1px solid #eee; display: none; flex-direction: column; padding: 5px 0; z-index: 9999; min-width: 180px; }
-    #context-menu .menu-item { padding: 10px 15px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #333; }
-    #context-menu .menu-item:hover { background: #f5f5f5; }
-    #context-menu select, #context-menu input { padding: 2px; font-size: 12px; max-width: 90px; }
-    #context-menu .divider { height: 1px; background: #eee; margin: 5px 0; }
+    /* DROPDOWN UNIFICADO */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content { display: none; position: absolute; background: var(--bg-box); min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; top: 100%; left: 0; overflow: hidden; border: 1px solid var(--border-color); }
+    .dropdown-content button { width: 100%; padding: 10px 15px; background: transparent; border: none; text-align: left; color: var(--text-main); cursor: pointer; font-size: 13px; }
+    .dropdown-content button:hover { background: rgba(128,128,128,0.15); }
+    .dropdown:hover .dropdown-content { display: block; }
+
+    /* MODO TEXTO TIPO WORD (PANEL INTEGRADO) */
+    #word-wrapper { position: fixed; top: 75px; right: -450px; width: 420px; height: calc(100vh - 90px); background: var(--bg-box); box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 90; transition: right 0.4s ease; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; border-left: 1px solid var(--border-color); }
+    #word-wrapper.open { right: 0; }
+    #word-editor { flex: 1; background: var(--bg-app); color: var(--text-main); border-radius: 8px; padding: 20px; outline: none; overflow-y: auto; font-size: 15px; line-height: 1.6; border: 1px solid var(--border-color); cursor: text; }
+
+    /* MENÚ CLICK DERECHO PRO */
+    #context-menu { position: fixed; background: var(--bg-box); border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); border: 1px solid var(--border-color); display: none; flex-direction: column; padding: 5px 0; z-index: 9999; min-width: 190px; color: var(--text-main); }
+    #context-menu .menu-item { padding: 10px 15px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+    #context-menu .menu-item:hover { background: rgba(128,128,128,0.15); }
+    #context-menu select, #context-menu input { padding: 2px; font-size: 12px; max-width: 90px; background: var(--bg-app); color: var(--text-main); border: 1px solid var(--border-color); }
+    #context-menu .divider { height: 1px; background: var(--border-color); margin: 5px 0; }
+
+    /* BOTÓN MODO OSCURO FLOTANTE */
+    #dark-toggle-btn { position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--bg-box); border: 1px solid var(--border-color); padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 16px; }
+    
+    /* TOAST DE GUARDADO */
+    #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; padding: 10px 25px; border-radius: 20px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 10000; display: none; }
   </style>
 </head>
 <body>
 
+<button id="dark-toggle-btn" onclick="toggleDarkMode()" title="Cambiar Modo Vista">🌙</button>
+
+<div id="toast">💾 ¡Cambios guardados en tu cuaderno!</div>
+
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
     <h2>Mis Apuntes Pro</h2>
-    <input type="text" id="username" placeholder="Usuario (Ej: tu nombre)">
+    <input type="text" id="username" placeholder="Usuario (Tu nombre)">
     <input type="password" id="password" placeholder="Contraseña">
     <button onclick="handleAuth()">Entrar al Espacio</button>
   </div>
   
   <div class="auth-box hidden" id="project-step">
     <h2 style="margin-bottom:5px;">Tus Cuadernos</h2>
-    <p id="welcome-text" style="margin:0 0 15px 0; font-size:12px; color:#666;"></p>
+    <p id="welcome-text" style="margin:0 0 15px 0; font-size:12px; opacity:0.7;"></p>
     <ul class="project-list" id="project-list-container"></ul>
-    <input type="text" id="new-project-name" placeholder="Nombre del nuevo apunte...">
+    <input type="text" id="new-project-name" placeholder="Nombre de nuevo apunte...">
     <button onclick="handleCreateProject()" style="background:#2196F3;">+ Crear Nuevo</button>
   </div>
 </div>
 
 <div id="context-menu">
   <div class="menu-item">
-    <span>Fuente</span>
+    <span>Letra</span>
     <select id="menu-font" onchange="updateSelectedTextProp('fontFamily', this.value)">
-      <option value="Segoe UI">Arial / Sans</option>
+      <option value="Segoe UI">Segoe / Arial</option>
       <option value="Times New Roman">Times</option>
       <option value="Courier New">Courier</option>
     </select>
@@ -65,18 +94,18 @@
   <div class="menu-item">
     <span>Tamaño</span>
     <select id="menu-size" onchange="updateSelectedTextProp('fontSize', parseInt(this.value))">
-      <option value="14">14px</option>
-      <option value="18">18px</option>
-      <option value="24">24px</option>
-      <option value="36">36px</option>
+      <option value="14">14px</option><option value="18">18px</option>
+      <option value="24">24px</option><option value="36">36px</option>
     </select>
   </div>
   <div class="menu-item">
-    <span>Color Letra</span>
+    <span>Color Texto</span>
     <input type="color" id="menu-tcolor" onchange="updateSelectedTextProp('fill', this.value)">
   </div>
   <div class="menu-item" onclick="toggleStyle('fontWeight', 'bold')"><b>N</b> Negrita</div>
   <div class="menu-item" onclick="toggleStyle('fontStyle', 'italic')"><i>K</i> Cursiva</div>
+  <div class="divider"></div>
+  <div class="menu-item" onclick="toggleGlowEffect()" style="font-weight: bold; color: #ff007f;">✨ Activar/Quitar Brillo</div>
   <div class="divider"></div>
   <div class="menu-item" onclick="startConnectingFromMenu()" style="color: #ff9800; font-weight: bold;">🔗 Conectar Objeto</div>
   <div class="divider"></div>
@@ -84,93 +113,104 @@
 </div>
 
 <div id="toolbar" class="hidden">
-  <button class="btn" onclick="addUnifiedBlock('square')">🟦 Cuadrado</button>
-  <button class="btn" onclick="addUnifiedBlock('circle')">⚪ Círculo</button>
-  <button class="btn" onclick="addUnifiedBlock('post-it')">📝 Post-it</button>
-  <button class="btn" onclick="addUnifiedBlock('text-only')" style="font-weight: bold; color: #2196F3;">🔤 Texto Libre</button>
-  <div style="width: 1px; height: 20px; background: #ccc; margin: 0 4px;"></div>
+  <div class="dropdown">
+    <button class="btn" style="background: rgba(33, 150, 243, 0.15); font-weight: bold;">➕ Insertar Forma ▼</button>
+    <div class="dropdown-content">
+      <button onclick="addUnifiedBlock('square')">🟦 Cuadrado</button>
+      <button onclick="addUnifiedBlock('circle')">⚪ Círculo</button>
+      <button onclick="addUnifiedBlock('post-it')">📝 Post-it</button>
+      <button onclick="addUnifiedBlock('text-only')">🔤 Texto Libre</button>
+    </div>
+  </div>
+
+  <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
   <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Modo Conectar: OFF</button>
-  <div style="width: 1px; height: 20px; background: #ccc; margin: 0 4px;"></div>
-  <button class="btn" onclick="saveToDatabase()" style="background: #4CAF50; color: white; border-radius: 6px;">💾 Guardar</button>
-  <button class="btn" onclick="exitToWorkspace()" style="color: #ff4d4d;">🏠 Salir</button>
+  <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
+  
+  <button class="btn" id="btn-word" onclick="toggleWordPanel()" style="background: rgba(156, 39, 176, 0.15);">📝 Modo Texto (Word)</button>
+  
+  <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 4px;"></div>
+  <button class="btn" onclick="saveToDatabase()" style="background: #4CAF50; color: white;">💾 Guardar</button>
+  <button class="btn" onclick="exitToWorkspace()" style="background: #f44336; color: white;">🏠 Salir</button>
 </div>
 
 <canvas id="mainCanvas"></canvas>
 
+<div id="word-wrapper">
+  <h3 style="margin-top: 0;">Notas del Proyecto (Estilo Word)</h3>
+  <div id="word-editor" contenteditable="true" placeholder="Escribe tus apuntes formales aquí..."></div>
+</div>
+
 <script>
-  // --- BASE DE DATOS LOCAL PERSISTENTE ---
-  let db = JSON.parse(localStorage.getItem("apuntes_v7_db")) || { users: {} };
-  let currentUser = null;
-  let currentProject = null;
+  let db = JSON.parse(localStorage.getItem("apuntes_v8_db")) || { users: {} };
+  let currentUser = null, currentProject = null;
+  let canvas, isConnectMode = false, connectSourceObj = null, rightClickedObject = null;
+  let connections = [];
 
-  // Variables de control del Lienzo
-  let canvas;
-  let isConnectMode = false;
-  let connectSourceObj = null;
-  let rightClickedObject = null;
-  let connections = []; // Estructura: { fromId: x, toId: y, lineRef: obj }
-
-  // Inicialización de la App
   window.onload = function() {
     canvas = new fabric.Canvas('mainCanvas', {
       width: window.innerWidth, height: window.innerHeight,
-      backgroundColor: '#f5f7fa', fireRightClick: true, stopContextMenu: true
+      backgroundColor: '#f5f7fa', fireRightClick: true, stopContextMenu: true,
+      devicePixelRatio: window.devicePixelRatio // <- NITIDEZ HD PARA EVITAR LETRAS BORROSAS
     });
     setupCanvasEvents();
+    if(localStorage.getItem("dark_mode_enabled") === "true") { toggleDarkMode(true); }
   };
 
   window.addEventListener('resize', () => { if(canvas) { canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); } });
 
-  // --- 1. GESTIÓN DE CUENTAS REALES Y WORKSPACE ---
+  // --- MODO OSCURO GLOBAL ---
+  function toggleDarkMode(force = false) {
+    let body = document.body;
+    if(!force) { body.classList.toggle("dark-mode"); } 
+    else { body.classList.add("dark-mode"); }
+    
+    let isDark = body.classList.contains("dark-mode");
+    localStorage.setItem("dark_mode_enabled", isDark);
+    document.getElementById("dark-toggle-btn").innerText = isDark ? "☀️" : "🌙";
+    
+    if(canvas) {
+      canvas.setBackgroundColor(isDark ? '#1e1e24' : '#f5f7fa', canvas.renderAll.bind(canvas));
+    }
+  }
+
+  // --- WORKSPACE Y SALIDA CORRECTA ---
   function handleAuth() {
     let u = document.getElementById("username").value.trim();
     let p = document.getElementById("password").value.trim();
-    if(!u || !p) return alert("Completa usuario y contraseña.");
-    
-    if(db.users[u]) {
-      if(db.users[u].password !== p) return alert("Contraseña incorrecta.");
-    } else {
-      db.users[u] = { password: p, projects: {}, lastOpen: null };
-      saveDB();
-    }
-    currentUser = u;
-    showProjectWorkspace();
+    if(!u || !p) return;
+    if(db.users[u]) { if(db.users[u].password !== p) return alert("Clave errónea."); } 
+    else { db.users[u] = { password: p, projects: {}, lastOpen: null }; saveDB(); }
+    currentUser = u; showProjectWorkspace();
   }
 
   function showProjectWorkspace() {
     document.getElementById("login-step").classList.add("hidden");
     document.getElementById("project-step").classList.remove("hidden");
-    document.getElementById("welcome-text").innerText = `Usuario: ${currentUser}`;
+    document.getElementById("welcome-text").innerText = `Espacio de: ${currentUser}`;
     renderProjectList();
   }
 
   function renderProjectList() {
-    let container = document.getElementById("project-list-container");
-    container.innerHTML = "";
+    let container = document.getElementById("project-list-container"); container.innerHTML = "";
     let projects = db.users[currentUser].projects;
     for(let pName in projects) {
-      let li = document.createElement("li");
-      li.className = "project-item";
-      li.innerText = pName;
-      li.onclick = () => openProject(pName);
-      container.appendChild(li);
+      let li = document.createElement("li"); li.className = "project-item"; li.innerText = pName;
+      li.onclick = () => openProject(pName); container.appendChild(li);
     }
-    // Auto-abrir el último proyecto si existía
     let last = db.users[currentUser].lastOpen;
     if(last && projects[last] && !currentProject) { openProject(last); }
   }
 
   function handleCreateProject() {
-    let name = document.getElementById("new-project-name").value.trim();
-    if(!name) return;
-    if(db.users[currentUser].projects[name]) return alert("Ese cuaderno ya existe.");
-    db.users[currentUser].projects[name] = { objects: [], connections: [] };
+    let name = document.getElementById("new-project-name").value.trim(); if(!name) return;
+    if(db.users[currentUser].projects[name]) return alert("Ya existe.");
+    db.users[currentUser].projects[name] = { objects: [], connections: [], wordText: "" };
     saveDB(); renderProjectList(); openProject(name);
   }
 
   function openProject(name) {
-    currentProject = name;
-    db.users[currentUser].lastOpen = name; saveDB();
+    currentProject = name; db.users[currentUser].lastOpen = name; saveDB();
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("toolbar").classList.remove("hidden");
     loadProjectData();
@@ -180,246 +220,188 @@
     saveToDatabase();
     currentProject = null;
     document.getElementById("auth-screen").classList.remove("hidden");
-    document.getElementById("project-step").classList.remove("hidden");
     document.getElementById("toolbar").classList.add("hidden");
+    document.getElementById("word-wrapper").classList.remove("open");
     canvas.clear();
-    renderProjectList();
+    showProjectWorkspace(); // Redirección limpia al menú inicial
   }
 
-  function saveDB() { localStorage.setItem("apuntes_v7_db", JSON.stringify(db)); }
+  function saveDB() { localStorage.setItem("apuntes_v8_db", JSON.stringify(db)); }
 
-  // --- 2. CREACIÓN DE OBJETOS UNIFICADOS (FORMA + TEXTO JUNTOS) ---
+  // --- PANEL ESTILO WORD ---
+  function toggleWordPanel() {
+    let panel = document.getElementById("word-wrapper");
+    let btn = document.getElementById("btn-word");
+    panel.classList.toggle("open");
+    if(panel.classList.contains("open")) { btn.classList.add("btn-active"); } 
+    else { btn.classList.remove("btn-active"); }
+  }
+
+  // --- CREAR BLOQUES UNIFICADOS ---
   function addUnifiedBlock(type, options = {}) {
-    let left = options.left || 200; let top = options.top || 200;
-    let id = options.id || "obj_" + Date.now() + Math.floor(Math.random()*100);
+    let left = options.left || 250; let top = options.top || 250;
+    let id = options.id || "obj_" + Date.now() + Math.floor(Math.random()*50);
     let savedText = options.text !== undefined ? options.text : "";
-
     let shape, textObj;
 
-    // Configuración base de texto interactivo
     textObj = new fabric.IText(savedText, {
       fontSize: options.fontSize || 14, fontFamily: options.fontFamily || 'Segoe UI',
       fill: options.textColor || '#333', textAlign: 'center', originX: 'center', originY: 'center',
-      fontWeight: options.fontWeight || 'normal', fontStyle: options.fontStyle || 'normal',
-      editingBorderColor: '#2196F3'
+      fontWeight: options.fontWeight || 'normal', fontStyle: options.fontStyle || 'normal'
     });
 
     if (type === 'text-only') {
       if(savedText === "") textObj.text = "Escribe aquí...";
-      textObj.left = left; textObj.top = top; textObj.id = id; textObj.customType = 'text-only';
-      // Control de vaciado al editar por primera vez
+      textObj.set({ left, top, id, customType: 'text-only' });
       textObj.on('editing:entered', () => { if(textObj.text === "Escribe aquí...") { textObj.text = ""; canvas.renderAll(); } });
+      if(options.hasGlow) applyGlowToObject(textObj, options.textColor || '#333');
       canvas.add(textObj); canvas.setActiveObject(textObj); return;
     }
 
-    // Configuración según el tipo de forma geométrica pastel
-    if (type === 'square') {
-      shape = new fabric.Rect({ width: 130, height: 90, fill: options.bg || '#e3fafc', rx: 10, ry: 10 });
-    } else if (type === 'circle') {
-      shape = new fabric.Circle({ radius: 55, fill: options.bg || '#ffebf0' });
-    } else if (type === 'post-it') {
-      shape = new fabric.Rect({ width: 110, height: 110, fill: options.bg || '#fff740', shadow: '2px 2px 5px rgba(0,0,0,0.1)' });
-    }
+    if (type === 'square') { shape = new fabric.Rect({ width: 130, height: 90, fill: options.bg || '#e3fafc', rx: 10, ry: 10 }); } 
+    else if (type === 'circle') { shape = new fabric.Circle({ radius: 55, fill: options.bg || '#ffebf0' }); } 
+    else if (type === 'post-it') { shape = new fabric.Rect({ width: 110, height: 110, fill: options.bg || '#fff740' }); }
 
     shape.set({ originX: 'center', originY: 'center' });
-
-    // UNIFICACIÓN: Creamos un grupo real (Miro/PowerPoint style)
-    let group = new fabric.Group([ shape, textObj ], {
-      left: left, top: top, id: id, customType: type
-    });
-
-    // Permitir editar texto haciendo doble clic en el grupo unificado
-    group.on('mousedblclick', () => {
-      textObj.enterEditing();
-      textObj.hiddenTextarea.focus();
-    });
-
-    // Forzar actualización gráfica del contenedor si el texto cambia
+    
+    let group = new fabric.Group([ shape, textObj ], { left, top, id, customType: type });
+    group.on('mousedblclick', () => { textObj.enterEditing(); textObj.hiddenTextarea.focus(); });
     textObj.on('changed', () => { canvas.renderAll(); });
     textObj.on('editing:exited', () => { group.addWithUpdate(); canvas.renderAll(); });
 
-    canvas.add(group);
-    canvas.setActiveObject(group);
+    if(options.hasGlow) applyGlowToObject(group, shape.fill);
+
+    canvas.add(group); canvas.setActiveObject(group);
   }
 
-  // --- 3. CONEXIONES DIRECTAS / INTUITIVAS ---
-  function toggleConnectMode() {
-    isConnectMode = !isConnectMode;
-    connectSourceObj = null;
-    let btn = document.getElementById("btn-connect-mode");
-    if(isConnectMode) {
-      btn.innerText = "⚡ Modo Conectar: ON"; btn.classList.add("btn-active");
-    } else {
-      btn.innerText = "⚡ Modo Conectar: OFF"; btn.classList.remove("btn-active");
-    }
-  }
-
-  function startConnectingFromMenu() {
-    if(!rightClickedObject) return;
-    toggleConnectMode();
-    connectSourceObj = rightClickedObject;
-    document.getElementById("context-menu").style.display = "none";
-  }
-
-  function handleObjectConnection(targetObj) {
-    if(!connectSourceObj) {
-      connectSourceObj = targetObj;
-    } else {
-      if(connectSourceObj.id !== targetObj.id) {
-        createLineBetween(connectSourceObj, targetObj);
-        toggleConnectMode(); // Apagar al conectar exitosamente
-      } else { connectSourceObj = null; }
-    }
-  }
-
-  function createLineBetween(obj1, obj2) {
-    let p1 = obj1.getCenterPoint(); let p2 = obj2.getCenterPoint();
-    let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
-      stroke: '#555', strokeWidth: 3, selectable: false, evented: false
-    });
-    // Mandar la línea al fondo para que no se superponga visualmente al texto
-    canvas.add(line); canvas.sendToBack(line);
-    connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
-  }
-
-  function updateLinesPosition() {
-    connections.forEach(c => {
-      let fObj = findCanvasObjectById(c.fromId);
-      let tObj = findCanvasObjectById(c.toId);
-      if(fObj && tObj) {
-        let p1 = fObj.getCenterPoint(); let p2 = tObj.getCenterPoint();
-        c.lineRef.set({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
-      }
-    });
-  }
-
-  // --- 4. MENÚ CONTEXTUAL COMPLETO Y CONTROL DE ACCIONES ---
-  function setupCanvasEvents() {
-    canvas.on('mouse:down', (e) => {
-      let menu = document.getElementById("context-menu");
-      
-      // Control de Click Derecho
-      if (e.button === 3) { 
-        if (e.target) {
-          rightClickedObject = e.target;
-          menu.style.display = "flex";
-          menu.style.left = e.e.clientX + "px";
-          menu.style.top = e.e.clientY + "px";
-          loadCurrentTextPropsIntoMenu(e.target);
-        } else { menu.style.display = "none"; }
-      } else {
-        // Click izquierdo cierra menú contextual
-        menu.style.display = "none";
-        
-        // Acción en Modo Conexión
-        if(isConnectMode && e.target) { handleObjectConnection(e.target); }
-      }
-    });
-
-    // Movimiento fluido en tiempo real y re-enrutamiento de líneas
-    canvas.on('object:moving', () => { updateLinesPosition(); });
-    canvas.on('object:scaling', () => { updateLinesPosition(); });
-  }
-
-  function loadCurrentTextPropsIntoMenu(obj) {
-    let t = obj.customType === 'text-only' ? obj : obj._objects ? obj._objects[1] : null;
-    if(!t) return;
-    document.getElementById("menu-font").value = t.fontFamily || "Segoe UI";
-    document.getElementById("menu-size").value = t.fontSize || "14";
-  }
-
-  function updateSelectedTextProp(prop, val) {
+  // --- EFECTO BRILLO / GLOW DE COMPONENTES ---
+  function toggleGlowEffect() {
     if(!rightClickedObject) return;
     let obj = rightClickedObject;
-    let t = obj.customType === 'text-only' ? obj : obj._objects ? obj._objects[1] : null;
-    if(t) {
-      t.set(prop, val);
-      if(obj.addWithUpdate) obj.addWithUpdate();
-      canvas.renderAll();
-    }
-  }
-
-  function toggleStyle(prop, styleVal) {
-    if(!rightClickedObject) return;
-    let obj = rightClickedObject;
-    let t = obj.customType === 'text-only' ? obj : obj._objects ? obj._objects[1] : null;
-    if(t) {
-      let current = t.get(prop);
-      t.set(prop, current === styleVal ? 'normal' : styleVal);
-      if(obj.addWithUpdate) obj.addWithUpdate();
-      canvas.renderAll();
-    }
-  }
-
-  function deleteCurrentObject() {
-    if(!rightClickedObject) return;
-    let obj = rightClickedObject;
+    let isText = obj.customType === 'text-only';
     
-    // Eliminar conectores asociados
-    connections = connections.filter(c => {
-      if(c.fromId === obj.id || c.toId === obj.id) {
-        canvas.remove(c.lineRef); return false;
-      } return true;
-    });
-
-    canvas.remove(obj);
+    if(obj.shadow) {
+      obj.set("shadow", null); // Quitar brillo
+    } else {
+      let glowColor = isText ? obj.fill : obj._objects[0].fill;
+      if(glowColor === "transparent" || glowColor === "#ffffff") glowColor = "#2196F3";
+      applyGlowToObject(obj, glowColor);
+    }
     document.getElementById("context-menu").style.display = "none";
     canvas.renderAll();
   }
 
-  // --- 5. PERSISTENCIA TOTAL (GUARDADO DE ESTRUCTURAS) ---
-  function saveToDatabase() {
-    if(!currentProject) return;
-    let objectsData = [];
-    
-    canvas.getObjects().forEach(o => {
-      if(o.id) { // Filtrar líneas básicas
-        let isText = o.customType === 'text-only';
-        let shapeRef = isText ? null : o._objects[0];
-        let textRef = isText ? o : o._objects[1];
+  function applyGlowToObject(obj, color) {
+    obj.set("shadow", new fabric.Shadow({
+      color: color, blur: 25, offsetX: 0, offsetY: 0, affectStroke: true
+    }));
+  }
 
+  // --- CONEXIONES ---
+  function toggleConnectMode() {
+    isConnectMode = !isConnectMode; connectSourceObj = null;
+    let btn = document.getElementById("btn-connect-mode");
+    btn.innerText = isConnectMode ? "⚡ Modo Conectar: ON" : "⚡ Modo Conectar: OFF";
+    btn.classList.toggle("btn-active", isConnectMode);
+  }
+
+  function startConnectingFromMenu() {
+    if(!rightClickedObject) return; toggleConnectMode();
+    connectSourceObj = rightClickedObject; document.getElementById("context-menu").style.display = "none";
+  }
+
+  function createLineBetween(obj1, obj2) {
+    let p1 = obj1.getCenterPoint(); let p2 = obj2.getCenterPoint();
+    let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], { stroke: '#777', strokeWidth: 3, selectable: false, evented: false });
+    canvas.add(line); canvas.sendToBack(line);
+    connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
+  }
+
+  function setupCanvasEvents() {
+    canvas.on('mouse:down', (e) => {
+      let menu = document.getElementById("context-menu");
+      if (e.button === 3) { // Click derecho
+        if (e.target) {
+          rightClickedObject = e.target; menu.style.display = "flex";
+          menu.style.left = e.e.clientX + "px"; menu.style.top = e.e.clientY + "px";
+        } else { menu.style.display = "none"; }
+      } else {
+        menu.style.display = "none";
+        if(isConnectMode && e.target) {
+          if(!connectSourceObj) { connectSourceObj = e.target; } 
+          else if(connectSourceObj.id !== e.target.id) {
+            createLineBetween(connectSourceObj, e.target); toggleConnectMode();
+          }
+        }
+      }
+    });
+    canvas.on('object:moving', () => { updateLines() });
+    canvas.on('object:scaling', () => { updateLines() });
+  }
+
+  function updateLines() {
+    connections.forEach(c => {
+      let f = canvas.getObjects().find(o => o.id === c.fromId);
+      let t = canvas.getObjects().find(o => o.id === c.toId);
+      if(f && t) { let p1 = f.getCenterPoint(); let p2 = t.getCenterPoint(); c.lineRef.set({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }); }
+    });
+  }
+
+  function updateSelectedTextProp(prop, val) {
+    if(!rightClickedObject) return;
+    let t = rightClickedObject.customType === 'text-only' ? rightClickedObject : rightClickedObject._objects[1];
+    if(t) { t.set(prop, val); if(rightClickedObject.addWithUpdate) rightClickedObject.addWithUpdate(); canvas.renderAll(); }
+  }
+
+  function toggleStyle(prop, styleVal) {
+    if(!rightClickedObject) return;
+    let t = rightClickedObject.customType === 'text-only' ? rightClickedObject : rightClickedObject._objects[1];
+    if(t) { t.set(prop, t.get(prop) === styleVal ? 'normal' : styleVal); if(rightClickedObject.addWithUpdate) rightClickedObject.addWithUpdate(); canvas.renderAll(); }
+  }
+
+  function deleteCurrentObject() {
+    if(!rightClickedObject) return;
+    connections = connections.filter(c => { if(c.fromId === rightClickedObject.id || c.toId === rightClickedObject.id) { canvas.remove(c.lineRef); return false; } return true; });
+    canvas.remove(rightClickedObject); document.getElementById("context-menu").style.display = "none"; canvas.renderAll();
+  }
+
+  // --- PERSISTENCIA Y ALERTAS ---
+  function saveToDatabase() {
+    if(!currentProject) return; let objectsData = [];
+    canvas.getObjects().forEach(o => {
+      if(o.id) {
+        let isText = o.customType === 'text-only';
         objectsData.push({
-          id: o.id, type: o.customType,
-          left: o.left, top: o.top,
-          bg: isText ? null : shapeRef.fill,
-          text: textRef.text,
-          fontSize: textRef.fontSize, fontFamily: textRef.fontFamily,
-          fontWeight: textRef.fontWeight, fontStyle: textRef.fontStyle,
-          textColor: textRef.fill
+          id: o.id, type: o.customType, left: o.left, top: o.top,
+          bg: isText ? null : o._objects[0].fill, text: isText ? o.text : o._objects[1].text,
+          fontSize: isText ? o.fontSize : o._objects[1].fontSize, fontFamily: isText ? o.fontFamily : o._objects[1].fontFamily,
+          textColor: isText ? o.fill : o._objects[1].fill, hasGlow: !!o.shadow
         });
       }
     });
-
-    let connectionsData = connections.map(c => ({ fromId: c.fromId, toId: c.toId }));
-
-    db.users[currentUser].projects[currentProject] = { objects: objectsData, connections: connectionsData };
+    db.users[currentUser].projects[currentProject] = {
+      objects: objectsData, connections: connections.map(c => ({ fromId: c.fromId, toId: c.toId })),
+      wordText: document.getElementById("word-editor").innerHTML
+    };
     saveDB();
+    // Animación visual del aviso de Guardado exitoso
+    let toast = document.getElementById("toast"); toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 2000);
   }
 
   function loadProjectData() {
-    canvas.clear();
-    connections = [];
-    let proj = db.users[currentUser].projects[currentProject];
-    if(!proj) return;
-
-    // Redibujar formas
-    if(proj.objects) { proj.objects.forEach(o => addUnifiedBlock(o.type, o)); }
-
-    // Redibujar conexiones vinculadas por ID
-    if(proj.connections) {
-      setTimeout(() => {
-        proj.connections.forEach(c => {
-          let o1 = findCanvasObjectById(c.fromId);
-          let o2 = findCanvasObjectById(c.toId);
-          if(o1 && o2) { createLineBetween(o1, o2); }
-        });
-        canvas.renderAll();
-      }, 150);
-    }
-  }
-
-  function findCanvasObjectById(id) {
-    return canvas.getObjects().find(o => o.id === id);
+    canvas.clear(); connections = [];
+    let proj = db.users[currentUser].projects[currentProject]; if(!proj) return;
+    if(proj.objects) proj.objects.forEach(o => addUnifiedBlock(o.type, o));
+    document.getElementById("word-editor").innerHTML = proj.wordText || "";
+    setTimeout(() => {
+      if(proj.connections) proj.connections.forEach(c => {
+        let o1 = canvas.getObjects().find(o => o.id === c.fromId);
+        let o2 = canvas.getObjects().find(o => o.id === c.toId);
+        if(o1 && o2) createLineBetween(o1, o2);
+      });
+      canvas.renderAll();
+    }, 200);
   }
 </script>
 </body>

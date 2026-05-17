@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Apuntes Pro - Studio Infinity V6</title>
+  <title>Apuntes Pro - Studio Infinity V7</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
     :root {
@@ -57,7 +57,7 @@
     #context-menu select, #context-menu input { padding: 3px; font-size: 12px; max-width: 95px; background: var(--bg-app); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; }
     .divider { height: 1px; background: var(--border-color); margin: 6px 0; }
 
-    #dark-toggle-btn { position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--bg-box); border: 1px solid var(--border-color); padding: 11px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12 rgba(0,0,0,0.1); font-size: 16px; }
+    #dark-toggle-btn { position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--bg-box); border: 1px solid var(--border-color); padding: 11px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 16px; }
     #toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #2196F3; color: white; padding: 12px 28px; border-radius: 30px; font-weight: bold; box-shadow: 0 8px 20px rgba(33,150,243,0.3); z-index: 10000; display: none; font-size: 14px; }
     
     #pan-hint { position: fixed; bottom: 15px; left: 15px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 500; pointer-events: none; z-index: 50; }
@@ -69,12 +69,16 @@
 <div id="toast">💾 ¡Cambios guardados perfectamente!</div>
 <div id="pan-hint">💡 Tip: Mantén presionado ALT + Arrastra para moverte por el lienzo infinito. Rueda del mouse para Zoom.</div>
 
+<input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importDatabase(event)">
+
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
     <h2>Mis Apuntes Pro</h2>
     <input type="text" id="username" placeholder="Nombre de usuario">
     <input type="password" id="password" placeholder="Contraseña">
     <button onclick="handleAuth()">Ingresar al Tablero</button>
+    <div class="divider" style="margin: 20px 0;"></div>
+    <button onclick="triggerImportBackup()" style="background:#673ab7; font-size:12px; padding:10px;">📤 Cargar Copia Externa (.json)</button>
   </div>
   
   <div class="auth-box hidden" id="project-step">
@@ -83,6 +87,8 @@
     <ul class="project-list" id="project-list-container"></ul>
     <input type="text" id="new-project-name" placeholder="Nombre de nuevo cuaderno...">
     <button onclick="handleCreateProject()">+ Crear Nuevo Proyecto</button>
+    <div class="divider" style="margin: 15px 0;"></div>
+    <button onclick="exportDatabaseBackup()" style="background:#9c27b0; font-size:12px; padding:10px;">📥 Guardar Backup Completo</button>
   </div>
 </div>
 
@@ -165,7 +171,6 @@
   let canvas, isConnectMode = false, connectSourceObj = null, rightClickedObject = null;
   let connections = [];
 
-  // Configuración de colores por tema por defecto
   const THEME_COLORS = {
     light: { square: '#e3fafc', circle: '#ffebf0', 'post-it': '#fff740' },
     dark: { square: '#1a3a4a', circle: '#4a1d2e', 'post-it': '#524e10' }
@@ -189,13 +194,48 @@
 
   window.addEventListener('resize', () => { if(canvas) { canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); } });
 
-  // BARRA TEXTO WORD NATIVO
+  // SISTEMA DE EXPORTACIÓN / IMPORTACIÓN DE SEGURIDAD
+  function exportDatabaseBackup() {
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+    let downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `backup_apuntes_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  function triggerImportBackup() {
+    document.getElementById("import-file-input").click();
+  }
+
+  function importDatabase(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        let importedData = JSON.parse(e.target.result);
+        if (importedData.users) {
+          db = importedData;
+          saveDB();
+          alert("¡Copia de seguridad cargada perfectamente! Ya puedes iniciar sesión y ver tus notas.");
+          location.reload();
+        } else {
+          alert("Error: El archivo no corresponde a una base de datos de Apuntes.");
+        }
+      } catch (err) {
+        alert("Error al procesar el archivo JSON.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
   function execWordCmd(cmd) {
     document.execCommand(cmd, false, null);
     document.getElementById("word-editor").focus();
   }
 
-  // MODO OSCURO GLOBAL EVOLUCIONADO (ADAPTA TEXTOS Y FORMAS)
   function toggleDarkMode(force = false) {
     let body = document.body;
     if(!force) body.classList.toggle("dark-mode");
@@ -209,21 +249,16 @@
     if(canvas) {
       canvas.setBackgroundColor(bg, () => {
         canvas.getObjects().forEach(o => {
-          // 1. Adaptar Textos
           if(o.customType === 'text-only' || o.isLinkedText) {
             if(isDark && o.fill === '#333333') o.set('fill', '#ffffff');
             if(!isDark && o.fill === '#ffffff') o.set('fill', '#333333');
           }
-          // 2. Adaptar Formas por Defecto
           if(o.customType && o.customType !== 'text-only') {
             let type = o.customType;
             let currentFill = o.fill;
             let fromTheme = isDark ? THEME_COLORS.light : THEME_COLORS.dark;
             let toTheme = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-            
-            if(currentFill === fromTheme[type]) {
-              o.set('fill', toTheme[type]);
-            }
+            if(currentFill === fromTheme[type]) o.set('fill', toTheme[type]);
           }
         });
         canvas.renderAll();
@@ -231,7 +266,6 @@
     }
   }
 
-  // PLATAFORMA DE PROYECTOS Y AUTENTICACIÓN
   function handleAuth() {
     let u = document.getElementById("username").value.trim();
     let p = document.getElementById("password").value.trim();
@@ -273,25 +307,20 @@
   }
 
   function exitToWorkspace() {
-    saveToDatabase();
-    currentProject = null;
+    saveToDatabase(); currentProject = null;
     document.getElementById("toolbar").classList.add("hidden");
     document.getElementById("word-wrapper").classList.remove("open");
     document.getElementById("btn-word").classList.remove("btn-active");
-    canvas.clear();
-    showProjectWorkspace();
+    canvas.clear(); showProjectWorkspace();
   }
 
   function saveDB() { localStorage.setItem("apuntes_v10_db", JSON.stringify(db)); }
 
   function toggleWordPanel() {
-    let panel = document.getElementById("word-wrapper");
-    let btn = document.getElementById("btn-word");
-    panel.classList.toggle("open");
-    btn.classList.toggle("btn-active", panel.classList.contains("open"));
+    let panel = document.getElementById("word-wrapper"); let btn = document.getElementById("btn-word");
+    panel.classList.toggle("open"); btn.classList.toggle("btn-active", panel.classList.contains("open"));
   }
 
-  // MOTOR UNIFICADO DE BLOQUES
   function addUnifiedBlock(type, options = {}) {
     let left = options.left !== undefined ? options.left : 250;
     let top = options.top !== undefined ? options.top : 250;
@@ -314,7 +343,6 @@
       if(savedText === "") textObj.text = "Haz doble clic...";
       textObj.set({ selectable: true, evented: true, isLinkedText: false, id: id, customType: 'text-only' });
       textObj.on('editing:entered', () => { if(textObj.text === "Haz doble clic...") { textObj.text = ""; canvas.renderAll(); } });
-      if(options.hasGlow) applyGlowToObject(textObj, textObj.fill);
       canvas.add(textObj); canvas.setActiveObject(textObj); return;
     }
 
@@ -333,31 +361,23 @@
 
     shape.on('mousedblclick', () => {
       textObj.selectable = true; textObj.evented = true;
-      canvas.setActiveObject(textObj);
-      textObj.enterEditing();
+      canvas.setActiveObject(textObj); textObj.enterEditing();
     });
 
     textObj.on('editing:exited', () => {
       textObj.selectable = false; textObj.evented = false;
-      canvas.setActiveObject(shape);
-      canvas.renderAll();
+      canvas.setActiveObject(shape); canvas.renderAll();
     });
 
-    if(options.hasGlow) applyGlowToObject(shape, '#2196F3');
+    if(options.hasGlow) shape.set('shadow', new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 }));
 
-    canvas.add(shape);
-    canvas.add(textObj);
-    canvas.setActiveObject(shape);
-    
+    canvas.add(shape); canvas.add(textObj); canvas.setActiveObject(shape);
     syncTextsAndShapes();
   }
 
   function updateSelectedShapeColor(val) {
     if(!rightClickedObject || Array.isArray(rightClickedObject)) return;
-    if(rightClickedObject.customType !== 'text-only') {
-      rightClickedObject.set('fill', val);
-      canvas.renderAll();
-    }
+    if(rightClickedObject.customType !== 'text-only') { rightClickedObject.set('fill', val); canvas.renderAll(); }
   }
 
   function toggleGlowEffect() {
@@ -367,14 +387,11 @@
         if(!obj.isLinkedText) obj.shadow = obj.shadow ? null : new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 });
       });
     } else {
-      let obj = rightClickedObject;
-      obj.shadow = obj.shadow ? null : new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 });
+      let obj = rightClickedObject; obj.shadow = obj.shadow ? null : new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 });
     }
-    document.getElementById("context-menu").style.display = "none";
-    canvas.renderAll();
+    document.getElementById("context-menu").style.display = "none"; canvas.renderAll();
   }
 
-  // RED DE CONEXIONES HABILITADA PARA POST-ITS TAMBIÉN
   function toggleConnectMode() {
     isConnectMode = !isConnectMode; connectSourceObj = null;
     let btn = document.getElementById("btn-connect-mode");
@@ -385,9 +402,8 @@
   function startConnectingFromMenu() {
     if(!rightClickedObject || Array.isArray(rightClickedObject)) return;
     isConnectMode = true; connectSourceObj = rightClickedObject;
-    let btn = document.getElementById("btn-connect-mode");
-    btn.innerText = "⚡ Selecciona Destino..."; btn.classList.add("btn-active");
-    document.getElementById("context-menu").style.display = "none";
+    let btn = document.getElementById("btn-connect-mode"); btn.innerText = "⚡ Selecciona Destino...";
+    btn.classList.add("btn-active"); document.getElementById("context-menu").style.display = "none";
   }
 
   function createLineBetween(obj1, obj2) {
@@ -397,104 +413,62 @@
     connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
   }
 
-  // EVENTOS DEL CANVAS (CON EL AGREGADO DE PAN Y ZOOM INFINITO)
   function setupCanvasEvents() {
-    // 1. ZOOM CON LA RUEDA DEL RATÓN
     canvas.on('mouse:wheel', function(opt) {
-      let delta = opt.e.deltaY;
-      let zoom = canvas.getZoom();
-      zoom *= 0.999 ** delta;
-      if (zoom > 5) zoom = 5;
-      if (zoom < 0.2) zoom = 0.2;
+      let delta = opt.e.deltaY; let zoom = canvas.getZoom(); zoom *= 0.999 ** delta;
+      if (zoom > 5) zoom = 5; if (zoom < 0.2) zoom = 0.2;
       canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
-      opt.e.preventDefault();
-      opt.e.stopPropagation();
-      updateLines();
+      opt.e.preventDefault(); opt.e.stopPropagation(); updateLines();
     });
 
-    // 2. ARRASTRE/PANEO PARA ESPACIO INFINITO (Alt + Drag o botón del medio)
     canvas.on('mouse:down', function(opt) {
       let evt = opt.e;
       if (evt.altKey === true || evt.button === 1) {
-        this.isDragging = true;
-        this.selection = false;
-        this.lastPosX = evt.clientX;
-        this.lastPosY = evt.clientY;
-        return;
+        this.isDragging = true; this.selection = false; this.lastPosX = evt.clientX; this.lastPosY = evt.clientY; return;
       }
-
       let menu = document.getElementById("context-menu");
-      if (evt.button === 2 || evt.which === 3) { // Click derecho
+      if (evt.button === 2 || evt.which === 3) {
         let activeObjects = canvas.getActiveObjects();
         if(activeObjects.length > 1) {
           rightClickedObject = activeObjects;
           document.getElementById("shape-tools-section").style.display = "none";
           document.getElementById("text-tools-section").style.display = "none";
           document.getElementById("connect-item-menu").style.display = "none";
-          menu.style.display = "flex";
-          menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
+          menu.style.display = "flex"; menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
         } else if (opt.target) {
-          let target = opt.target;
-          if(target.isLinkedText && target.shapeRef) target = target.shapeRef;
-          
-          rightClickedObject = target;
-          let isTextOnly = target.customType === 'text-only';
+          let target = opt.target; if(target.isLinkedText && target.shapeRef) target = target.shapeRef;
+          rightClickedObject = target; let isTextOnly = target.customType === 'text-only';
           document.getElementById("shape-tools-section").style.display = isTextOnly ? "none" : "block";
           document.getElementById("text-tools-section").style.display = "block";
           document.getElementById("connect-item-menu").style.display = !isTextOnly ? "flex" : "none";
-          
-          menu.style.display = "flex";
-          menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
-        } else {
-          menu.style.display = "none";
-        }
+          menu.style.display = "flex"; menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
+        } else { menu.style.display = "none"; }
       } else {
-        menu.style.display = "none";
-        let target = opt.target;
+        menu.style.display = "none"; let target = opt.target;
         if(target && target.isLinkedText && target.shapeRef) target = target.shapeRef;
-        
         if(isConnectMode && target && target.customType !== 'text-only') {
           if(!connectSourceObj) { connectSourceObj = target; } 
-          else if(connectSourceObj.id !== target.id) {
-            createLineBetween(connectSourceObj, target); toggleConnectMode();
-          }
+          else if(connectSourceObj.id !== target.id) { createLineBetween(connectSourceObj, target); toggleConnectMode(); }
         }
       }
     });
 
     canvas.on('mouse:move', function(opt) {
       if (this.isDragging) {
-        let e = opt.e;
-        let vpt = this.viewportTransform;
-        vpt[4] += e.clientX - this.lastPosX;
-        vpt[5] += e.clientY - this.lastPosY;
-        this.requestRenderAll();
-        this.lastPosX = e.clientX;
-        this.lastPosY = e.clientY;
-        updateLines();
+        let e = opt.e; let vpt = this.viewportTransform;
+        vpt[4] += e.clientX - this.lastPosX; vpt[5] += e.clientY - this.lastPosY;
+        this.requestRenderAll(); this.lastPosX = e.clientX; this.lastPosY = e.clientY; updateLines();
       }
     });
 
-    canvas.on('mouse:up', function(opt) {
-      if(this.isDragging) {
-        this.setViewportTransform(this.viewportTransform);
-        this.isDragging = false;
-        this.selection = true;
-      }
-    });
-
+    canvas.on('mouse:up', function(opt) { if(this.isDragging) { this.setViewportTransform(this.viewportTransform); this.isDragging = false; this.selection = true; } });
     canvas.on('object:moving', () => { syncTextsAndShapes(); updateLines(); });
     canvas.on('object:scaling', () => { syncTextsAndShapes(); updateLines(); });
     canvas.on('object:rotating', () => { syncTextsAndShapes(); updateLines(); });
   }
 
   function syncTextsAndShapes() {
-    canvas.getObjects().forEach(o => {
-      if (o.textRef) {
-        o.textRef.set({ left: o.left, top: o.top });
-        o.textRef.setCoords();
-      }
-    });
+    canvas.getObjects().forEach(o => { if (o.textRef) { o.textRef.set({ left: o.left, top: o.top }); o.textRef.setCoords(); } });
   }
 
   function updateLines() {
@@ -522,47 +496,34 @@
     if(Array.isArray(rightClickedObject)) {
       rightClickedObject.forEach(obj => {
         connections = connections.filter(c => { if(c.fromId === obj.id || c.toId === obj.id) { canvas.remove(c.lineRef); return false; } return true; });
-        if(obj.textRef) canvas.remove(obj.textRef);
-        canvas.remove(obj);
-      });
-      canvas.discardActiveObject();
+        if(obj.textRef) canvas.remove(obj.textRef); canvas.remove(obj);
+      }); canvas.discardActiveObject();
     } else {
       let target = rightClickedObject;
       connections = connections.filter(c => { if(c.fromId === target.id || c.toId === target.id) { canvas.remove(c.lineRef); return false; } return true; });
-      if(target.textRef) canvas.remove(target.textRef);
-      canvas.remove(target);
+      if(target.textRef) canvas.remove(target.textRef); canvas.remove(target);
     }
-    document.getElementById("context-menu").style.display = "none";
-    canvas.renderAll();
+    document.getElementById("context-menu").style.display = "none"; canvas.renderAll();
   }
 
-  // ALMACENAMIENTO DE SEGURIDAD CORREGIDO
   function saveToDatabase() {
     if(!currentProject) return; let objectsData = [];
-    
     canvas.getObjects().forEach(o => {
       if(o.id && !o.isLinkedText) {
-        let isTextOnly = o.customType === 'text-only';
-        let t = isTextOnly ? o : o.textRef;
+        let isTextOnly = o.customType === 'text-only'; let t = isTextOnly ? o : o.textRef;
         objectsData.push({
-          id: o.id, type: o.customType, left: o.left, top: o.top,
-          scaleX: o.scaleX, scaleY: o.scaleY,
-          bg: isTextOnly ? null : o.fill, text: t.text,
-          fontSize: t.fontSize, fontFamily: t.fontFamily,
-          textColor: t.fill, fontWeight: t.fontWeight, fontStyle: t.fontStyle,
-          hasGlow: !!o.shadow
+          id: o.id, type: o.customType, left: o.left, top: o.top, scaleX: o.scaleX, scaleY: o.scaleY,
+          bg: isTextOnly ? null : o.fill, text: t.text, fontSize: t.fontSize, fontFamily: t.fontFamily,
+          textColor: t.fill, fontWeight: t.fontWeight, fontStyle: t.fontStyle, hasGlow: !!o.shadow
         });
       }
     });
-    
     db.users[currentUser].projects[currentProject] = {
       objects: objectsData, connections: connections.map(c => ({ fromId: c.fromId, toId: c.toId })),
       wordText: document.getElementById("word-editor").innerHTML
     };
     saveDB();
-    
-    let toast = document.getElementById("toast"); toast.style.display = "block";
-    setTimeout(() => { toast.style.display = "none"; }, 2000);
+    let toast = document.getElementById("toast"); toast.style.display = "block"; setTimeout(() => { toast.style.display = "none"; }, 2000);
   }
 
   function loadProjectData() {
@@ -575,8 +536,7 @@
         let o1 = canvas.getObjects().find(o => o.id === c.fromId && !o.isLinkedText);
         let o2 = canvas.getObjects().find(o => o.id === c.toId && !o.isLinkedText);
         if(o1 && o2) createLineBetween(o1, o2);
-      });
-      canvas.renderAll();
+      }); canvas.renderAll();
     }, 250);
   }
 </script>

@@ -6,16 +6,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
     :root {
-      --bg-app: #f5f7fa; --bg-box: #ffffff; --text-main: #333333; --border-color: rgba(0,0,0,0.08);
+      --bg-app: #f5f7fa; --bg-box: #ffffff; --text-main: #333333; --border-color: rgba(0,0,0,0.08); --bg-word-bar: #eaeaea;
     }
     body.dark-mode {
-      --bg-app: #121216; --bg-box: #1e1f29; --text-main: #f5f7fa; --border-color: rgba(255,255,255,0.1);
+      --bg-app: #121216; --bg-box: #1e1f29; --text-main: #f5f7fa; --border-color: rgba(255,255,255,0.1); --bg-word-bar: #2a2b36;
     }
     
     body { margin: 0; padding: 0; background-color: var(--bg-app); overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; transition: background 0.3s; color: var(--text-main); }
     .hidden { display: none !important; }
     
-    /* PANTALLA DE INGRESO */
+    /* WORKSPACE LOGIN SCREEN */
     .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; z-index: 9000; }
     .auth-box { background: var(--bg-box); padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; width: 340px; color: var(--text-main); border: 1px solid var(--border-color); }
     .auth-box h2 { margin-top: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
@@ -27,41 +27,47 @@
     .project-item { padding: 12px; background: var(--bg-app); margin-bottom: 6px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; color: var(--text-main); border: 1px solid var(--border-color); }
     .project-item:hover { border-color: #2196F3; }
 
-    /* BARRA DE HERRAMIENTAS */
+    /* TOOLBAR CONTROL */
     #toolbar { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: var(--bg-box); padding: 8px 16px; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); z-index: 100; display: flex; gap: 10px; align-items: center; border: 1px solid var(--border-color); }
     .btn { padding: 8px 14px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; color: var(--text-main); display: flex; align-items: center; gap: 6px; transition: 0.2s; }
     .btn:hover { background: rgba(128,128,128,0.15); }
     .btn-active { background: #2196F3 !important; color: white !important; }
 
-    /* MENÚ DESPLEGABLE */
+    /* MENU DESPLEGABLE FORMAS */
     .dropdown { position: relative; display: inline-block; }
     .dropdown-content { display: none; position: absolute; background: var(--bg-box); min-width: 170px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border-radius: 10px; z-index: 1000; top: 100%; left: 0; overflow: hidden; border: 1px solid var(--border-color); }
     .dropdown-content button { width: 100%; padding: 11px 16px; background: transparent; border: none; text-align: left; color: var(--text-main); cursor: pointer; font-size: 13px; font-weight: 500; }
     .dropdown-content button:hover { background: rgba(128,128,128,0.11); }
     .dropdown:hover .dropdown-content { display: block; }
 
-    /* PANEL DOCUMENTO */
-    #word-wrapper { position: fixed; top: 80px; right: -460px; width: 430px; height: calc(100vh - 100px); background: var(--bg-box); box-shadow: -8px 0 30px rgba(0,0,0,0.15); z-index: 90; transition: right 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); display: flex; flex-direction: column; padding: 24px; box-sizing: border-box; border-radius: 16px 0 0 16px; border-left: 1px solid var(--border-color); }
+    /* PANEL TIPO WORD CON BARRA */
+    #word-wrapper { position: fixed; top: 80px; right: -460px; width: 430px; height: calc(100vh - 100px); background: var(--bg-box); box-shadow: -8px 0 30px rgba(0,0,0,0.15); z-index: 90; transition: right 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; border-radius: 16px 0 0 16px; border-left: 1px solid var(--border-color); }
     #word-wrapper.open { right: 0; }
+    
+    #word-toolbar { display: flex; gap: 6px; background: var(--bg-word-bar); padding: 6px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); }
+    #word-toolbar button { background: var(--bg-box); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    #word-toolbar button:hover { background: #2196F3; color: white; }
+
     #word-editor { flex: 1; background: var(--bg-app); color: var(--text-main); border-radius: 10px; padding: 20px; outline: none; overflow-y: auto; font-size: 15px; line-height: 1.6; border: 1px solid var(--border-color); cursor: text; }
 
-    /* CLICK DERECHO INTEGRAL */
+    /* MENU CONTEXTUAL INTELIGENTE (CLICK DERECHO) */
     #context-menu { position: fixed; background: var(--bg-box); border-radius: 12px; box-shadow: 0 10px 35px rgba(0,0,0,0.2); border: 1px solid var(--border-color); display: none; flex-direction: column; padding: 6px 0; z-index: 9999; min-width: 200px; color: var(--text-main); }
     #context-menu .menu-item { padding: 10px 16px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
     #context-menu .menu-item:hover { background: rgba(128,128,128,0.15); }
     #context-menu select, #context-menu input { padding: 3px; font-size: 12px; max-width: 95px; background: var(--bg-app); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; }
     .divider { height: 1px; background: var(--border-color); margin: 6px 0; }
 
-    #dark-toggle-btn { position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--bg-box); border: 1px solid var(--border-color); padding: 11px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 16px; }
+    #dark-toggle-btn { position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--bg-box); border: 1px solid var(--border-color); padding: 11px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12 rgba(0,0,0,0.1); font-size: 16px; }
     #toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #2196F3; color: white; padding: 12px 28px; border-radius: 30px; font-weight: bold; box-shadow: 0 8px 20px rgba(33,150,243,0.3); z-index: 10000; display: none; font-size: 14px; }
-    #canvas-tip { position: fixed; bottom: 15px; right: 15px; background: rgba(0,0,0,0.7); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 11px; z-index: 50; pointer-events: none; font-weight: 500; }
+    
+    #pan-hint { position: fixed; bottom: 15px; left: 15px; background: rgba(0,0,0,0.6); color: white; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 500; pointer-events: none; z-index: 50; }
   </style>
 </head>
 <body>
 
 <button id="dark-toggle-btn" onclick="toggleDarkMode()">🌙</button>
 <div id="toast">💾 ¡Cambios guardados perfectamente!</div>
-<div id="canvas-tip" class="hidden">💡 Desplazarse: Alt o Espacio + Arrastrar | Zoom: Rueda del mouse</div>
+<div id="pan-hint">💡 Tip: Mantén presionado ALT + Arrastra para moverte por el lienzo infinito. Rueda del mouse para Zoom.</div>
 
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
@@ -81,11 +87,13 @@
 </div>
 
 <div id="context-menu">
-  <div id="shape-colors-section" class="menu-item">
-    <span>Color Bloque</span>
-    <input type="color" id="menu-shape-color" onchange="updateSelectedShapeProp('fill', this.value)">
+  <div id="shape-tools-section">
+    <div class="menu-item">
+      <span>Color Fondo</span>
+      <input type="color" id="menu-shape-color" onchange="updateSelectedShapeColor(this.value)">
+    </div>
+    <div class="divider"></div>
   </div>
-  <div class="divider" id="shape-divider"></div>
 
   <div id="text-tools-section">
     <div class="menu-item">
@@ -124,7 +132,7 @@
     <div class="dropdown-content">
       <button onclick="addUnifiedBlock('square')">🟦 Cuadrado Estándar</button>
       <button onclick="addUnifiedBlock('circle')">⚪ Círculo de Idea</button>
-      <button onclick="addUnifiedBlock('post-it')">📝 Post-it Adaptable</button>
+      <button onclick="addUnifiedBlock('post-it')">📝 Post-it Amarillo</button>
       <button onclick="addUnifiedBlock('text-only')">🔤 Caja de Texto Libre</button>
     </div>
   </div>
@@ -141,23 +149,27 @@
 <canvas id="mainCanvas"></canvas>
 
 <div id="word-wrapper">
-  <h3 style="margin-top: 0;">Apuntes Formalizados</h3>
+  <h3 style="margin: 0 0 10px 0; font-size: 16px;">Apuntes Formalizados</h3>
+  <div id="word-toolbar">
+    <button onclick="execWordCmd('bold')">B</button>
+    <button onclick="execWordCmd('italic')">I</button>
+    <button onclick="execWordCmd('underline')">U</button>
+    <button onclick="execWordCmd('insertUnorderedList')">• Lista</button>
+  </div>
   <div id="word-editor" contenteditable="true" placeholder="Empieza a redactar tu documento aquí..."></div>
 </div>
 
 <script>
-  let db = JSON.parse(localStorage.getItem("apuntes_v11_db")) || { users: {} };
+  let db = JSON.parse(localStorage.getItem("apuntes_v10_db")) || { users: {} };
   let currentUser = null, currentProject = null;
   let canvas, isConnectMode = false, connectSourceObj = null, rightClickedObject = null;
   let connections = [];
-  
-  // Motores de paneo espacial infinito
-  let isPanning = false, lastPosX = 0, lastPosY = 0;
-  let isSpacePressed = false;
 
-  // Mapeos de colores por defecto claros y oscuros
-  const lightDefaults = { 'square': '#e3fafc', 'circle': '#ffebf0', 'post-it': '#fff740' };
-  const darkDefaults  = { 'square': '#1a323d', 'circle': '#3d1a27', 'post-it': '#423f11' };
+  // Configuración de colores por tema por defecto
+  const THEME_COLORS = {
+    light: { square: '#e3fafc', circle: '#ffebf0', 'post-it': '#fff740' },
+    dark: { square: '#1a3a4a', circle: '#4a1d2e', 'post-it': '#524e10' }
+  };
 
   window.onload = function() {
     canvas = new fabric.Canvas('mainCanvas', {
@@ -172,52 +184,18 @@
     });
 
     setupCanvasEvents();
-    setupInfiniteSpaceEvents();
     if(localStorage.getItem("dark_mode_enabled") === "true") { toggleDarkMode(true); }
   };
 
   window.addEventListener('resize', () => { if(canvas) { canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); } });
 
-  // SISTEMA ESPACIAL: ZOOM Y PANEO DE COORDENADAS INFINITAS
-  function setupInfiniteSpaceEvents() {
-    window.addEventListener('keydown', (e) => { if(e.code === 'Space') isSpacePressed = true; });
-    window.addEventListener('keyup', (e) => { if(e.code === 'Space') isSpacePressed = false; });
-
-    canvas.on('mouse:wheel', function(opt) {
-      let delta = opt.e.deltaY;
-      let zoom = canvas.getZoom();
-      zoom *= 0.999 ** delta;
-      if (zoom > 15) zoom = 15; if (zoom < 0.08) zoom = 0.08;
-      canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
-      opt.e.preventDefault(); opt.e.stopPropagation();
-    });
-
-    canvas.on('mouse:down', function(opt) {
-      let evt = opt.e;
-      if (isSpacePressed || evt.altKey) {
-        isPanning = true;
-        canvas.selection = false;
-        lastPosX = evt.clientX;
-        lastPosY = evt.clientY;
-      }
-    });
-
-    canvas.on('mouse:move', function(opt) {
-      if (isPanning) {
-        let e = opt.e;
-        let vpt = canvas.viewportTransform;
-        vpt[4] += e.clientX - lastPosX;
-        vpt[5] += e.clientY - lastPosY;
-        canvas.requestRenderAll();
-        lastPosX = e.clientX;
-        lastPosY = e.clientY;
-      }
-    });
-
-    canvas.on('mouse:up', function() { isPanning = false; canvas.selection = true; });
+  // BARRA TEXTO WORD NATIVO
+  function execWordCmd(cmd) {
+    document.execCommand(cmd, false, null);
+    document.getElementById("word-editor").focus();
   }
 
-  // ADAPTACIÓN INTELIGENTE DE FORMAS Y TEXTOS AL MODO OSCURO
+  // MODO OSCURO GLOBAL EVOLUCIONADO (ADAPTA TEXTOS Y FORMAS)
   function toggleDarkMode(force = false) {
     let body = document.body;
     if(!force) body.classList.toggle("dark-mode");
@@ -231,15 +209,21 @@
     if(canvas) {
       canvas.setBackgroundColor(bg, () => {
         canvas.getObjects().forEach(o => {
-          // Adaptar colores de textos
+          // 1. Adaptar Textos
           if(o.customType === 'text-only' || o.isLinkedText) {
             if(isDark && o.fill === '#333333') o.set('fill', '#ffffff');
             if(!isDark && o.fill === '#ffffff') o.set('fill', '#333333');
           }
-          // Adaptar colores base de las formas (si usan las paletas por defecto)
+          // 2. Adaptar Formas por Defecto
           if(o.customType && o.customType !== 'text-only') {
-            if(isDark && o.fill === lightDefaults[o.customType]) o.set('fill', darkDefaults[o.customType]);
-            if(!isDark && o.fill === darkDefaults[o.customType]) o.set('fill', lightDefaults[o.customType]);
+            let type = o.customType;
+            let currentFill = o.fill;
+            let fromTheme = isDark ? THEME_COLORS.light : THEME_COLORS.dark;
+            let toTheme = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
+            
+            if(currentFill === fromTheme[type]) {
+              o.set('fill', toTheme[type]);
+            }
           }
         });
         canvas.renderAll();
@@ -247,7 +231,7 @@
     }
   }
 
-  // AUTENTICACIÓN
+  // PLATAFORMA DE PROYECTOS Y AUTENTICACIÓN
   function handleAuth() {
     let u = document.getElementById("username").value.trim();
     let p = document.getElementById("password").value.trim();
@@ -285,7 +269,6 @@
     currentProject = name; db.users[currentUser].lastOpen = name; saveDB();
     document.getElementById("auth-screen").classList.add("hidden");
     document.getElementById("toolbar").classList.remove("hidden");
-    document.getElementById("canvas-tip").classList.remove("hidden");
     loadProjectData();
   }
 
@@ -293,14 +276,13 @@
     saveToDatabase();
     currentProject = null;
     document.getElementById("toolbar").classList.add("hidden");
-    document.getElementById("canvas-tip").classList.add("hidden");
     document.getElementById("word-wrapper").classList.remove("open");
     document.getElementById("btn-word").classList.remove("btn-active");
-    canvas.clear(); canvas.setZoom(1); canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
+    canvas.clear();
     showProjectWorkspace();
   }
 
-  function saveDB() { localStorage.setItem("apuntes_v11_db", JSON.stringify(db)); }
+  function saveDB() { localStorage.setItem("apuntes_v10_db", JSON.stringify(db)); }
 
   function toggleWordPanel() {
     let panel = document.getElementById("word-wrapper");
@@ -309,20 +291,16 @@
     btn.classList.toggle("btn-active", panel.classList.contains("open"));
   }
 
-  // SPARK ENGINE: INSERCIÓN PRO DE BLOQUES UNIFICADOS
+  // MOTOR UNIFICADO DE BLOQUES
   function addUnifiedBlock(type, options = {}) {
-    // Calculamos el centro relativo de la pantalla real para spawnear el bloque ordenadamente
-    let vpt = canvas.viewportTransform;
-    let centerX = ((canvas.width / 2) - vpt[4]) / canvas.getZoom();
-    let centerY = ((canvas.height / 2) - vpt[5]) / canvas.getZoom();
-
-    let left = options.left !== undefined ? options.left : centerX;
-    let top = options.top !== undefined ? options.top : centerY;
+    let left = options.left !== undefined ? options.left : 250;
+    let top = options.top !== undefined ? options.top : 250;
     let id = options.id || "block_" + Date.now() + Math.floor(Math.random()*100);
     let savedText = options.text !== undefined ? options.text : "";
     
     let isDark = document.body.classList.contains("dark-mode");
     let defaultTextColor = isDark ? '#ffffff' : '#333333';
+    let defaultBg = options.bg || (isDark ? THEME_COLORS.dark[type] : THEME_COLORS.light[type]);
 
     let textObj = new fabric.IText(savedText, {
       fontSize: options.fontSize || 15, fontFamily: options.fontFamily || 'Segoe UI',
@@ -336,16 +314,14 @@
       if(savedText === "") textObj.text = "Haz doble clic...";
       textObj.set({ selectable: true, evented: true, isLinkedText: false, id: id, customType: 'text-only' });
       textObj.on('editing:entered', () => { if(textObj.text === "Haz doble clic...") { textObj.text = ""; canvas.renderAll(); } });
-      if(options.hasGlow) applyGlowToObject(textObj, '#2196F3');
+      if(options.hasGlow) applyGlowToObject(textObj, textObj.fill);
       canvas.add(textObj); canvas.setActiveObject(textObj); return;
     }
 
-    let defaultBg = isDark ? darkDefaults[type] : lightDefaults[type];
-
     let shape;
-    if (type === 'square') { shape = new fabric.Rect({ width: 140, height: 95, fill: options.bg || defaultBg, rx: 10, ry: 10 }); } 
-    else if (type === 'circle') { shape = new fabric.Circle({ radius: 55, fill: options.bg || defaultBg }); } 
-    else if (type === 'post-it') { shape = new fabric.Rect({ width: 120, height: 120, fill: options.bg || defaultBg }); }
+    if (type === 'square') { shape = new fabric.Rect({ width: 140, height: 95, fill: defaultBg, rx: 10, ry: 10 }); } 
+    else if (type === 'circle') { shape = new fabric.Circle({ radius: 55, fill: defaultBg }); } 
+    else if (type === 'post-it') { shape = new fabric.Rect({ width: 120, height: 120, fill: defaultBg }); }
 
     shape.set({
       left: left, top: top, originX: 'center', originY: 'center',
@@ -357,35 +333,48 @@
 
     shape.on('mousedblclick', () => {
       textObj.selectable = true; textObj.evented = true;
-      canvas.setActiveObject(textObj); textObj.enterEditing();
+      canvas.setActiveObject(textObj);
+      textObj.enterEditing();
     });
 
     textObj.on('editing:exited', () => {
       textObj.selectable = false; textObj.evented = false;
-      canvas.setActiveObject(shape); canvas.renderAll();
+      canvas.setActiveObject(shape);
+      canvas.renderAll();
     });
 
     if(options.hasGlow) applyGlowToObject(shape, '#2196F3');
 
-    canvas.add(shape); canvas.add(textObj); canvas.setActiveObject(shape);
+    canvas.add(shape);
+    canvas.add(textObj);
+    canvas.setActiveObject(shape);
+    
     syncTextsAndShapes();
   }
 
-  function applyGlowToObject(obj, color) {
-    obj.set("shadow", new fabric.Shadow({ color: color, blur: 25, offsetX: 0, offsetY: 0 }));
+  function updateSelectedShapeColor(val) {
+    if(!rightClickedObject || Array.isArray(rightClickedObject)) return;
+    if(rightClickedObject.customType !== 'text-only') {
+      rightClickedObject.set('fill', val);
+      canvas.renderAll();
+    }
   }
 
   function toggleGlowEffect() {
     if(!rightClickedObject) return;
     if(Array.isArray(rightClickedObject)) {
-      rightClickedObject.forEach(obj => { if(!obj.isLinkedText) obj.shadow = obj.shadow ? null : new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 }); });
+      rightClickedObject.forEach(obj => {
+        if(!obj.isLinkedText) obj.shadow = obj.shadow ? null : new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 });
+      });
     } else {
-      let obj = rightClickedObject; obj.shadow = obj.shadow ? null : new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 });
+      let obj = rightClickedObject;
+      obj.shadow = obj.shadow ? null : new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 });
     }
-    document.getElementById("context-menu").style.display = "none"; canvas.renderAll();
+    document.getElementById("context-menu").style.display = "none";
+    canvas.renderAll();
   }
 
-  // RED DE CONEXIONES UNIVERSALES (POST-IT INCLUIDOS)
+  // RED DE CONEXIONES HABILITADA PARA POST-ITS TAMBIÉN
   function toggleConnectMode() {
     isConnectMode = !isConnectMode; connectSourceObj = null;
     let btn = document.getElementById("btn-connect-mode");
@@ -408,42 +397,89 @@
     connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
   }
 
-  // EVENTOS DEL CANVAS Y MENÚ CONTEXTUAL ADAPTATIVO
+  // EVENTOS DEL CANVAS (CON EL AGREGADO DE PAN Y ZOOM INFINITO)
   function setupCanvasEvents() {
-    canvas.on('mouse:down', (e) => {
+    // 1. ZOOM CON LA RUEDA DEL RATÓN
+    canvas.on('mouse:wheel', function(opt) {
+      let delta = opt.e.deltaY;
+      let zoom = canvas.getZoom();
+      zoom *= 0.999 ** delta;
+      if (zoom > 5) zoom = 5;
+      if (zoom < 0.2) zoom = 0.2;
+      canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+      updateLines();
+    });
+
+    // 2. ARRASTRE/PANEO PARA ESPACIO INFINITO (Alt + Drag o botón del medio)
+    canvas.on('mouse:down', function(opt) {
+      let evt = opt.e;
+      if (evt.altKey === true || evt.button === 1) {
+        this.isDragging = true;
+        this.selection = false;
+        this.lastPosX = evt.clientX;
+        this.lastPosY = evt.clientY;
+        return;
+      }
+
       let menu = document.getElementById("context-menu");
-      if (e.button === 3) { // Click derecho
+      if (evt.button === 2 || evt.which === 3) { // Click derecho
         let activeObjects = canvas.getActiveObjects();
         if(activeObjects.length > 1) {
           rightClickedObject = activeObjects;
+          document.getElementById("shape-tools-section").style.display = "none";
           document.getElementById("text-tools-section").style.display = "none";
-          document.getElementById("shape-colors-section").style.display = "none";
-          document.getElementById("shape-divider").style.display = "none";
           document.getElementById("connect-item-menu").style.display = "none";
           menu.style.display = "flex";
-          menu.style.left = e.e.clientX + "px"; menu.style.top = e.e.clientY + "px";
-        } else if (e.target) {
-          let target = e.target;
+          menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
+        } else if (opt.target) {
+          let target = opt.target;
           if(target.isLinkedText && target.shapeRef) target = target.shapeRef;
+          
           rightClickedObject = target;
-
-          let hasShape = target.customType && target.customType !== 'text-only';
-          document.getElementById("shape-colors-section").style.display = hasShape ? "flex" : "none";
-          document.getElementById("shape-divider").style.display = hasShape ? "block" : "none";
+          let isTextOnly = target.customType === 'text-only';
+          document.getElementById("shape-tools-section").style.display = isTextOnly ? "none" : "block";
           document.getElementById("text-tools-section").style.display = "block";
-          document.getElementById("connect-item-menu").style.display = target.customType !== 'text-only' ? "flex" : "none";
+          document.getElementById("connect-item-menu").style.display = !isTextOnly ? "flex" : "none";
           
           menu.style.display = "flex";
-          menu.style.left = e.e.clientX + "px"; menu.style.top = e.e.clientY + "px";
-        } else { menu.style.display = "none"; }
+          menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
+        } else {
+          menu.style.display = "none";
+        }
       } else {
         menu.style.display = "none";
-        let target = e.target;
+        let target = opt.target;
         if(target && target.isLinkedText && target.shapeRef) target = target.shapeRef;
+        
         if(isConnectMode && target && target.customType !== 'text-only') {
           if(!connectSourceObj) { connectSourceObj = target; } 
-          else if(connectSourceObj.id !== target.id) { createLineBetween(connectSourceObj, target); toggleConnectMode(); }
+          else if(connectSourceObj.id !== target.id) {
+            createLineBetween(connectSourceObj, target); toggleConnectMode();
+          }
         }
+      }
+    });
+
+    canvas.on('mouse:move', function(opt) {
+      if (this.isDragging) {
+        let e = opt.e;
+        let vpt = this.viewportTransform;
+        vpt[4] += e.clientX - this.lastPosX;
+        vpt[5] += e.clientY - this.lastPosY;
+        this.requestRenderAll();
+        this.lastPosX = e.clientX;
+        this.lastPosY = e.clientY;
+        updateLines();
+      }
+    });
+
+    canvas.on('mouse:up', function(opt) {
+      if(this.isDragging) {
+        this.setViewportTransform(this.viewportTransform);
+        this.isDragging = false;
+        this.selection = true;
       }
     });
 
@@ -453,7 +489,12 @@
   }
 
   function syncTextsAndShapes() {
-    canvas.getObjects().forEach(o => { if (o.textRef) { o.textRef.set({ left: o.left, top: o.top }); o.textRef.setCoords(); } });
+    canvas.getObjects().forEach(o => {
+      if (o.textRef) {
+        o.textRef.set({ left: o.left, top: o.top });
+        o.textRef.setCoords();
+      }
+    });
   }
 
   function updateLines() {
@@ -462,12 +503,6 @@
       let t = canvas.getObjects().find(o => o.id === c.toId && !o.isLinkedText);
       if(f && t) { let p1 = f.getCenterPoint(); let p2 = t.getCenterPoint(); c.lineRef.set({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }); }
     });
-  }
-
-  // MODIFICADORES DINÁMICOS
-  function updateSelectedShapeProp(prop, val) {
-    if(!rightClickedObject || Array.isArray(rightClickedObject)) return;
-    rightClickedObject.set(prop, val); canvas.renderAll();
   }
 
   function updateSelectedTextProp(prop, val) {
@@ -487,41 +522,51 @@
     if(Array.isArray(rightClickedObject)) {
       rightClickedObject.forEach(obj => {
         connections = connections.filter(c => { if(c.fromId === obj.id || c.toId === obj.id) { canvas.remove(c.lineRef); return false; } return true; });
-        if(obj.textRef) canvas.remove(obj.textRef); canvas.remove(obj);
+        if(obj.textRef) canvas.remove(obj.textRef);
+        canvas.remove(obj);
       });
       canvas.discardActiveObject();
     } else {
       let target = rightClickedObject;
       connections = connections.filter(c => { if(c.fromId === target.id || c.toId === target.id) { canvas.remove(c.lineRef); return false; } return true; });
-      if(target.textRef) canvas.remove(target.textRef); canvas.remove(target);
+      if(target.textRef) canvas.remove(target.textRef);
+      canvas.remove(target);
     }
-    document.getElementById("context-menu").style.display = "none"; canvas.renderAll();
+    document.getElementById("context-menu").style.display = "none";
+    canvas.renderAll();
   }
 
-  // BASE DE DATOS Y GUARDADO ESTABLE
+  // ALMACENAMIENTO DE SEGURIDAD CORREGIDO
   function saveToDatabase() {
     if(!currentProject) return; let objectsData = [];
+    
     canvas.getObjects().forEach(o => {
       if(o.id && !o.isLinkedText) {
-        let isTextOnly = o.customType === 'text-only'; let t = isTextOnly ? o : o.textRef;
+        let isTextOnly = o.customType === 'text-only';
+        let t = isTextOnly ? o : o.textRef;
         objectsData.push({
-          id: o.id, type: o.customType, left: o.left, top: o.top, scaleX: o.scaleX, scaleY: o.scaleY,
-          bg: isTextOnly ? null : o.fill, text: t.text, fontSize: t.fontSize, fontFamily: t.fontFamily,
-          textColor: t.fill, fontWeight: t.fontWeight, fontStyle: t.fontStyle, hasGlow: !!o.shadow
+          id: o.id, type: o.customType, left: o.left, top: o.top,
+          scaleX: o.scaleX, scaleY: o.scaleY,
+          bg: isTextOnly ? null : o.fill, text: t.text,
+          fontSize: t.fontSize, fontFamily: t.fontFamily,
+          textColor: t.fill, fontWeight: t.fontWeight, fontStyle: t.fontStyle,
+          hasGlow: !!o.shadow
         });
       }
     });
+    
     db.users[currentUser].projects[currentProject] = {
       objects: objectsData, connections: connections.map(c => ({ fromId: c.fromId, toId: c.toId })),
       wordText: document.getElementById("word-editor").innerHTML
     };
     saveDB();
+    
     let toast = document.getElementById("toast"); toast.style.display = "block";
     setTimeout(() => { toast.style.display = "none"; }, 2000);
   }
 
   function loadProjectData() {
-    canvas.clear(); connections = []; canvas.setZoom(1); canvas.viewportTransform = [1, 0, 0, 1, 0, 0];
+    canvas.clear(); connections = [];
     let proj = db.users[currentUser].projects[currentProject]; if(!proj) return;
     if(proj.objects) proj.objects.forEach(o => addUnifiedBlock(o.type, o));
     document.getElementById("word-editor").innerHTML = proj.wordText || "";

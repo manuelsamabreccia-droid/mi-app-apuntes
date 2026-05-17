@@ -2,113 +2,425 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Apuntes Pro - Reboot (Motor Fabric.js)</title>
+  <title>Apuntes Pro - Sistema Unificado</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
-    body { 
-      margin: 0; padding: 0; 
-      background-color: #f5f7fa; 
-      overflow: hidden; /* Sin barras de scroll nativas, el lienzo es infinito ahora */
-      font-family: 'Segoe UI', sans-serif; 
-    }
+    body { margin: 0; padding: 0; background-color: #f5f7fa; overflow: hidden; font-family: 'Segoe UI', sans-serif; user-select: none; }
+    .hidden { display: none !important; }
     
-    /* Barra de herramientas temporal básica */
-    #toolbar { 
-      position: fixed; top: 15px; left: 50%; transform: translateX(-50%); 
-      background: white; padding: 10px 20px; border-radius: 12px; 
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100; 
-      display: flex; gap: 10px; border: 1px solid #ddd;
-    }
+    /* PANTALLA DE INICIO (WORKSPACE & CUENTAS PERSISTENTES) */
+    .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(40,44,52,0.6); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 9000; }
+    .auth-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); text-align: center; width: 320px; }
+    .auth-box h2 { margin-top: 0; color: #333; font-size: 24px; }
+    .auth-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 14px; }
+    .auth-box button { width: 100%; padding: 12px; border: none; background: #4CAF50; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .auth-box button:hover { background: #45a049; }
     
-    button { 
-      padding: 8px 16px; border: none; background: #e0c3fc; 
-      border-radius: 6px; cursor: pointer; font-weight: bold; color: #333;
-      transition: background 0.2s;
-    }
-    button:hover { background: #d0a3fc; }
-    .btn-danger { background: #ff4d4d; color: white; }
-    .btn-danger:hover { background: #e60000; }
+    .project-list { max-height: 150px; overflow-y: auto; margin: 15px 0; padding: 0; list-style: none; }
+    .project-item { padding: 10px; background: #f0f0f0; margin-bottom: 5px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; }
+    .project-item:hover { background: #e0e0e0; }
+
+    /* BARRA DE HERRAMIENTAS SUPERIOR */
+    #toolbar { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); padding: 8px 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); z-index: 100; display: flex; gap: 8px; align-items: center; border: 1px solid rgba(0,0,0,0.05); }
+    .btn { padding: 8px 14px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #444; display: flex; align-items: center; gap: 4px; }
+    .btn:hover { background: #f0f0f0; }
+    .btn-active { background: #ffeaa7 !important; border: 1px solid #fdcb6e; font-weight: bold; }
+
+    /* MENÚ CONTEXTUAL (CLICK DERECHO POWERPOINT) */
+    #context-menu { position: fixed; background: white; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); border: 1px solid #eee; display: none; flex-direction: column; padding: 5px 0; z-index: 9999; min-width: 180px; }
+    #context-menu .menu-item { padding: 10px 15px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: #333; }
+    #context-menu .menu-item:hover { background: #f5f5f5; }
+    #context-menu select, #context-menu input { padding: 2px; font-size: 12px; max-width: 90px; }
+    #context-menu .divider { height: 1px; background: #eee; margin: 5px 0; }
   </style>
 </head>
 <body>
 
-<div id="toolbar">
-  <button onclick="addRectangle()">🟦 Cuadrado</button>
-  <button onclick="addCircle()">⚪ Círculo</button>
-  <button onclick="addText()">📝 Texto Libre</button>
-  <div style="width: 2px; background: #eee; margin: 0 5px;"></div>
-  <button onclick="deleteSelected()" class="btn-danger">🗑️ Borrar</button>
+<div id="auth-screen" class="screen">
+  <div class="auth-box" id="login-step">
+    <h2>Mis Apuntes Pro</h2>
+    <input type="text" id="username" placeholder="Usuario (Ej: tu nombre)">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button onclick="handleAuth()">Entrar al Espacio</button>
+  </div>
+  
+  <div class="auth-box hidden" id="project-step">
+    <h2 style="margin-bottom:5px;">Tus Cuadernos</h2>
+    <p id="welcome-text" style="margin:0 0 15px 0; font-size:12px; color:#666;"></p>
+    <ul class="project-list" id="project-list-container"></ul>
+    <input type="text" id="new-project-name" placeholder="Nombre del nuevo apunte...">
+    <button onclick="handleCreateProject()" style="background:#2196F3;">+ Crear Nuevo</button>
+  </div>
+</div>
+
+<div id="context-menu">
+  <div class="menu-item">
+    <span>Fuente</span>
+    <select id="menu-font" onchange="updateSelectedTextProp('fontFamily', this.value)">
+      <option value="Segoe UI">Arial / Sans</option>
+      <option value="Times New Roman">Times</option>
+      <option value="Courier New">Courier</option>
+    </select>
+  </div>
+  <div class="menu-item">
+    <span>Tamaño</span>
+    <select id="menu-size" onchange="updateSelectedTextProp('fontSize', parseInt(this.value))">
+      <option value="14">14px</option>
+      <option value="18">18px</option>
+      <option value="24">24px</option>
+      <option value="36">36px</option>
+    </select>
+  </div>
+  <div class="menu-item">
+    <span>Color Letra</span>
+    <input type="color" id="menu-tcolor" onchange="updateSelectedTextProp('fill', this.value)">
+  </div>
+  <div class="menu-item" onclick="toggleStyle('fontWeight', 'bold')"><b>N</b> Negrita</div>
+  <div class="menu-item" onclick="toggleStyle('fontStyle', 'italic')"><i>K</i> Cursiva</div>
+  <div class="divider"></div>
+  <div class="menu-item" onclick="startConnectingFromMenu()" style="color: #ff9800; font-weight: bold;">🔗 Conectar Objeto</div>
+  <div class="divider"></div>
+  <div class="menu-item" onclick="deleteCurrentObject()" style="color: red; font-weight: bold;">🗑️ Borrar Forma</div>
+</div>
+
+<div id="toolbar" class="hidden">
+  <button class="btn" onclick="addUnifiedBlock('square')">🟦 Cuadrado</button>
+  <button class="btn" onclick="addUnifiedBlock('circle')">⚪ Círculo</button>
+  <button class="btn" onclick="addUnifiedBlock('post-it')">📝 Post-it</button>
+  <button class="btn" onclick="addUnifiedBlock('text-only')" style="font-weight: bold; color: #2196F3;">🔤 Texto Libre</button>
+  <div style="width: 1px; height: 20px; background: #ccc; margin: 0 4px;"></div>
+  <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Modo Conectar: OFF</button>
+  <div style="width: 1px; height: 20px; background: #ccc; margin: 0 4px;"></div>
+  <button class="btn" onclick="saveToDatabase()" style="background: #4CAF50; color: white; border-radius: 6px;">💾 Guardar</button>
+  <button class="btn" onclick="exitToWorkspace()" style="color: #ff4d4d;">🏠 Salir</button>
 </div>
 
 <canvas id="mainCanvas"></canvas>
 
 <script>
-  // 1. INICIALIZAR EL MOTOR FABRIC.JS
-  // Aquí es donde ocurre la magia. Esto reemplaza todo el código manual de arrastrar.
-  const canvas = new fabric.Canvas('mainCanvas', {
-    width: window.innerWidth,
-    height: window.innerHeight,
-    backgroundColor: '#f5f7fa',
-    selection: true // Esto activa la caja de selección azul arrastrando el mouse (¡como en Windows!)
-  });
+  // --- BASE DE DATOS LOCAL PERSISTENTE ---
+  let db = JSON.parse(localStorage.getItem("apuntes_v7_db")) || { users: {} };
+  let currentUser = null;
+  let currentProject = null;
 
-  // Si el usuario cambia el tamaño de la ventana, el lienzo se ajusta solo
-  window.addEventListener('resize', () => {
-    canvas.setWidth(window.innerWidth);
-    canvas.setHeight(window.innerHeight);
-    canvas.renderAll();
-  });
+  // Variables de control del Lienzo
+  let canvas;
+  let isConnectMode = false;
+  let connectSourceObj = null;
+  let rightClickedObject = null;
+  let connections = []; // Estructura: { fromId: x, toId: y, lineRef: obj }
 
-  // Configuración global para que los controles (los puntitos para agrandar) se vean profesionales
-  fabric.Object.prototype.set({
-    transparentCorners: false,
-    cornerColor: '#2196F3',
-    cornerStyle: 'circle',
-    borderColor: '#2196F3',
-    cornerSize: 10,
-    padding: 5
-  });
-
-  // 2. FUNCIONES DE CREACIÓN DE OBJETOS
-  function addRectangle() {
-    const rect = new fabric.Rect({
-      left: 150, top: 150, width: 120, height: 80, fill: '#e3fafc',
-      rx: 10, ry: 10 // Bordes redondeados
+  // Inicialización de la App
+  window.onload = function() {
+    canvas = new fabric.Canvas('mainCanvas', {
+      width: window.innerWidth, height: window.innerHeight,
+      backgroundColor: '#f5f7fa', fireRightClick: true, stopContextMenu: true
     });
-    canvas.add(rect);
-    canvas.setActiveObject(rect); // Lo selecciona automáticamente al crearlo
+    setupCanvasEvents();
+  };
+
+  window.addEventListener('resize', () => { if(canvas) { canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); } });
+
+  // --- 1. GESTIÓN DE CUENTAS REALES Y WORKSPACE ---
+  function handleAuth() {
+    let u = document.getElementById("username").value.trim();
+    let p = document.getElementById("password").value.trim();
+    if(!u || !p) return alert("Completa usuario y contraseña.");
+    
+    if(db.users[u]) {
+      if(db.users[u].password !== p) return alert("Contraseña incorrecta.");
+    } else {
+      db.users[u] = { password: p, projects: {}, lastOpen: null };
+      saveDB();
+    }
+    currentUser = u;
+    showProjectWorkspace();
   }
 
-  function addCircle() {
-    const circle = new fabric.Circle({
-      left: 300, top: 150, radius: 60, fill: '#ffebf0'
-    });
-    canvas.add(circle);
-    canvas.setActiveObject(circle);
+  function showProjectWorkspace() {
+    document.getElementById("login-step").classList.add("hidden");
+    document.getElementById("project-step").classList.remove("hidden");
+    document.getElementById("welcome-text").innerText = `Usuario: ${currentUser}`;
+    renderProjectList();
   }
 
-  function addText() {
-    // IText es un texto interactivo. Permite hacer doble clic para editar.
-    const text = new fabric.IText('Doble clic para escribir', {
-      left: 450, top: 150, fontFamily: 'Segoe UI', fontSize: 22, fill: '#333'
-    });
-    canvas.add(text);
-    canvas.setActiveObject(text);
+  function renderProjectList() {
+    let container = document.getElementById("project-list-container");
+    container.innerHTML = "";
+    let projects = db.users[currentUser].projects;
+    for(let pName in projects) {
+      let li = document.createElement("li");
+      li.className = "project-item";
+      li.innerText = pName;
+      li.onclick = () => openProject(pName);
+      container.appendChild(li);
+    }
+    // Auto-abrir el último proyecto si existía
+    let last = db.users[currentUser].lastOpen;
+    if(last && projects[last] && !currentProject) { openProject(last); }
   }
 
-  // 3. FUNCIONES DE EDICIÓN BÁSICA
-  function deleteSelected() {
-    const activeObjects = canvas.getActiveObjects(); // Detecta si seleccionaste uno o varios
-    if (activeObjects.length) {
-      canvas.discardActiveObject(); // Deselecciona la caja invisible grupal
-      activeObjects.forEach(function(object) {
-        canvas.remove(object); // Borra cada objeto
-      });
+  function handleCreateProject() {
+    let name = document.getElementById("new-project-name").value.trim();
+    if(!name) return;
+    if(db.users[currentUser].projects[name]) return alert("Ese cuaderno ya existe.");
+    db.users[currentUser].projects[name] = { objects: [], connections: [] };
+    saveDB(); renderProjectList(); openProject(name);
+  }
+
+  function openProject(name) {
+    currentProject = name;
+    db.users[currentUser].lastOpen = name; saveDB();
+    document.getElementById("auth-screen").classList.add("hidden");
+    document.getElementById("toolbar").classList.remove("hidden");
+    loadProjectData();
+  }
+
+  function exitToWorkspace() {
+    saveToDatabase();
+    currentProject = null;
+    document.getElementById("auth-screen").classList.remove("hidden");
+    document.getElementById("project-step").classList.remove("hidden");
+    document.getElementById("toolbar").classList.add("hidden");
+    canvas.clear();
+    renderProjectList();
+  }
+
+  function saveDB() { localStorage.setItem("apuntes_v7_db", JSON.stringify(db)); }
+
+  // --- 2. CREACIÓN DE OBJETOS UNIFICADOS (FORMA + TEXTO JUNTOS) ---
+  function addUnifiedBlock(type, options = {}) {
+    let left = options.left || 200; let top = options.top || 200;
+    let id = options.id || "obj_" + Date.now() + Math.floor(Math.random()*100);
+    let savedText = options.text !== undefined ? options.text : "";
+
+    let shape, textObj;
+
+    // Configuración base de texto interactivo
+    textObj = new fabric.IText(savedText, {
+      fontSize: options.fontSize || 14, fontFamily: options.fontFamily || 'Segoe UI',
+      fill: options.textColor || '#333', textAlign: 'center', originX: 'center', originY: 'center',
+      fontWeight: options.fontWeight || 'normal', fontStyle: options.fontStyle || 'normal',
+      editingBorderColor: '#2196F3'
+    });
+
+    if (type === 'text-only') {
+      if(savedText === "") textObj.text = "Escribe aquí...";
+      textObj.left = left; textObj.top = top; textObj.id = id; textObj.customType = 'text-only';
+      // Control de vaciado al editar por primera vez
+      textObj.on('editing:entered', () => { if(textObj.text === "Escribe aquí...") { textObj.text = ""; canvas.renderAll(); } });
+      canvas.add(textObj); canvas.setActiveObject(textObj); return;
+    }
+
+    // Configuración según el tipo de forma geométrica pastel
+    if (type === 'square') {
+      shape = new fabric.Rect({ width: 130, height: 90, fill: options.bg || '#e3fafc', rx: 10, ry: 10 });
+    } else if (type === 'circle') {
+      shape = new fabric.Circle({ radius: 55, fill: options.bg || '#ffebf0' });
+    } else if (type === 'post-it') {
+      shape = new fabric.Rect({ width: 110, height: 110, fill: options.bg || '#fff740', shadow: '2px 2px 5px rgba(0,0,0,0.1)' });
+    }
+
+    shape.set({ originX: 'center', originY: 'center' });
+
+    // UNIFICACIÓN: Creamos un grupo real (Miro/PowerPoint style)
+    let group = new fabric.Group([ shape, textObj ], {
+      left: left, top: top, id: id, customType: type
+    });
+
+    // Permitir editar texto haciendo doble clic en el grupo unificado
+    group.on('mousedblclick', () => {
+      textObj.enterEditing();
+      textObj.hiddenTextarea.focus();
+    });
+
+    // Forzar actualización gráfica del contenedor si el texto cambia
+    textObj.on('changed', () => { canvas.renderAll(); });
+    textObj.on('editing:exited', () => { group.addWithUpdate(); canvas.renderAll(); });
+
+    canvas.add(group);
+    canvas.setActiveObject(group);
+  }
+
+  // --- 3. CONEXIONES DIRECTAS / INTUITIVAS ---
+  function toggleConnectMode() {
+    isConnectMode = !isConnectMode;
+    connectSourceObj = null;
+    let btn = document.getElementById("btn-connect-mode");
+    if(isConnectMode) {
+      btn.innerText = "⚡ Modo Conectar: ON"; btn.classList.add("btn-active");
+    } else {
+      btn.innerText = "⚡ Modo Conectar: OFF"; btn.classList.remove("btn-active");
     }
   }
 
-  // Pre-cargar una forma de bienvenida
-  addText();
+  function startConnectingFromMenu() {
+    if(!rightClickedObject) return;
+    toggleConnectMode();
+    connectSourceObj = rightClickedObject;
+    document.getElementById("context-menu").style.display = "none";
+  }
+
+  function handleObjectConnection(targetObj) {
+    if(!connectSourceObj) {
+      connectSourceObj = targetObj;
+    } else {
+      if(connectSourceObj.id !== targetObj.id) {
+        createLineBetween(connectSourceObj, targetObj);
+        toggleConnectMode(); // Apagar al conectar exitosamente
+      } else { connectSourceObj = null; }
+    }
+  }
+
+  function createLineBetween(obj1, obj2) {
+    let p1 = obj1.getCenterPoint(); let p2 = obj2.getCenterPoint();
+    let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
+      stroke: '#555', strokeWidth: 3, selectable: false, evented: false
+    });
+    // Mandar la línea al fondo para que no se superponga visualmente al texto
+    canvas.add(line); canvas.sendToBack(line);
+    connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
+  }
+
+  function updateLinesPosition() {
+    connections.forEach(c => {
+      let fObj = findCanvasObjectById(c.fromId);
+      let tObj = findCanvasObjectById(c.toId);
+      if(fObj && tObj) {
+        let p1 = fObj.getCenterPoint(); let p2 = tObj.getCenterPoint();
+        c.lineRef.set({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+      }
+    });
+  }
+
+  // --- 4. MENÚ CONTEXTUAL COMPLETO Y CONTROL DE ACCIONES ---
+  function setupCanvasEvents() {
+    canvas.on('mouse:down', (e) => {
+      let menu = document.getElementById("context-menu");
+      
+      // Control de Click Derecho
+      if (e.button === 3) { 
+        if (e.target) {
+          rightClickedObject = e.target;
+          menu.style.display = "flex";
+          menu.style.left = e.e.clientX + "px";
+          menu.style.top = e.e.clientY + "px";
+          loadCurrentTextPropsIntoMenu(e.target);
+        } else { menu.style.display = "none"; }
+      } else {
+        // Click izquierdo cierra menú contextual
+        menu.style.display = "none";
+        
+        // Acción en Modo Conexión
+        if(isConnectMode && e.target) { handleObjectConnection(e.target); }
+      }
+    });
+
+    // Movimiento fluido en tiempo real y re-enrutamiento de líneas
+    canvas.on('object:moving', () => { updateLinesPosition(); });
+    canvas.on('object:scaling', () => { updateLinesPosition(); });
+  }
+
+  function loadCurrentTextPropsIntoMenu(obj) {
+    let t = obj.customType === 'text-only' ? obj : obj._objects ? obj._objects[1] : null;
+    if(!t) return;
+    document.getElementById("menu-font").value = t.fontFamily || "Segoe UI";
+    document.getElementById("menu-size").value = t.fontSize || "14";
+  }
+
+  function updateSelectedTextProp(prop, val) {
+    if(!rightClickedObject) return;
+    let obj = rightClickedObject;
+    let t = obj.customType === 'text-only' ? obj : obj._objects ? obj._objects[1] : null;
+    if(t) {
+      t.set(prop, val);
+      if(obj.addWithUpdate) obj.addWithUpdate();
+      canvas.renderAll();
+    }
+  }
+
+  function toggleStyle(prop, styleVal) {
+    if(!rightClickedObject) return;
+    let obj = rightClickedObject;
+    let t = obj.customType === 'text-only' ? obj : obj._objects ? obj._objects[1] : null;
+    if(t) {
+      let current = t.get(prop);
+      t.set(prop, current === styleVal ? 'normal' : styleVal);
+      if(obj.addWithUpdate) obj.addWithUpdate();
+      canvas.renderAll();
+    }
+  }
+
+  function deleteCurrentObject() {
+    if(!rightClickedObject) return;
+    let obj = rightClickedObject;
+    
+    // Eliminar conectores asociados
+    connections = connections.filter(c => {
+      if(c.fromId === obj.id || c.toId === obj.id) {
+        canvas.remove(c.lineRef); return false;
+      } return true;
+    });
+
+    canvas.remove(obj);
+    document.getElementById("context-menu").style.display = "none";
+    canvas.renderAll();
+  }
+
+  // --- 5. PERSISTENCIA TOTAL (GUARDADO DE ESTRUCTURAS) ---
+  function saveToDatabase() {
+    if(!currentProject) return;
+    let objectsData = [];
+    
+    canvas.getObjects().forEach(o => {
+      if(o.id) { // Filtrar líneas básicas
+        let isText = o.customType === 'text-only';
+        let shapeRef = isText ? null : o._objects[0];
+        let textRef = isText ? o : o._objects[1];
+
+        objectsData.push({
+          id: o.id, type: o.customType,
+          left: o.left, top: o.top,
+          bg: isText ? null : shapeRef.fill,
+          text: textRef.text,
+          fontSize: textRef.fontSize, fontFamily: textRef.fontFamily,
+          fontWeight: textRef.fontWeight, fontStyle: textRef.fontStyle,
+          textColor: textRef.fill
+        });
+      }
+    });
+
+    let connectionsData = connections.map(c => ({ fromId: c.fromId, toId: c.toId }));
+
+    db.users[currentUser].projects[currentProject] = { objects: objectsData, connections: connectionsData };
+    saveDB();
+  }
+
+  function loadProjectData() {
+    canvas.clear();
+    connections = [];
+    let proj = db.users[currentUser].projects[currentProject];
+    if(!proj) return;
+
+    // Redibujar formas
+    if(proj.objects) { proj.objects.forEach(o => addUnifiedBlock(o.type, o)); }
+
+    // Redibujar conexiones vinculadas por ID
+    if(proj.connections) {
+      setTimeout(() => {
+        proj.connections.forEach(c => {
+          let o1 = findCanvasObjectById(c.fromId);
+          let o2 = findCanvasObjectById(c.toId);
+          if(o1 && o2) { createLineBetween(o1, o2); }
+        });
+        canvas.renderAll();
+      }, 150);
+    }
+  }
+
+  function findCanvasObjectById(id) {
+    return canvas.getObjects().find(o => o.id === id);
+  }
 </script>
 </body>
 </html>

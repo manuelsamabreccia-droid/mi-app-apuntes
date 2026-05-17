@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Apuntes Pro - Studio Infinity V7</title>
+  <title>Apuntes Pro - Studio Infinity V8</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
     :root {
@@ -73,10 +73,13 @@
 
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
-    <h2>Mis Apuntes Pro</h2>
+    <h2 id="auth-title">Mis Apuntes Pro</h2>
     <input type="text" id="username" placeholder="Nombre de usuario">
     <input type="password" id="password" placeholder="Contraseña">
-    <button onclick="handleAuth()">Ingresar al Tablero</button>
+    <button id="auth-submit-btn" onclick="handleAuthAction()">Ingresar al Tablero</button>
+    
+    <p id="auth-toggle-text" style="font-size: 13px; margin: 15px 0 0 0; cursor: pointer; color: #2196F3; font-weight: 600;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+    
     <div class="divider" style="margin: 20px 0;"></div>
     <button onclick="triggerImportBackup()" style="background:#673ab7; font-size:12px; padding:10px;">📤 Cargar Copia Externa (.json)</button>
   </div>
@@ -170,6 +173,7 @@
   let currentUser = null, currentProject = null;
   let canvas, isConnectMode = false, connectSourceObj = null, rightClickedObject = null;
   let connections = [];
+  let isLoginMode = true; // Control de pantalla de login vs registro
 
   const THEME_COLORS = {
     light: { square: '#e3fafc', circle: '#ffebf0', 'post-it': '#fff740' },
@@ -194,7 +198,53 @@
 
   window.addEventListener('resize', () => { if(canvas) { canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); } });
 
-  // SISTEMA DE EXPORTACIÓN / IMPORTACIÓN DE SEGURIDAD
+  // CONTROL INTERCAMBIABLE LOGIN / REGISTRO
+  function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    let title = document.getElementById("auth-title");
+    let btn = document.getElementById("auth-submit-btn");
+    let toggleText = document.getElementById("auth-toggle-text");
+    
+    if(isLoginMode) {
+      title.innerText = "Mis Apuntes Pro";
+      btn.innerText = "Ingresar al Tablero";
+      toggleText.innerText = "¿No tienes cuenta? Regístrate aquí";
+    } else {
+      title.innerText = "Crear Cuenta Nueva";
+      btn.innerText = "Registrarse y Entrar";
+      toggleText.innerText = "¿Ya tienes cuenta? Inicia sesión";
+    }
+  }
+
+  function handleAuthAction() {
+    let u = document.getElementById("username").value.trim();
+    let p = document.getElementById("password").value.trim();
+    if(!u || !p) return alert("Por favor, completa todos los campos.");
+    
+    if(isLoginMode) {
+      // PROCESO INICIAR SESIÓN
+      if(!db.users[u]) {
+        return alert("El usuario no existe. Por favor, cambia a modo 'Registrarse' para crear una cuenta.");
+      }
+      if(db.users[u].password !== p) {
+        return alert("Contraseña incorrecta.");
+      }
+      currentUser = u; 
+      showProjectWorkspace();
+    } else {
+      // PROCESO REGISTRARSE
+      if(db.users[u]) {
+        return alert("Este nombre de usuario ya está registrado. Elige otro o inicia sesión.");
+      }
+      db.users[u] = { password: p, projects: {}, lastOpen: null }; 
+      saveDB();
+      currentUser = u;
+      alert("¡Cuenta creada exitosamente!");
+      showProjectWorkspace();
+    }
+  }
+
+  // RESPALDOS DE SEGURIDAD
   function exportDatabaseBackup() {
     let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
     let downloadAnchor = document.createElement('a');
@@ -205,30 +255,26 @@
     downloadAnchor.remove();
   }
 
-  function triggerImportBackup() {
-    document.getElementById("import-file-input").click();
-  }
+  function triggerImportBackup() { document.getElementById("import-file-input").click(); }
 
-  function importDatabase(event) {
-    let file = event.target.files[0];
-    if (!file) return;
-    let reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        let importedData = JSON.parse(e.target.result);
-        if (importedData.users) {
-          db = importedData;
-          saveDB();
-          alert("¡Copia de seguridad cargada perfectamente! Ya puedes iniciar sesión y ver tus notas.");
-          location.reload();
-        } else {
-          alert("Error: El archivo no corresponde a una base de datos de Apuntes.");
-        }
-      } catch (err) {
-        alert("Error al procesar el archivo JSON.");
-      }
-    };
-    reader.readAsText(file);
+  if (typeof importDatabase !== 'function') {
+    window.importDatabase = function(event) {
+      let file = event.target.files[0];
+      if (!file) return;
+      let reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          let importedData = JSON.parse(e.target.result);
+          if (importedData.users) {
+            db = importedData;
+            saveDB();
+            alert("¡Copia de seguridad cargada perfectamente! Ya puedes iniciar sesión.");
+            location.reload();
+          } else { alert("Error: Archivo inválido."); }
+        } catch (err) { alert("Error al procesar el archivo JSON."); }
+      };
+      reader.readAsText(file);
+    }
   }
 
   function execWordCmd(cmd) {
@@ -264,15 +310,6 @@
         canvas.renderAll();
       });
     }
-  }
-
-  function handleAuth() {
-    let u = document.getElementById("username").value.trim();
-    let p = document.getElementById("password").value.trim();
-    if(!u || !p) return;
-    if(db.users[u]) { if(db.users[u].password !== p) return alert("Contraseña incorrecta."); } 
-    else { db.users[u] = { password: p, projects: {}, lastOpen: null }; saveDB(); }
-    currentUser = u; showProjectWorkspace();
   }
 
   function showProjectWorkspace() {

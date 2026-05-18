@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Apuntes Pro - Studio Infinity V8</title>
+  <title>Apuntes Pro - Studio Infinity V9</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
   <style>
     :root {
@@ -116,8 +116,8 @@
     <div class="menu-item">
       <span>Tamaño</span>
       <select id="menu-size" onchange="updateSelectedTextProp('fontSize', parseInt(this.value))">
-        <option value="14">14px</option><option value="18">18px</option>
-        <option value="24">24px</option><option value="36">36px</option>
+        <option value="12">12px</option><option value="14">14px</option>
+        <option value="18">18px</option><option value="24">24px</option>
       </select>
     </div>
     <div class="menu-item">
@@ -173,7 +173,7 @@
   let currentUser = null, currentProject = null;
   let canvas, isConnectMode = false, connectSourceObj = null, rightClickedObject = null;
   let connections = [];
-  let isLoginMode = true; // Control de pantalla de login vs registro
+  let isLoginMode = true; 
 
   const THEME_COLORS = {
     light: { square: '#e3fafc', circle: '#ffebf0', 'post-it': '#fff740' },
@@ -198,7 +198,6 @@
 
   window.addEventListener('resize', () => { if(canvas) { canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); } });
 
-  // CONTROL INTERCAMBIABLE LOGIN / REGISTRO
   function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     let title = document.getElementById("auth-title");
@@ -222,73 +221,47 @@
     if(!u || !p) return alert("Por favor, completa todos los campos.");
     
     if(isLoginMode) {
-      // PROCESO INICIAR SESIÓN
-      if(!db.users[u]) {
-        return alert("El usuario no existe. Por favor, cambia a modo 'Registrarse' para crear una cuenta.");
-      }
-      if(db.users[u].password !== p) {
-        return alert("Contraseña incorrecta.");
-      }
-      currentUser = u; 
-      showProjectWorkspace();
+      if(!db.users[u]) return alert("El usuario no existe. Por favor regístrate.");
+      if(db.users[u].password !== p) return alert("Contraseña incorrecta.");
+      currentUser = u; showProjectWorkspace();
     } else {
-      // PROCESO REGISTRARSE
-      if(db.users[u]) {
-        return alert("Este nombre de usuario ya está registrado. Elige otro o inicia sesión.");
-      }
+      if(db.users[u]) return alert("Este usuario ya está registrado.");
       db.users[u] = { password: p, projects: {}, lastOpen: null }; 
-      saveDB();
-      currentUser = u;
-      alert("¡Cuenta creada exitosamente!");
-      showProjectWorkspace();
+      saveDB(); currentUser = u; alert("¡Cuenta creada exitosamente!"); showProjectWorkspace();
     }
   }
 
-  // RESPALDOS DE SEGURIDAD
   function exportDatabaseBackup() {
     let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
     let downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", `backup_apuntes_${Date.now()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
   }
 
   function triggerImportBackup() { document.getElementById("import-file-input").click(); }
 
   if (typeof importDatabase !== 'function') {
     window.importDatabase = function(event) {
-      let file = event.target.files[0];
-      if (!file) return;
+      let file = event.target.files[0]; if (!file) return;
       let reader = new FileReader();
       reader.onload = function(e) {
         try {
           let importedData = JSON.parse(e.target.result);
           if (importedData.users) {
-            db = importedData;
-            saveDB();
-            alert("¡Copia de seguridad cargada perfectamente! Ya puedes iniciar sesión.");
-            location.reload();
+            db = importedData; saveDB(); alert("¡Backup cargado!"); location.reload();
           } else { alert("Error: Archivo inválido."); }
-        } catch (err) { alert("Error al procesar el archivo JSON."); }
-      };
-      reader.readAsText(file);
+        } catch (err) { alert("Error al procesar el archivo."); }
+      }; reader.readAsText(file);
     }
   }
 
-  function execWordCmd(cmd) {
-    document.execCommand(cmd, false, null);
-    document.getElementById("word-editor").focus();
-  }
+  function execWordCmd(cmd) { document.execCommand(cmd, false, null); document.getElementById("word-editor").focus(); }
 
   function toggleDarkMode(force = false) {
     let body = document.body;
-    if(!force) body.classList.toggle("dark-mode");
-    else body.classList.add("dark-mode");
-    
-    let isDark = body.classList.contains("dark-mode");
-    localStorage.setItem("dark_mode_enabled", isDark);
+    if(!force) body.classList.toggle("dark-mode"); else body.classList.add("dark-mode");
+    let isDark = body.classList.contains("dark-mode"); localStorage.setItem("dark_mode_enabled", isDark);
     document.getElementById("dark-toggle-btn").innerText = isDark ? "☀️" : "🌙";
     
     let bg = isDark ? '#121216' : '#f5f7fa';
@@ -300,14 +273,11 @@
             if(!isDark && o.fill === '#ffffff') o.set('fill', '#333333');
           }
           if(o.customType && o.customType !== 'text-only') {
-            let type = o.customType;
-            let currentFill = o.fill;
-            let fromTheme = isDark ? THEME_COLORS.light : THEME_COLORS.dark;
+            let type = o.customType; let fromTheme = isDark ? THEME_COLORS.light : THEME_COLORS.dark;
             let toTheme = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-            if(currentFill === fromTheme[type]) o.set('fill', toTheme[type]);
+            if(o.fill === fromTheme[type]) o.set('fill', toTheme[type]);
           }
-        });
-        canvas.renderAll();
+        }); canvas.renderAll();
       });
     }
   }
@@ -316,8 +286,7 @@
     document.getElementById("auth-screen").classList.remove("hidden");
     document.getElementById("login-step").classList.add("hidden");
     document.getElementById("project-step").classList.remove("hidden");
-    document.getElementById("welcome-text").innerText = `Conectado como: ${currentUser}`;
-    renderProjectList();
+    document.getElementById("welcome-text").innerText = `Conectado como: ${currentUser}`; renderProjectList();
   }
 
   function renderProjectList() {
@@ -339,8 +308,7 @@
   function openProject(name) {
     currentProject = name; db.users[currentUser].lastOpen = name; saveDB();
     document.getElementById("auth-screen").classList.add("hidden");
-    document.getElementById("toolbar").classList.remove("hidden");
-    loadProjectData();
+    document.getElementById("toolbar").classList.remove("hidden"); loadProjectData();
   }
 
   function exitToWorkspace() {
@@ -358,6 +326,7 @@
     panel.classList.toggle("open"); btn.classList.toggle("btn-active", panel.classList.contains("open"));
   }
 
+  // --- SOLUCIÓN DEL TEXTO AQUÍ (USANDO TEXTBOX EN VEZ DE ITEXT) ---
   function addUnifiedBlock(type, options = {}) {
     let left = options.left !== undefined ? options.left : 250;
     let top = options.top !== undefined ? options.top : 250;
@@ -368,12 +337,20 @@
     let defaultTextColor = isDark ? '#ffffff' : '#333333';
     let defaultBg = options.bg || (isDark ? THEME_COLORS.dark[type] : THEME_COLORS.light[type]);
 
-    let textObj = new fabric.IText(savedText, {
-      fontSize: options.fontSize || 15, fontFamily: options.fontFamily || 'Segoe UI',
+    // Ancho dinámico para que el texto baje de línea sin salirse
+    let textWidth = 200; 
+    if(type === 'square') textWidth = 120;
+    if(type === 'circle') textWidth = 90;
+    if(type === 'post-it') textWidth = 100;
+
+    let textObj = new fabric.Textbox(savedText, {
+      width: textWidth,
+      fontSize: options.fontSize || 14, fontFamily: options.fontFamily || 'Segoe UI',
       fill: options.textColor || defaultTextColor, textAlign: 'center', 
       originX: 'center', originY: 'center', left: left, top: top,
       fontWeight: options.fontWeight || 'normal', fontStyle: options.fontStyle || 'normal',
-      selectable: false, evented: false, isLinkedText: true
+      selectable: false, evented: false, isLinkedText: true,
+      splitByGrapheme: false
     });
 
     if (type === 'text-only') {
@@ -408,8 +385,7 @@
 
     if(options.hasGlow) shape.set('shadow', new fabric.Shadow({ color: '#2196F3', blur: 25, offsetX: 0, offsetY: 0 }));
 
-    canvas.add(shape); canvas.add(textObj); canvas.setActiveObject(shape);
-    syncTextsAndShapes();
+    canvas.add(shape); canvas.add(textObj); canvas.setActiveObject(shape); syncTextsAndShapes();
   }
 
   function updateSelectedShapeColor(val) {
@@ -446,8 +422,7 @@
   function createLineBetween(obj1, obj2) {
     let p1 = obj1.getCenterPoint(); let p2 = obj2.getCenterPoint();
     let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], { stroke: '#888888', strokeWidth: 3, selectable: false, evented: false });
-    canvas.add(line); canvas.sendToBack(line);
-    connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
+    canvas.add(line); canvas.sendToBack(line); connections.push({ fromId: obj1.id, toId: obj2.id, lineRef: line });
   }
 
   function setupCanvasEvents() {
@@ -468,17 +443,13 @@
         let activeObjects = canvas.getActiveObjects();
         if(activeObjects.length > 1) {
           rightClickedObject = activeObjects;
-          document.getElementById("shape-tools-section").style.display = "none";
-          document.getElementById("text-tools-section").style.display = "none";
-          document.getElementById("connect-item-menu").style.display = "none";
-          menu.style.display = "flex"; menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
+          document.getElementById("shape-tools-section").style.display = "none"; document.getElementById("text-tools-section").style.display = "none";
+          document.getElementById("connect-item-menu").style.display = "none"; menu.style.display = "flex"; menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
         } else if (opt.target) {
           let target = opt.target; if(target.isLinkedText && target.shapeRef) target = target.shapeRef;
           rightClickedObject = target; let isTextOnly = target.customType === 'text-only';
-          document.getElementById("shape-tools-section").style.display = isTextOnly ? "none" : "block";
-          document.getElementById("text-tools-section").style.display = "block";
-          document.getElementById("connect-item-menu").style.display = !isTextOnly ? "flex" : "none";
-          menu.style.display = "flex"; menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
+          document.getElementById("shape-tools-section").style.display = isTextOnly ? "none" : "block"; document.getElementById("text-tools-section").style.display = "block";
+          document.getElementById("connect-item-menu").style.display = !isTextOnly ? "flex" : "none"; menu.style.display = "flex"; menu.style.left = evt.clientX + "px"; menu.style.top = evt.clientY + "px";
         } else { menu.style.display = "none"; }
       } else {
         menu.style.display = "none"; let target = opt.target;
@@ -492,8 +463,7 @@
 
     canvas.on('mouse:move', function(opt) {
       if (this.isDragging) {
-        let e = opt.e; let vpt = this.viewportTransform;
-        vpt[4] += e.clientX - this.lastPosX; vpt[5] += e.clientY - this.lastPosY;
+        let e = opt.e; let vpt = this.viewportTransform; vpt[4] += e.clientX - this.lastPosX; vpt[5] += e.clientY - this.lastPosY;
         this.requestRenderAll(); this.lastPosX = e.clientX; this.lastPosY = e.clientY; updateLines();
       }
     });
@@ -559,8 +529,7 @@
       objects: objectsData, connections: connections.map(c => ({ fromId: c.fromId, toId: c.toId })),
       wordText: document.getElementById("word-editor").innerHTML
     };
-    saveDB();
-    let toast = document.getElementById("toast"); toast.style.display = "block"; setTimeout(() => { toast.style.display = "none"; }, 2000);
+    saveDB(); let toast = document.getElementById("toast"); toast.style.display = "block"; setTimeout(() => { toast.style.display = "none"; }, 2000);
   }
 
   function loadProjectData() {

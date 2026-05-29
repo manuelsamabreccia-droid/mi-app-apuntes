@@ -1,249 +1,250 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Apuntes Pro - Studio Infinity V10</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-  <style>
-    :root {
-      --bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;
-    }
-    body.dark-mode {
-      --bg-app:#121216;--bg-box:#1e1f29;--text-main:#f5f7fa;--border-color:rgba(255,255,255,0.1);--bg-word-bar:#2a2b36;
-    }
-    body{margin:0;padding:0;background-color:var(--bg-app);overflow:hidden;font-family:'Segoe UI',sans-serif;user-select:none;transition:background 0.3s;color:var(--text-main);}
-    .hidden{display:none!important;}
- 
-    /* AUTH */
-    .screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(15px);display:flex;align-items:center;justify-content:center;z-index:9000;}
-    .auth-box{background:var(--bg-box);padding:40px;border-radius:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);text-align:center;width:340px;color:var(--text-main);border:1px solid var(--border-color);}
-    .auth-box h2{margin-top:0;font-size:26px;font-weight:700;letter-spacing:-0.5px;}
-    .auth-box input{width:100%;padding:12px 16px;margin:10px 0;border:1px solid var(--border-color);background:var(--bg-app);color:var(--text-main);border-radius:10px;box-sizing:border-box;outline:none;font-size:14px;}
-    .auth-box button{width:100%;padding:14px;border:none;background:#2196F3;color:white;font-weight:bold;border-radius:10px;cursor:pointer;font-size:14px;transition:0.2s;}
-    .auth-box button:hover{opacity:0.9;}
-    .project-list{max-height:160px;overflow-y:auto;margin:15px 0;padding:0;list-style:none;}
-    .project-item{padding:12px;background:var(--bg-app);margin-bottom:6px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);}
-    .project-item:hover{border-color:#2196F3;}
-    /* saved-accounts list */
-    #saved-accounts-list{max-height:120px;overflow-y:auto;margin:10px 0;padding:0;list-style:none;}
-    .saved-account-item{padding:10px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;}
-    .saved-account-item:hover{border-color:#2196F3;}
-    .saved-account-item .acc-name{flex:1;}
-    .saved-account-item .acc-badge{font-size:10px;background:#2196F3;color:white;padding:2px 7px;border-radius:20px;}
- 
-    /* TOOLBAR */
-    #toolbar{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--bg-box);padding:8px 16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.15);z-index:100;display:flex;gap:8px;align-items:center;border:1px solid var(--border-color);flex-wrap:wrap;max-width:96vw;}
-    .btn{padding:8px 14px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--text-main);display:flex;align-items:center;gap:6px;transition:0.2s;}
-    .btn:hover{background:rgba(128,128,128,0.15);}
-    .btn-active{background:#2196F3!important;color:white!important;}
-    .sep{width:1px;height:20px;background:var(--border-color);margin:0 2px;}
- 
-    /* DROPDOWNS */
-    .dropdown{position:relative;display:inline-block;}
-    .dropdown-content{display:none;position:absolute;background:var(--bg-box);min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,0.18);border-radius:10px;z-index:1000;top:100%;left:0;overflow:hidden;border:1px solid var(--border-color);}
-    .dropdown-content button{width:100%;padding:11px 16px;background:transparent;border:none;text-align:left;color:var(--text-main);cursor:pointer;font-size:13px;font-weight:500;}
-    .dropdown-content button:hover{background:rgba(128,128,128,0.11);}
-    .dropdown:hover .dropdown-content{display:block;}
-    .dd-section-label{padding:6px 16px 4px;font-size:10px;font-weight:700;opacity:0.45;text-transform:uppercase;letter-spacing:0.5px;}
-    .dd-divider{height:1px;background:var(--border-color);margin:4px 0;}
- 
-    /* CONTEXT MENU */
-    #context-menu{position:fixed;background:var(--bg-box);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,0.2);border:1px solid var(--border-color);display:none;flex-direction:column;padding:6px 0;z-index:9999;min-width:210px;color:var(--text-main);}
-    #context-menu .menu-item{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
-    #context-menu .menu-item:hover{background:rgba(128,128,128,0.15);}
-    #context-menu select,#context-menu input[type=color],#context-menu input[type=number]{padding:3px;font-size:12px;max-width:95px;background:var(--bg-app);color:var(--text-main);border:1px solid var(--border-color);border-radius:4px;}
-    .divider{height:1px;background:var(--border-color);margin:6px 0;}
- 
-    /* WORD PANEL */
-    #word-wrapper{position:fixed;top:80px;right:-460px;width:430px;height:calc(100vh - 100px);background:var(--bg-box);box-shadow:-8px 0 30px rgba(0,0,0,0.15);z-index:90;transition:right 0.4s cubic-bezier(0.1,0.9,0.2,1);display:flex;flex-direction:column;padding:20px;box-sizing:border-box;border-radius:16px 0 0 16px;border-left:1px solid var(--border-color);}
-    #word-wrapper.open{right:0;}
-    #word-toolbar{display:flex;gap:6px;background:var(--bg-word-bar);padding:6px;border-radius:8px;margin-bottom:12px;border:1px solid var(--border-color);}
-    #word-toolbar button{background:var(--bg-box);border:1px solid var(--border-color);color:var(--text-main);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;transition:0.2s;}
-    #word-toolbar button:hover{background:#2196F3;color:white;}
-    #word-editor{flex:1;background:var(--bg-app);color:var(--text-main);border-radius:10px;padding:20px;outline:none;overflow-y:auto;font-size:15px;line-height:1.6;border:1px solid var(--border-color);cursor:text;}
- 
-    /* CONNECTOR TYPE SELECTOR */
-    #conn-type-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,0.15);}
-    #conn-type-bar.visible{display:flex;}
-    .conn-btn{padding:7px 13px;border:1px solid var(--border-color);background:transparent;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-main);transition:0.2s;}
-    .conn-btn:hover,.conn-btn.active{background:#2196F3;color:white;border-color:#2196F3;}
- 
-    /* LINE MODE BAR */
-    #line-dir-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,0.15);}
-    #line-dir-bar.visible{display:flex;}
- 
-    /* FORMAT MODAL */
-    #format-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:8000;}
-    #format-modal.visible{display:flex;}
-    #format-modal-box{background:var(--bg-box);padding:32px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,0.3);min-width:320px;max-width:440px;color:var(--text-main);border:1px solid var(--border-color);}
-    #format-modal-box h3{margin:0 0 16px;font-size:18px;}
-    #format-modal-box p{margin:0 0 12px;font-size:13px;opacity:0.7;}
-    .fm-btn{padding:12px 18px;border:1px solid var(--border-color);background:var(--bg-app);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-main);width:100%;margin-bottom:8px;text-align:left;transition:0.2s;}
-    .fm-btn:hover{border-color:#2196F3;color:#2196F3;}
- 
-    /* PAN cursor */
-    body.panning{cursor:grabbing!important;}
- 
-    #dark-toggle-btn{position:fixed;top:15px;right:15px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:11px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.1);font-size:16px;}
-    #toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#2196F3;color:white;padding:12px 28px;border-radius:30px;font-weight:bold;box-shadow:0 8px 20px rgba(33,150,243,0.3);z-index:10000;display:none;font-size:14px;}
-    #pan-hint{position:fixed;bottom:15px;left:15px;background:rgba(0,0,0,0.6);color:white;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:500;pointer-events:none;z-index:50;}
-  </style>
+<meta charset="UTF-8">
+<title>Apuntes Pro V12</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<style>
+:root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
+body.dark-mode{--bg-app:#121216;--bg-box:#1e1f29;--text-main:#f5f7fa;--border-color:rgba(255,255,255,0.1);--bg-word-bar:#2a2b36;}
+body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Segoe UI',sans-serif;user-select:none;transition:background .3s;color:var(--text-main);}
+.hidden{display:none!important;}
+/* AUTH */
+.screen{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(15px);display:flex;align-items:center;justify-content:center;z-index:9000;}
+.auth-box{background:var(--bg-box);padding:40px;border-radius:24px;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center;width:340px;color:var(--text-main);border:1px solid var(--border-color);}
+.auth-box h2{margin-top:0;font-size:26px;font-weight:700;}
+.auth-box input{width:100%;padding:12px 16px;margin:10px 0;border:1px solid var(--border-color);background:var(--bg-app);color:var(--text-main);border-radius:10px;box-sizing:border-box;outline:none;font-size:14px;}
+.auth-box button{width:100%;padding:14px;border:none;background:#2196F3;color:#fff;font-weight:700;border-radius:10px;cursor:pointer;font-size:14px;transition:.2s;}
+.auth-box button:hover{opacity:.9;}
+.project-list{max-height:160px;overflow-y:auto;margin:15px 0;padding:0;list-style:none;}
+.project-item{padding:11px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;}
+.project-item:hover{border-color:#2196F3;}
+.pi-actions{display:flex;gap:6px;}
+.pi-btn{padding:4px 9px;border:1px solid var(--border-color);background:var(--bg-box);color:var(--text-main);border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;}
+.pi-btn:hover{background:#2196F3;color:#fff;border-color:#2196F3;}
+.pi-btn.del:hover{background:#f44336;border-color:#f44336;}
+#saved-accounts-list{max-height:120px;overflow-y:auto;margin:10px 0;padding:0;list-style:none;}
+.saved-account-item{padding:10px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;}
+.saved-account-item:hover{border-color:#2196F3;}
+.acc-badge{font-size:10px;background:#2196F3;color:#fff;padding:2px 7px;border-radius:20px;}
+/* TOOLBAR */
+#toolbar{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--bg-box);padding:8px 16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:100;display:flex;gap:8px;align-items:center;border:1px solid var(--border-color);flex-wrap:wrap;max-width:96vw;}
+.btn{padding:8px 14px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--text-main);display:flex;align-items:center;gap:6px;transition:.2s;}
+.btn:hover{background:rgba(128,128,128,.15);}
+.btn-active{background:#2196F3!important;color:#fff!important;}
+.sep{width:1px;height:20px;background:var(--border-color);margin:0 2px;}
+/* DROPDOWNS */
+.dropdown{position:relative;display:inline-block;}
+.dropdown-content{display:none;position:absolute;background:var(--bg-box);min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:10px;z-index:1000;top:100%;left:0;overflow:hidden;border:1px solid var(--border-color);}
+.dropdown-content button{width:100%;padding:11px 16px;background:transparent;border:none;text-align:left;color:var(--text-main);cursor:pointer;font-size:13px;font-weight:500;}
+.dropdown-content button:hover{background:rgba(128,128,128,.11);}
+.dropdown:hover .dropdown-content{display:block;}
+.ddl{padding:6px 16px 4px;font-size:10px;font-weight:700;opacity:.45;text-transform:uppercase;letter-spacing:.5px;}
+.ddd{height:1px;background:var(--border-color);margin:4px 0;}
+/* CONTEXT MENU */
+#ctx{position:fixed;background:var(--bg-box);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.2);border:1px solid var(--border-color);display:none;flex-direction:column;padding:6px 0;z-index:9999;min-width:215px;color:var(--text-main);}
+#ctx .mi{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+#ctx .mi:hover{background:rgba(128,128,128,.15);}
+#ctx select,#ctx input[type=color]{padding:3px;font-size:12px;max-width:95px;background:var(--bg-app);color:var(--text-main);border:1px solid var(--border-color);border-radius:4px;}
+.dv{height:1px;background:var(--border-color);margin:6px 0;}
+/* WORD PANEL */
+#word-wrapper{position:fixed;top:80px;right:-460px;width:430px;height:calc(100vh - 100px);background:var(--bg-box);box-shadow:-8px 0 30px rgba(0,0,0,.15);z-index:90;transition:right .4s cubic-bezier(.1,.9,.2,1);display:flex;flex-direction:column;padding:20px;box-sizing:border-box;border-radius:16px 0 0 16px;border-left:1px solid var(--border-color);}
+#word-wrapper.open{right:0;}
+#word-toolbar{display:flex;gap:6px;background:var(--bg-word-bar);padding:6px;border-radius:8px;margin-bottom:12px;border:1px solid var(--border-color);}
+#word-toolbar button{background:var(--bg-box);border:1px solid var(--border-color);color:var(--text-main);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;transition:.2s;}
+#word-toolbar button:hover{background:#2196F3;color:#fff;}
+#word-editor{flex:1;background:var(--bg-app);color:var(--text-main);border-radius:10px;padding:20px;outline:none;overflow-y:auto;font-size:15px;line-height:1.6;border:1px solid var(--border-color);cursor:text;}
+/* BOTTOM BARS */
+.bot-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.15);}
+.bot-bar.vis{display:flex;}
+.cob{padding:7px 13px;border:1px solid var(--border-color);background:transparent;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-main);transition:.2s;}
+.cob:hover,.cob.act{background:#2196F3;color:#fff;border-color:#2196F3;}
+.cob.cancel{color:red;border-color:red;}
+.cob.cancel:hover{background:#f44336;color:#fff;}
+/* MODALS */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:8000;}
+.modal-bg.vis{display:flex;}
+.modal-box{background:var(--bg-box);padding:32px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.3);min-width:320px;max-width:460px;color:var(--text-main);border:1px solid var(--border-color);max-height:80vh;overflow-y:auto;}
+.modal-box h3{margin:0 0 16px;font-size:18px;}
+.modal-box p{margin:0 0 12px;font-size:13px;opacity:.7;}
+.fm-btn{padding:12px 18px;border:1px solid var(--border-color);background:var(--bg-app);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-main);width:100%;margin-bottom:8px;text-align:left;transition:.2s;box-sizing:border-box;}
+.fm-btn:hover{border-color:#2196F3;color:#2196F3;}
+/* UI ELEMENTS */
+#zoom-indicator{position:fixed;bottom:15px;right:60px;background:rgba(0,0,0,.55);color:#fff;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;pointer-events:none;z-index:50;}
+#btn-center{position:fixed;bottom:15px;right:15px;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:50;}
+#btn-center:hover{background:#2196F3;color:#fff;}
+#dark-toggle-btn{position:fixed;top:15px;right:15px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:11px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.1);font-size:16px;}
+#bg-color-btn{position:fixed;top:15px;right:60px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.1);font-size:15px;}
+#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#2196F3;color:#fff;padding:12px 28px;border-radius:30px;font-weight:700;box-shadow:0 8px 20px rgba(33,150,243,.3);z-index:10000;display:none;font-size:14px;}
+#snap-hint{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(33,150,243,.85);color:#fff;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;pointer-events:none;z-index:50;display:none;}
+/* LASSO */
+#lasso-rect{position:fixed;border:2px solid #2196F3;background:rgba(33,150,243,.12);pointer-events:none;display:none;z-index:300;border-radius:3px;}
+body.panning{cursor:grabbing!important;}
+body.lasso-mode *{cursor:crosshair!important;}
+</style>
 </head>
 <body>
- 
+
 <button id="dark-toggle-btn" onclick="toggleDarkMode()">🌙</button>
-<div id="toast">💾 ¡Cambios guardados perfectamente!</div>
-<div id="pan-hint">💡 Mantén click y arrastrá para moverte · Rueda = Zoom · ALT+Click también funciona</div>
+<button id="bg-color-btn" title="Color de fondo" onclick="document.getElementById('cbgi').click()">🎨</button>
+<input type="color" id="cbgi" style="display:none" onchange="setCanvasBg(this.value)">
+<button id="btn-center" onclick="centerCanvas()" title="Volver al centro">⌖</button>
+<div id="zoom-indicator">100%</div>
+<div id="snap-hint">🧲 Snap ON</div>
+<div id="toast">💾 ¡Guardado!</div>
+<div id="lasso-rect"></div>
 <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importDatabase(event)">
- 
-<!-- ══════════ AUTH SCREEN ══════════ -->
+
+<!-- AUTH -->
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
     <h2 id="auth-title">Mis Apuntes Pro</h2>
- 
-    <!-- Cuentas guardadas (aparece si hay más de 1) -->
     <div id="saved-accounts-section" class="hidden">
-      <p style="font-size:12px;opacity:0.6;margin:0 0 6px;">Cuentas guardadas:</p>
+      <p style="font-size:12px;opacity:.6;margin:0 0 6px;">Cuentas guardadas:</p>
       <ul id="saved-accounts-list"></ul>
-      <div class="divider" style="margin:12px 0;"></div>
+      <div class="dv" style="margin:12px 0;"></div>
     </div>
- 
     <input type="text" id="username" placeholder="Nombre de usuario">
-    <input type="password" id="password" placeholder="Contraseña">
+    <input type="password" id="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')handleAuthAction()">
     <button id="auth-submit-btn" onclick="handleAuthAction()">Ingresar al Tablero</button>
     <p id="auth-toggle-text" style="font-size:13px;margin:15px 0 0;cursor:pointer;color:#2196F3;font-weight:600;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
-    <div class="divider" style="margin:20px 0;"></div>
-    <button onclick="triggerImportBackup()" style="background:#673ab7;font-size:12px;padding:10px;">📤 Cargar Copia Externa (.json)</button>
+    <div class="dv" style="margin:20px 0;"></div>
+    <button onclick="triggerImportBackup()" style="background:#673ab7;font-size:12px;padding:10px;">📤 Cargar Copia Externa</button>
   </div>
- 
   <div class="auth-box hidden" id="project-step">
     <h2 style="margin-bottom:4px;">Tus Cuadernos</h2>
-    <p id="welcome-text" style="margin:0 0 15px;font-size:12px;opacity:0.6;font-weight:500;"></p>
+    <p id="welcome-text" style="margin:0 0 15px;font-size:12px;opacity:.6;font-weight:500;"></p>
     <ul class="project-list" id="project-list-container"></ul>
-    <input type="text" id="new-project-name" placeholder="Nombre de nuevo cuaderno...">
-    <button onclick="handleCreateProject()">+ Crear Nuevo Proyecto</button>
-    <div class="divider" style="margin:15px 0;"></div>
-    <button onclick="exportDatabaseBackup()" style="background:#9c27b0;font-size:12px;padding:10px;">📥 Guardar Backup Completo</button>
+    <input type="text" id="new-project-name" placeholder="Nombre del cuaderno..." onkeydown="if(event.key==='Enter')handleCreateProject()">
+    <button onclick="handleCreateProject()">+ Crear Nuevo Cuaderno</button>
+    <div class="dv" style="margin:15px 0;"></div>
+    <button onclick="exportDatabaseBackup()" style="background:#9c27b0;font-size:12px;padding:10px;">📥 Guardar Backup</button>
   </div>
 </div>
- 
-<!-- ══════════ CONTEXT MENU ══════════ -->
-<div id="context-menu">
-  <!-- BORRAR siempre arriba -->
-  <div class="menu-item" onclick="deleteCurrentObject()" style="color:red;font-weight:bold;">🗑️ Eliminar</div>
-  <div class="divider"></div>
- 
-  <div id="shape-tools-section">
-    <div class="menu-item"><span>Color Fondo</span><input type="color" id="menu-shape-color" onchange="updateSelectedShapeColor(this.value)"></div>
-    <div class="divider"></div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx">
+  <div class="mi" onclick="deleteCurrentObject()" style="color:red;font-weight:700;">🗑️ Eliminar</div>
+  <div class="mi" onclick="duplicateCurrentObject()" style="color:#2196F3;font-weight:600;">⧉ Duplicar</div>
+  <div class="dv"></div>
+  <div id="ctx-conn-sec" style="display:none;">
+    <div class="mi" onclick="deleteConnector()" style="color:#f44336;font-weight:600;">✂️ Borrar Conector</div>
+    <div class="dv"></div>
   </div>
- 
-  <div id="text-tools-section">
-    <div class="menu-item"><span>Letra</span>
+  <div id="ctx-shape-sec">
+    <div class="mi"><span>Color Fondo</span><input type="color" id="menu-shape-color" onchange="updateSelectedShapeColor(this.value)"></div>
+    <div class="mi"><span>Color Borde</span><input type="color" id="menu-stroke-color" onchange="updateSelectedStroke(this.value)"></div>
+    <div class="mi"><span>Grosor Borde</span>
+      <select id="menu-stroke-width" onchange="updateSelectedStrokeWidth(parseInt(this.value))">
+        <option value="0">Sin borde</option><option value="1">1px</option>
+        <option value="2">2px</option><option value="3">3px</option><option value="5">5px</option>
+      </select>
+    </div>
+    <div class="dv"></div>
+  </div>
+  <div id="ctx-text-sec">
+    <div class="mi"><span>Letra</span>
       <select id="menu-font" onchange="updateSelectedTextProp('fontFamily',this.value)">
         <option value="Segoe UI">Segoe UI</option>
         <option value="Times New Roman">Times New</option>
         <option value="Courier New">Courier</option>
+        <option value="Georgia">Georgia</option>
       </select>
     </div>
-    <div class="menu-item"><span>Tamaño</span>
+    <div class="mi"><span>Tamaño</span>
       <select id="menu-size" onchange="updateSelectedTextProp('fontSize',parseInt(this.value))">
-        <option value="12">12px</option><option value="14">14px</option>
-        <option value="18">18px</option><option value="24">24px</option>
+        <option value="11">11</option><option value="12">12</option><option value="14">14</option>
+        <option value="16">16</option><option value="18">18</option><option value="22">22</option><option value="28">28</option>
       </select>
     </div>
-    <div class="menu-item"><span>Color Texto</span><input type="color" id="menu-tcolor" onchange="updateSelectedTextProp('fill',this.value)"></div>
-    <div class="menu-item" onclick="toggleStyle('fontWeight','bold')"><b>N</b> Negrita</div>
-    <div class="menu-item" onclick="toggleStyle('fontStyle','italic')"><i>K</i> Cursiva</div>
-    <div class="divider"></div>
+    <div class="mi"><span>Alineación</span>
+      <select id="menu-align" onchange="updateSelectedTextProp('textAlign',this.value)">
+        <option value="center">Centro</option><option value="left">Izquierda</option><option value="right">Derecha</option>
+      </select>
+    </div>
+    <div class="mi"><span>Color Texto</span><input type="color" id="menu-tcolor" onchange="updateSelectedTextProp('fill',this.value)"></div>
+    <div class="mi" onclick="toggleStyle('fontWeight','bold')"><b>N</b> Negrita</div>
+    <div class="mi" onclick="toggleStyle('fontStyle','italic')"><i>K</i> Cursiva</div>
+    <div class="dv"></div>
   </div>
- 
-  <div class="menu-item" onclick="toggleGlowEffect()" style="font-weight:bold;color:#ff007f;">✨ Alternar Brillo</div>
-  <div id="connect-item-menu" class="menu-item" onclick="startConnectingFromMenu()" style="color:#ff9800;font-weight:bold;">🔗 Conectar Objeto</div>
+  <div class="mi" onclick="toggleGlowEffect()" style="font-weight:700;color:#ff007f;">✨ Alternar Brillo</div>
+  <div id="ctx-conn-mi" class="mi" onclick="startConnectingFromMenu()" style="color:#ff9800;font-weight:700;">🔗 Conectar Objeto</div>
 </div>
- 
-<!-- ══════════ TOOLBAR ══════════ -->
+
+<!-- TOOLBAR -->
 <div id="toolbar" class="hidden">
-  <!-- Componentes individuales -->
   <div class="dropdown">
-    <button class="btn" style="background:rgba(33,150,243,0.12);color:#2196F3;">➕ Insertar ▼</button>
+    <button class="btn" style="background:rgba(33,150,243,.12);color:#2196F3;">➕ Insertar ▼</button>
     <div class="dropdown-content">
-      <div class="dd-section-label">Bloques</div>
-      <button onclick="addUnifiedBlock('square')">🟦 Cuadrado</button>
-      <button onclick="addUnifiedBlock('circle')">⚪ Círculo</button>
-      <button onclick="addUnifiedBlock('diamond')">🔷 Rombo</button>
-      <button onclick="addUnifiedBlock('post-it')">📝 Post-it</button>
-      <button onclick="addUnifiedBlock('text-only')">🔤 Texto Libre</button>
-      <div class="dd-divider"></div>
-      <div class="dd-section-label">Líneas rectas</div>
-      <button onclick="startStraightLineMode('h')">➡️ Línea Horizontal</button>
-      <button onclick="startStraightLineMode('v')">⬇️ Línea Vertical</button>
-      <button onclick="startStraightLineMode('any')">↗️ Línea Libre</button>
+      <div class="ddl">Bloques</div>
+      <button onclick="addBlock('square')">🟦 Cuadrado</button>
+      <button onclick="addBlock('circle')">⚪ Círculo</button>
+      <button onclick="addBlock('diamond')">🔷 Rombo</button>
+      <button onclick="addBlock('post-it')">📝 Post-it</button>
+      <button onclick="addBlock('text-only')">🔤 Texto Libre</button>
     </div>
   </div>
- 
-  <!-- Tomas de apuntes -->
   <div class="dropdown">
-    <button class="btn" style="background:rgba(156,39,176,0.12);color:#9c27b0;">📚 Tipo de Apunte ▼</button>
+    <button class="btn" style="background:rgba(156,39,176,.12);color:#9c27b0;">📚 Tipo de Apunte ▼</button>
     <div class="dropdown-content" style="min-width:220px;">
-      <div class="dd-section-label">Crear nuevo</div>
+      <div class="ddl">Crear nuevo</div>
       <button onclick="createNoteFormat('mindmap')">🧠 Mapa Mental</button>
-      <button onclick="createNoteFormat('esquema')">📋 Esquema (con llaves)</button>
+      <button onclick="createNoteFormat('esquema')">📋 Esquema (llaves)</button>
       <button onclick="createNoteFormat('linea-tiempo')">📅 Línea de Tiempo</button>
       <button onclick="createNoteFormat('cornell')">🗒️ Método Cornell</button>
       <button onclick="createNoteFormat('cuadro-comp')">📊 Cuadro Comparativo</button>
       <button onclick="createNoteFormat('flujo')">🔄 Diagrama de Flujo</button>
       <button onclick="createNoteFormat('concept-map')">🗺️ Mapa Conceptual</button>
-      <div class="dd-divider"></div>
-      <div class="dd-section-label">Formar con selección</div>
+      <div class="ddd"></div>
+      <div class="ddl">Formar con selección</div>
       <button onclick="openFormatModal()">🎯 Asignar formato a selección</button>
     </div>
   </div>
- 
   <div class="sep"></div>
   <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Conectar</button>
+  <button class="btn" id="btn-snap" onclick="toggleSnap()" title="Snap a grilla (S)">🧲 Snap</button>
   <div class="sep"></div>
-  <button class="btn" id="btn-word" onclick="toggleWordPanel()" style="background:rgba(156,39,176,0.12);color:#9c27b0;">📝 Hoja Resumen</button>
+  <button class="btn" id="btn-word" onclick="toggleWordPanel()" style="background:rgba(156,39,176,.12);color:#9c27b0;">📝 Hoja Resumen</button>
   <div class="sep"></div>
-  <button class="btn" onclick="saveToDatabase()" style="background:#4CAF50;color:white;">💾 Guardar</button>
-  <button class="btn" onclick="exitToWorkspace()" style="background:#f44336;color:white;">🏠 Salir</button>
+  <button class="btn" onclick="saveToDatabase()" style="background:#4CAF50;color:#fff;">💾 Guardar</button>
+  <button class="btn" onclick="exitToWorkspace()" style="background:#f44336;color:#fff;">🏠 Salir</button>
 </div>
- 
-<!-- Barra de tipo de conector -->
-<div id="conn-type-bar">
-  <span style="font-size:12px;font-weight:700;opacity:0.6;">Conector:</span>
-  <button class="conn-btn active" id="ctype-line" onclick="setConnectorType('line')">── Línea</button>
-  <button class="conn-btn" id="ctype-arrow" onclick="setConnectorType('arrow')">→ Flecha</button>
-  <button class="conn-btn" id="ctype-dashed" onclick="setConnectorType('dashed')">╌╌ Punteada</button>
-  <button class="conn-btn" id="ctype-brace" onclick="setConnectorType('brace')">} Llave</button>
-  <button class="conn-btn" onclick="cancelConnect()" style="color:red;border-color:red;">✕ Cancelar</button>
+
+<!-- CONNECTOR TYPE BAR -->
+<div id="conn-type-bar" class="bot-bar">
+  <span style="font-size:12px;font-weight:700;opacity:.6;">Tipo:</span>
+  <button class="cob act" id="ctype-line" onclick="setConnectorType('line')">── Línea</button>
+  <button class="cob" id="ctype-arrow" onclick="setConnectorType('arrow')">→ Flecha</button>
+  <button class="cob" id="ctype-dashed" onclick="setConnectorType('dashed')">╌╌ Punteada</button>
+  <button class="cob" id="ctype-brace" onclick="setConnectorType('brace')">} Llave</button>
+  <button class="cob" id="ctype-orthoH" onclick="setConnectorType('orthoH')">⊢ Ortogonal H</button>
+  <button class="cob" id="ctype-orthoV" onclick="setConnectorType('orthoV')">⊤ Ortogonal V</button>
+  <button class="cob cancel" onclick="cancelConnect()">✕ Cancelar</button>
 </div>
- 
-<!-- Barra de dirección de línea recta -->
-<div id="line-dir-bar">
-  <span style="font-size:12px;font-weight:700;opacity:0.6;">Modo línea recta activo — hacé click en el canvas para dibujar</span>
-  <button class="conn-btn" onclick="cancelStraightLine()" style="color:red;border-color:red;">✕ Cancelar</button>
+
+<!-- CONNECT STATUS BAR -->
+<div id="connect-status-bar" class="bot-bar" style="background:rgba(255,152,0,.12);border-color:#ff9800;">
+  <span id="connect-status-text" style="font-size:13px;font-weight:700;color:#ff9800;"></span>
+  <button class="cob cancel" onclick="cancelConnect()">✕ Cancelar</button>
 </div>
- 
-<!-- Modal de asignar formato -->
-<div id="format-modal">
-  <div id="format-modal-box">
+
+<!-- FORMAT MODAL -->
+<div id="format-modal" class="modal-bg">
+  <div class="modal-box">
     <h3>Asignar formato a selección</h3>
-    <p>Elegí el tipo de apunte. Las reglas se aplicarán a los bloques seleccionados.</p>
+    <p>Elegí el tipo de apunte. Se conectarán y colorearán los bloques seleccionados.</p>
     <button class="fm-btn" onclick="applyFormatToSelection('mindmap')">🧠 Mapa Mental</button>
     <button class="fm-btn" onclick="applyFormatToSelection('esquema')">📋 Esquema</button>
     <button class="fm-btn" onclick="applyFormatToSelection('linea-tiempo')">📅 Línea de Tiempo</button>
     <button class="fm-btn" onclick="applyFormatToSelection('cornell')">🗒️ Cornell</button>
     <button class="fm-btn" onclick="applyFormatToSelection('flujo')">🔄 Diagrama de Flujo</button>
     <button class="fm-btn" onclick="applyFormatToSelection('concept-map')">🗺️ Mapa Conceptual</button>
-    <div style="margin-top:8px;">
-      <button class="fm-btn" onclick="closeFormatModal()" style="color:red;border-color:red;">✕ Cancelar</button>
-    </div>
+    <button class="fm-btn" onclick="closeFormatModal()" style="color:red;border-color:red;margin-top:4px;">✕ Cancelar</button>
   </div>
 </div>
- 
+
 <canvas id="mainCanvas"></canvas>
- 
+
 <div id="word-wrapper">
   <h3 style="margin:0 0 10px;font-size:16px;">Apuntes Formalizados</h3>
   <div id="word-toolbar">
@@ -254,767 +255,1029 @@
   </div>
   <div id="word-editor" contenteditable="true"></div>
 </div>
- 
+
 <script>
-// ════════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════════
-let db = JSON.parse(localStorage.getItem("apuntes_v10_db")) || { users: {} };
-let currentUser = null, currentProject = null;
-let canvas, isConnectMode = false, connectSourceObj = null, rightClickedObject = null;
-let connections = [];      // { fromId, toId, lineRef, type, braceRef? }
-let isLoginMode = true;
-let currentConnectorType = 'line';  // line | arrow | dashed | brace
-let braceFirstNode = null;          // for brace connectors (need 2 targets)
-let straightLineMode = null;        // null | 'h' | 'v' | 'any'
-let straightLineStartPoint = null;
-let isPanningByMouse = false;
- 
-const THEME_COLORS = {
-  light:{ square:'#e3fafc', circle:'#ffebf0', diamond:'#fff0e0', 'post-it':'#fff740' },
-  dark:{ square:'#1a3a4a', circle:'#4a1d2e', diamond:'#3a2a10', 'post-it':'#524e10' }
+// ═══════════ STATE ═══════════
+let db = JSON.parse(localStorage.getItem("apuntes_v12_db")) || { users:{} };
+let currentUser=null, currentProject=null;
+let canvas, isConnectMode=false, connectSourceObj=null, rightClickedObject=null;
+let connections=[];
+let isLoginMode=true;
+let currentConnectorType='line';
+let snapEnabled=false;
+const SNAP=20;
+let canvasBgColor='#f5f7fa';
+let rightClickedConnIdx=null;
+const MAX_HIST=60;
+let history=[], historyIdx=-1, batchSaving=false;
+let isLassoMode=false, lassoStart=null;
+const lassoEl=document.getElementById('lasso-rect');
+// Right-click lasso state
+let rcHoldTimer=null, rcDragging=false, rcStart=null;
+
+const THEME={
+  light:{square:'#e3fafc',circle:'#ffebf0',diamond:'#fff0e0','post-it':'#fff740'},
+  dark:{square:'#1a3a4a',circle:'#4a1d2e',diamond:'#3a2a10','post-it':'#524e10'}
 };
- 
-// Note-format colors
-const FORMAT_COLORS = {
-  'mindmap':   { center:'#ffd6e7', branch:'#c8f0ff', leaf:'#d4ffd4' },
-  'esquema':   { title:'#ffe0b2', item:'#fff8e1', sub:'#f3f8ff' },
-  'linea-tiempo': { node:'#e8eaf6', connector:'#7986cb' },
-  'cornell':   { cue:'#e8f5e9', notes:'#e3f2fd', summary:'#fff3e0' },
-  'cuadro-comp':{ header:'#e1f5fe', cell:'#f9fbe7' },
-  'flujo':     { start:'#c8e6c9', process:'#e3f2fd', decision:'#fff3e0', end:'#ffcdd2' },
-  'concept-map':{ main:'#ede7f6', secondary:'#fce4ec', detail:'#e0f2f1' }
+const FMT={
+  mindmap:{center:'#ffd6e7',branch:'#c8f0ff',leaf:'#d4ffd4'},
+  esquema:{title:'#ffe0b2',item:'#fff8e1'},
+  'linea-tiempo':{node:'#e8eaf6'},
+  cornell:{cue:'#e8f5e9',notes:'#e3f2fd',summary:'#fff3e0'},
+  'cuadro-comp':{header:'#e1f5fe',cell:'#f9fbe7'},
+  flujo:{start:'#c8e6c9',process:'#e3f2fd',decision:'#fff3e0',end:'#ffcdd2'},
+  'concept-map':{main:'#ede7f6',secondary:'#fce4ec',detail:'#e0f2f1'}
 };
- 
-// ════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════
-window.onload = function() {
-  canvas = new fabric.Canvas('mainCanvas', {
-    width: window.innerWidth, height: window.innerHeight,
-    backgroundColor: '#f5f7fa', fireRightClick: true, stopContextMenu: true
+
+// ═══════════ INIT ═══════════
+window.onload=function(){
+  // Block native context menu everywhere
+  document.addEventListener('contextmenu',e=>e.preventDefault(),true);
+
+  canvas=new fabric.Canvas('mainCanvas',{
+    width:window.innerWidth,height:window.innerHeight,
+    backgroundColor:'#f5f7fa',fireRightClick:true,stopContextMenu:true,
+    selection:true
   });
   fabric.Object.prototype.set({
-    transparentCorners:false, cornerColor:'#ffffff', cornerStrokeColor:'#2196F3',
-    borderColor:'#2196F3', cornerStyle:'circle', cornerSize:9,
-    borderDashArray:[4,4], borderScaleFactor:1.5, padding:6
+    transparentCorners:false,cornerColor:'#fff',cornerStrokeColor:'#2196F3',
+    borderColor:'#2196F3',cornerStyle:'circle',cornerSize:9,
+    borderDashArray:[4,4],borderScaleFactor:1.5,padding:6
   });
   setupCanvasEvents();
+  setupKeyboard();
   if(localStorage.getItem("dark_mode_enabled")==="true") toggleDarkMode(true);
   checkAutoLogin();
+  setInterval(()=>{if(currentProject)saveToDatabase(true);},30000);
 };
- 
 window.addEventListener('resize',()=>{
-  if(canvas){ canvas.setWidth(window.innerWidth); canvas.setHeight(window.innerHeight); canvas.renderAll(); }
+  if(canvas){canvas.setWidth(window.innerWidth);canvas.setHeight(window.innerHeight);canvas.renderAll();}
 });
- 
-// ════════════════════════════════════════════════
-//  AUTO-LOGIN  (1 cuenta → entra directo)
-// ════════════════════════════════════════════════
-function checkAutoLogin() {
-  let users = Object.keys(db.users);
-  if(users.length === 1) {
-    // Auto-select but still ask password for security
-    document.getElementById("username").value = users[0];
-    document.getElementById("username").readOnly = true;
-  }
+
+// ═══════════ UNDO/REDO ═══════════
+function snapshot(){
+  if(batchSaving) return;
+  let snap=JSON.stringify({objects:serializeObjects(),connections:connections.map(c=>({fromId:c.fromId,toId:c.toId,type:c.type||'line'}))});
+  history=history.slice(0,historyIdx+1);
+  history.push(snap); if(history.length>MAX_HIST) history.shift();
+  historyIdx=history.length-1;
+}
+function undoAction(){
+  if(historyIdx<=0){showToast('Sin más pasos');return;}
+  historyIdx--; restoreSnap(JSON.parse(history[historyIdx])); showToast('↩ Deshacer');
+}
+function redoAction(){
+  if(historyIdx>=history.length-1){showToast('Sin pasos adelante');return;}
+  historyIdx++; restoreSnap(JSON.parse(history[historyIdx])); showToast('↪ Rehacer');
+}
+function restoreSnap(s){
+  batchSaving=true; canvas.clear(); connections=[];
+  if(s.objects) s.objects.forEach(o=>{
+    if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    addBlock(o.type,o);
+  });
+  setTimeout(()=>{
+    if(s.connections) s.connections.forEach(c=>{
+      let o1=findObj(c.fromId), o2=findObj(c.toId);
+      if(o1&&o2) createConn(o1,o2,c.type||'line');
+    });
+    canvas.renderAll(); batchSaving=false;
+  },200);
+}
+
+// ═══════════ KEYBOARD ═══════════
+function setupKeyboard(){
+  document.addEventListener('keydown',e=>{
+    let ae=document.activeElement;
+    let inInput=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable||ae.getAttribute('contenteditable'));
+    if(inInput) return;
+    if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key==='z'){e.preventDefault();undoAction();}
+    else if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&e.key==='z'))){e.preventDefault();redoAction();}
+    else if((e.ctrlKey||e.metaKey)&&e.key==='a'){e.preventDefault();selectAll();}
+    else if((e.ctrlKey||e.metaKey)&&e.key==='d'){e.preventDefault();duplicateCurrentObject();}
+    else if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveToDatabase();}
+    else if(e.key==='Delete'||e.key==='Backspace'){
+      let act=canvas.getActiveObjects();
+      if(act.length){rightClickedObject=act.length>1?act:act[0];deleteCurrentObject();}
+    }
+    else if(e.key==='Escape'){cancelConnect();closeLasso();closeFormatModal();}
+    else if((e.key==='s'||e.key==='S')&&!e.ctrlKey) toggleSnap();
+  });
+}
+function selectAll(){
+  let objs=canvas.getObjects().filter(o=>!o.isLinkedText&&o.selectable);
+  if(!objs.length) return;
+  canvas.discardActiveObject();
+  canvas.setActiveObject(new fabric.ActiveSelection(objs,{canvas}));
+  canvas.renderAll();
+}
+
+// ═══════════ SNAP ═══════════
+function toggleSnap(){
+  snapEnabled=!snapEnabled;
+  document.getElementById('btn-snap').classList.toggle('btn-active',snapEnabled);
+  document.getElementById('snap-hint').style.display=snapEnabled?'block':'none';
+}
+function sv(v){return snapEnabled?Math.round(v/SNAP)*SNAP:v;}
+
+// ═══════════ CANVAS BG / CENTER ═══════════
+function setCanvasBg(c){canvasBgColor=c;canvas.setBackgroundColor(c,()=>canvas.renderAll());}
+function centerCanvas(){canvas.setViewportTransform([1,0,0,1,0,0]);updateLines();updateZoomUI();}
+function updateZoomUI(){document.getElementById('zoom-indicator').innerText=Math.round(canvas.getZoom()*100)+'%';}
+
+// ═══════════ AUTH ═══════════
+function checkAutoLogin(){
+  let users=Object.keys(db.users);
+  if(users.length===1){document.getElementById("username").value=users[0];document.getElementById("username").readOnly=true;document.getElementById("password").focus();}
   renderSavedAccountsUI();
 }
- 
-function renderSavedAccountsUI() {
-  let users = Object.keys(db.users);
-  let section = document.getElementById("saved-accounts-section");
-  let list = document.getElementById("saved-accounts-list");
-  list.innerHTML = "";
-  if(users.length === 0) { section.classList.add("hidden"); return; }
-  section.classList.remove("hidden");
-  users.forEach(u => {
-    let li = document.createElement("li");
-    li.className = "saved-account-item";
-    li.innerHTML = `<span class="acc-name">👤 ${u}</span><span class="acc-badge">Guardado</span>`;
-    li.onclick = () => {
-      document.getElementById("username").value = u;
-      document.getElementById("username").readOnly = false;
-      document.getElementById("password").focus();
-    };
+function renderSavedAccountsUI(){
+  let users=Object.keys(db.users);
+  let sec=document.getElementById("saved-accounts-section"),list=document.getElementById("saved-accounts-list");
+  list.innerHTML="";
+  if(!users.length){sec.classList.add("hidden");return;}
+  sec.classList.remove("hidden");
+  users.forEach(u=>{
+    let li=document.createElement("li"); li.className="saved-account-item";
+    li.innerHTML=`<span>👤 ${u}</span><span class="acc-badge">Guardado</span>`;
+    li.onclick=()=>{document.getElementById("username").value=u;document.getElementById("username").readOnly=false;document.getElementById("password").focus();};
     list.appendChild(li);
   });
 }
- 
-// ════════════════════════════════════════════════
-//  AUTH
-// ════════════════════════════════════════════════
-function toggleAuthMode() {
-  isLoginMode = !isLoginMode;
-  document.getElementById("auth-title").innerText = isLoginMode ? "Mis Apuntes Pro" : "Crear Cuenta Nueva";
-  document.getElementById("auth-submit-btn").innerText = isLoginMode ? "Ingresar al Tablero" : "Registrarse y Entrar";
-  document.getElementById("auth-toggle-text").innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
+function toggleAuthMode(){
+  isLoginMode=!isLoginMode;
+  document.getElementById("auth-title").innerText=isLoginMode?"Mis Apuntes Pro":"Crear Cuenta Nueva";
+  document.getElementById("auth-submit-btn").innerText=isLoginMode?"Ingresar al Tablero":"Registrarse y Entrar";
+  document.getElementById("auth-toggle-text").innerText=isLoginMode?"¿No tienes cuenta? Regístrate aquí":"¿Ya tienes cuenta? Inicia sesión";
 }
- 
-function handleAuthAction() {
-  let u = document.getElementById("username").value.trim();
-  let p = document.getElementById("password").value.trim();
-  if(!u||!p) return alert("Por favor completá todos los campos.");
-  if(isLoginMode) {
-    if(!db.users[u]) return alert("El usuario no existe. Por favor registrate.");
-    if(db.users[u].password !== p) return alert("Contraseña incorrecta.");
-    currentUser = u; showProjectWorkspace();
+function handleAuthAction(){
+  let u=document.getElementById("username").value.trim(),p=document.getElementById("password").value.trim();
+  if(!u||!p) return alert("Completá todos los campos.");
+  if(isLoginMode){
+    if(!db.users[u]) return alert("El usuario no existe.");
+    if(db.users[u].password!==p) return alert("Contraseña incorrecta.");
+    currentUser=u; showProjectWorkspace();
   } else {
-    if(db.users[u]) return alert("Este usuario ya está registrado.");
-    db.users[u]={ password:p, projects:{}, lastOpen:null };
-    saveDB(); currentUser = u; alert("¡Cuenta creada!"); showProjectWorkspace();
+    if(db.users[u]) return alert("Usuario ya registrado.");
+    db.users[u]={password:p,projects:{},lastOpen:null}; saveDB(); currentUser=u; showProjectWorkspace();
   }
 }
- 
-function showProjectWorkspace() {
+function showProjectWorkspace(){
   document.getElementById("login-step").classList.add("hidden");
   document.getElementById("project-step").classList.remove("hidden");
   document.getElementById("welcome-text").innerText=`Conectado como: ${currentUser}`;
   renderProjectList();
 }
- 
-function renderProjectList() {
+function renderProjectList(){
   let c=document.getElementById("project-list-container"); c.innerHTML="";
   let projects=db.users[currentUser].projects;
   for(let n in projects){
-    let li=document.createElement("li"); li.className="project-item"; li.innerText=n;
-    li.onclick=()=>openProject(n); c.appendChild(li);
+    let li=document.createElement("li"); li.className="project-item";
+    let ns=document.createElement("span"); ns.innerText=n; ns.style.cssText="flex:1;cursor:pointer;text-align:left;"; ns.onclick=()=>openProject(n);
+    let acts=document.createElement("div"); acts.className="pi-actions";
+    let rb=document.createElement("button"); rb.className="pi-btn"; rb.innerText="✏️"; rb.title="Renombrar"; rb.onclick=e=>{e.stopPropagation();renameProject(n);};
+    let db2=document.createElement("button"); db2.className="pi-btn del"; db2.innerText="🗑️"; db2.title="Borrar"; db2.onclick=e=>{e.stopPropagation();deleteProject(n);};
+    acts.appendChild(rb); acts.appendChild(db2); li.appendChild(ns); li.appendChild(acts); c.appendChild(li);
   }
 }
- 
-function handleCreateProject() {
+function renameProject(old){
+  let nw=prompt("Nuevo nombre:",old); if(!nw||nw===old) return;
+  if(db.users[currentUser].projects[nw]) return alert("Ya existe ese nombre.");
+  db.users[currentUser].projects[nw]=db.users[currentUser].projects[old];
+  delete db.users[currentUser].projects[old]; saveDB(); renderProjectList();
+}
+function deleteProject(name){
+  if(!confirm(`¿Borrar "${name}"? No se puede deshacer.`)) return;
+  delete db.users[currentUser].projects[name]; saveDB(); renderProjectList();
+}
+function handleCreateProject(){
   let name=document.getElementById("new-project-name").value.trim(); if(!name) return;
   if(db.users[currentUser].projects[name]) return alert("Este cuaderno ya existe.");
   db.users[currentUser].projects[name]={objects:[],connections:[],wordText:""};
   saveDB(); renderProjectList(); openProject(name);
 }
- 
-function openProject(name) {
+function openProject(name){
   currentProject=name; db.users[currentUser].lastOpen=name; saveDB();
   document.getElementById("auth-screen").classList.add("hidden");
   document.getElementById("toolbar").classList.remove("hidden");
   loadProjectData();
 }
- 
-function exitToWorkspace() {
+function exitToWorkspace(){
   saveToDatabase(); currentProject=null;
   document.getElementById("toolbar").classList.add("hidden");
   document.getElementById("word-wrapper").classList.remove("open");
   document.getElementById("btn-word").classList.remove("btn-active");
-  cancelConnect(); cancelStraightLine();
-  canvas.clear(); connections=[];
+  cancelConnect(); closeLasso();
+  canvas.clear(); connections=[]; history=[]; historyIdx=-1;
   document.getElementById("auth-screen").classList.remove("hidden");
   document.getElementById("login-step").classList.remove("hidden");
   document.getElementById("project-step").classList.add("hidden");
   document.getElementById("username").readOnly=false;
   renderSavedAccountsUI();
 }
- 
-function saveDB(){ localStorage.setItem("apuntes_v10_db",JSON.stringify(db)); }
+function saveDB(){localStorage.setItem("apuntes_v12_db",JSON.stringify(db));}
 function exportDatabaseBackup(){
   let d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(db));
-  let a=document.createElement('a'); a.href=d; a.download=`backup_apuntes_${Date.now()}.json`;
-  document.body.appendChild(a); a.click(); a.remove();
+  let a=document.createElement('a'); a.href=d; a.download=`backup_${Date.now()}.json`; document.body.appendChild(a); a.click(); a.remove();
 }
-function triggerImportBackup(){ document.getElementById("import-file-input").click(); }
-window.importDatabase=function(event){
-  let file=event.target.files[0]; if(!file) return;
+function triggerImportBackup(){document.getElementById("import-file-input").click();}
+window.importDatabase=function(ev){
+  let f=ev.target.files[0]; if(!f) return;
   let r=new FileReader();
-  r.onload=e=>{ try{ let d=JSON.parse(e.target.result); if(d.users){ db=d; saveDB(); alert("¡Backup cargado!"); location.reload(); } else alert("Archivo inválido."); } catch(e){ alert("Error al procesar."); } };
-  r.readAsText(file);
+  r.onload=e=>{try{let d=JSON.parse(e.target.result);if(d.users){db=d;saveDB();alert("¡Backup cargado!");location.reload();}else alert("Archivo inválido.");}catch(e){alert("Error al procesar.");}};
+  r.readAsText(f);
 };
- 
-// ════════════════════════════════════════════════
-//  DARK MODE
-// ════════════════════════════════════════════════
+
+// ═══════════ DARK MODE ═══════════
 function toggleDarkMode(force=false){
   let body=document.body;
   if(!force) body.classList.toggle("dark-mode"); else body.classList.add("dark-mode");
   let isDark=body.classList.contains("dark-mode");
   localStorage.setItem("dark_mode_enabled",isDark);
   document.getElementById("dark-toggle-btn").innerText=isDark?"☀️":"🌙";
-  let bg=isDark?'#121216':'#f5f7fa';
+  canvasBgColor=isDark?'#121216':'#f5f7fa';
   if(canvas){
-    canvas.setBackgroundColor(bg,()=>{
+    canvas.setBackgroundColor(canvasBgColor,()=>{
       canvas.getObjects().forEach(o=>{
         if(o.customType==='text-only'||o.isLinkedText){
           if(isDark&&o.fill==='#333333') o.set('fill','#ffffff');
           if(!isDark&&o.fill==='#ffffff') o.set('fill','#333333');
         }
-        if(o.customType&&o.customType!=='text-only'){
-          let t=o.customType; let from=isDark?THEME_COLORS.light:THEME_COLORS.dark;
-          let to=isDark?THEME_COLORS.dark:THEME_COLORS.light;
-          if(o.fill===from[t]) o.set('fill',to[t]);
+        if(o.customType&&!['text-only','straight-line'].includes(o.customType)){
+          let from=isDark?THEME.light:THEME.dark, to=isDark?THEME.dark:THEME.light;
+          if(from[o.customType]&&o.fill===from[o.customType]) o.set('fill',to[o.customType]);
         }
       }); canvas.renderAll();
     });
   }
 }
- 
-// ════════════════════════════════════════════════
-//  WORD PANEL
-// ════════════════════════════════════════════════
+
+// ═══════════ WORD PANEL ═══════════
 function toggleWordPanel(){
-  let p=document.getElementById("word-wrapper"); let b=document.getElementById("btn-word");
+  let p=document.getElementById("word-wrapper"),b=document.getElementById("btn-word");
   p.classList.toggle("open"); b.classList.toggle("btn-active",p.classList.contains("open"));
 }
-function execWordCmd(cmd){ document.execCommand(cmd,false,null); document.getElementById("word-editor").focus(); }
- 
-// ════════════════════════════════════════════════
-//  ADD BLOCK
-// ════════════════════════════════════════════════
-function addUnifiedBlock(type, options={}){
-  let left=options.left!==undefined?options.left:canvas.getWidth()/2;
-  let top=options.top!==undefined?options.top:canvas.getHeight()/2;
-  // Convert from viewport to canvas coords if using pan/zoom
-  if(!options.fromLoad){
+function execWordCmd(cmd){document.execCommand(cmd,false,null);document.getElementById("word-editor").focus();}
+
+// ═══════════ SHAPE DIMENSIONS ═══════════
+// Returns the visual width/height of a shape in canvas units (accounting for scale)
+function getShapeDims(shape){
+  let w,h;
+  if(shape.customType==='circle') {w=shape.radius*2*shape.scaleX; h=shape.radius*2*shape.scaleY;}
+  else if(shape.customType==='diamond'){w=150*shape.scaleX; h=110*shape.scaleY;}
+  else {w=(shape.width||120)*shape.scaleX; h=(shape.height||95)*shape.scaleY;}
+  return {w,h};
+}
+
+// ═══════════ ADD BLOCK ═══════════
+function addBlock(type, opts={}){
+  // Screen-center default, converted to canvas coords
+  let left=opts.left!==undefined?opts.left:canvas.getWidth()/2;
+  let top=opts.top!==undefined?opts.top:canvas.getHeight()/2;
+  if(!opts.fromLoad){
     let vpt=canvas.viewportTransform;
-    left=(left-vpt[4])/vpt[0];
-    top=(top-vpt[5])/vpt[3];
+    left=(left-vpt[4])/vpt[0]; top=(top-vpt[5])/vpt[3];
+    left=sv(left); top=sv(top);
   }
-  let id=options.id||"block_"+Date.now()+Math.floor(Math.random()*9999);
-  let savedText=options.text!==undefined?options.text:"";
+  let id=opts.id||"b_"+Date.now()+Math.floor(Math.random()*9999);
+  let savedText=opts.text!==undefined?opts.text:"";
   let isDark=document.body.classList.contains("dark-mode");
-  let defaultTextColor=isDark?'#ffffff':'#333333';
-  let defaultBg=options.bg||(isDark?THEME_COLORS.dark[type]:THEME_COLORS.light[type])||'#e3fafc';
- 
-  let textWidth=200;
-  if(type==='square') textWidth=120;
-  if(type==='circle') textWidth=90;
-  if(type==='post-it') textWidth=100;
-  if(type==='diamond') textWidth=100;
- 
-  let textObj=new fabric.Textbox(savedText,{
-    width:textWidth, fontSize:options.fontSize||14, fontFamily:options.fontFamily||'Segoe UI',
-    fill:options.textColor||defaultTextColor, textAlign:'center',
-    originX:'center', originY:'center', left:left, top:top,
-    fontWeight:options.fontWeight||'normal', fontStyle:options.fontStyle||'normal',
-    selectable:false, evented:false, isLinkedText:true, splitByGrapheme:false
-  });
- 
+  let defColor=isDark?'#ffffff':'#333333';
+  let defBg=opts.bg||(isDark?THEME.dark[type]:THEME.light[type])||'#e3fafc';
+
+  // ── TEXT ONLY ──
   if(type==='text-only'){
-    if(savedText==="") textObj.text="Doble clic para editar...";
-    textObj.set({ selectable:true, evented:true, isLinkedText:false, id:id, customType:'text-only' });
-    textObj.on('editing:entered',()=>{ if(textObj.text==="Doble clic para editar..."){ textObj.text=""; canvas.renderAll(); } });
-    canvas.add(textObj); canvas.setActiveObject(textObj); canvas.renderAll(); return;
+    let t=new fabric.Textbox(savedText||"Doble clic para editar...",{
+      width:opts.width||200, fontSize:opts.fontSize||14, fontFamily:opts.fontFamily||'Segoe UI',
+      fill:opts.textColor||defColor, textAlign:opts.textAlign||'left',
+      originX:'center', originY:'top',
+      left:left, top:top,
+      fontWeight:opts.fontWeight||'normal', fontStyle:opts.fontStyle||'normal',
+      selectable:true, evented:true, isLinkedText:false, id:id, customType:'text-only',
+      splitByGrapheme:false
+    });
+    t.on('editing:entered',()=>{if(t.text==="Doble clic para editar..."){t.text="";canvas.renderAll();}});
+    t.on('editing:exited',()=>snapshot());
+    canvas.add(t); canvas.setActiveObject(t); canvas.renderAll(); return t;
   }
- 
+
+  // ── SHAPE ──
+  // Determine base shape dimensions
+  let baseW=140, baseH=95;
+  if(type==='circle'){baseW=110; baseH=110;}
+  else if(type==='post-it'){baseW=120; baseH=120;}
+  else if(type==='diamond'){baseW=150; baseH=110;}
+
+  let scaleX=opts.scaleX||1, scaleY=opts.scaleY||1;
   let shape;
-  if(type==='square'){
-    shape=new fabric.Rect({ width:140, height:95, fill:defaultBg, rx:10, ry:10 });
-  } else if(type==='circle'){
-    shape=new fabric.Circle({ radius:55, fill:defaultBg });
-  } else if(type==='post-it'){
-    shape=new fabric.Rect({ width:120, height:120, fill:defaultBg });
-  } else if(type==='diamond'){
-    let pts=[{x:75,y:0},{x:150,y:55},{x:75,y:110},{x:0,y:55}];
-    shape=new fabric.Polygon(pts,{ fill:defaultBg });
-  }
- 
+  if(type==='square'){shape=new fabric.Rect({width:baseW,height:baseH,fill:defBg,rx:10,ry:10});}
+  else if(type==='circle'){shape=new fabric.Circle({radius:55,fill:defBg});}
+  else if(type==='post-it'){shape=new fabric.Rect({width:baseW,height:baseH,fill:defBg});}
+  else if(type==='diamond'){shape=new fabric.Polygon([{x:75,y:0},{x:150,y:55},{x:75,y:110},{x:0,y:55}],{fill:defBg});}
+  else return null;
+
   shape.set({
     left:left, top:top, originX:'center', originY:'center',
-    id:id, customType:type, textRef:textObj,
-    scaleX:options.scaleX||1, scaleY:options.scaleY||1,
-    noteFormat:options.noteFormat||null
+    id:id, customType:type,
+    scaleX:scaleX, scaleY:scaleY,
+    noteFormat:opts.noteFormat||null,
+    stroke:opts.stroke||null, strokeWidth:opts.strokeWidth||0
   });
+
+  // ── TEXTBOX linked to shape ──
+  // Compute text wrap width from shape's actual pixel size
+  let textPadding=16;
+  let textW=Math.max(40, baseW*scaleX - textPadding);
+  if(type==='circle') textW=Math.max(40,(110*scaleX)*0.75);
+  if(type==='diamond') textW=Math.max(40,(baseW*scaleX)*0.55);
+
+  let textObj=new fabric.Textbox(savedText,{
+    width:textW,
+    fontSize:opts.fontSize||14, fontFamily:opts.fontFamily||'Segoe UI',
+    fill:opts.textColor||defColor, textAlign:opts.textAlign||'center',
+    originX:'center', originY:'center',
+    left:left, top:top,
+    fontWeight:opts.fontWeight||'normal', fontStyle:opts.fontStyle||'normal',
+    selectable:false, evented:false, isLinkedText:true,
+    splitByGrapheme:false
+  });
+
+  shape.textRef=textObj;
   textObj.shapeRef=shape;
- 
+
+  // Resize shape to fit text height
+  function fitShapeToText(){
+    let tH=textObj.calcTextHeight?textObj.calcTextHeight():textObj.height;
+    let minH=type==='circle'?baseH:baseH;
+    let needed=Math.max(minH, tH+textPadding);
+    if(type==='square'||type==='post-it'){
+      let newH=needed/scaleY;
+      shape.set('height',newH);
+    } else if(type==='circle'){
+      let r=Math.max(55, needed/2/scaleX);
+      shape.set('radius',r);
+    }
+    // Realign text vertically
+    textObj.set('top',shape.top);
+    shape.setCoords(); textObj.setCoords();
+    canvas.renderAll();
+  }
+
+  // When shape is scaled horizontally, update text wrap width
+  function updateTextWidthFromShape(){
+    let sX=shape.scaleX, sY=shape.scaleY;
+    let newW;
+    if(type==='circle') newW=Math.max(40,(shape.radius*2*sX)*0.75);
+    else if(type==='diamond') newW=Math.max(40,(150*sX)*0.55);
+    else newW=Math.max(40,(shape.width||baseW)*sX-textPadding);
+    textObj.set('width',newW);
+    fitShapeToText();
+  }
+
   shape.on('mousedblclick',()=>{
     textObj.selectable=true; textObj.evented=true;
     canvas.setActiveObject(textObj); textObj.enterEditing();
   });
   textObj.on('editing:exited',()=>{
     textObj.selectable=false; textObj.evented=false;
-    canvas.setActiveObject(shape); canvas.renderAll();
+    fitShapeToText();
+    canvas.setActiveObject(shape); canvas.renderAll(); snapshot();
   });
- 
-  if(options.hasGlow) shape.set('shadow',new fabric.Shadow({color:'#2196F3',blur:25,offsetX:0,offsetY:0}));
- 
+  textObj.on('changed',()=>fitShapeToText());
+  shape.on('scaling',()=>updateTextWidthFromShape());
+  shape.on('scaled',()=>{updateTextWidthFromShape();snapshot();});
+
+  if(opts.hasGlow) shape.set('shadow',new fabric.Shadow({color:'#2196F3',blur:25,offsetX:0,offsetY:0}));
+
   canvas.add(shape); canvas.add(textObj); canvas.setActiveObject(shape);
-  syncTextsAndShapes();
+  fitShapeToText();
+  syncText(); updateLines();
   return shape;
 }
- 
-// ════════════════════════════════════════════════
-//  STRAIGHT LINES
-// ════════════════════════════════════════════════
-function startStraightLineMode(dir){
-  straightLineMode=dir;
-  document.getElementById("line-dir-bar").classList.add("visible");
-  canvas.defaultCursor='crosshair';
-  canvas.selection=false;
+
+function addStraightLineObj(o){
+  let l=new fabric.Line([o.x1,o.y1,o.x2,o.y2],{stroke:'#555',strokeWidth:3,selectable:true,evented:true,id:o.id,customType:'straight-line',lineDir:o.lineDir});
+  canvas.add(l); return l;
 }
-function cancelStraightLine(){
-  straightLineMode=null; straightLineStartPoint=null;
-  document.getElementById("line-dir-bar").classList.remove("visible");
-  canvas.defaultCursor='default'; canvas.selection=true;
+
+// ═══════════ DUPLICATE ═══════════
+function duplicateCurrentObject(){
+  let targets=rightClickedObject?
+    (Array.isArray(rightClickedObject)?rightClickedObject:[rightClickedObject]):
+    canvas.getActiveObjects().filter(o=>!o.isLinkedText);
+  if(!targets.length) return;
+  targets.forEach(obj=>{
+    if(obj.customType==='straight-line'){
+      addStraightLineObj({...obj,x1:obj.x1+30,y1:obj.y1+30,x2:obj.x2+30,y2:obj.y2+30,id:'b_'+Date.now()+Math.random()}); return;
+    }
+    let isTO=obj.customType==='text-only'; let t=isTO?obj:obj.textRef;
+    addBlock(obj.customType,{
+      left:obj.left+40,top:obj.top+40,bg:obj.fill,
+      text:t?t.text:"",fontSize:t?t.fontSize:14,fontFamily:t?t.fontFamily:'Segoe UI',
+      textColor:t?t.fill:'#333',fontWeight:t?t.fontWeight:'normal',
+      fontStyle:t?t.fontStyle:'normal',hasGlow:!!obj.shadow,
+      stroke:obj.stroke,strokeWidth:obj.strokeWidth,fromLoad:true
+    });
+  });
+  document.getElementById("ctx").style.display="none";
+  canvas.renderAll(); snapshot();
 }
- 
-// ════════════════════════════════════════════════
-//  CONNECTORS
-// ════════════════════════════════════════════════
+
+// ═══════════ CONNECTORS ═══════════
 function setConnectorType(t){
   currentConnectorType=t;
-  ['line','arrow','dashed','brace'].forEach(x=>{
-    document.getElementById('ctype-'+x)?.classList.toggle('active',x===t);
+  ['line','arrow','dashed','brace','orthoH','orthoV'].forEach(x=>{
+    let el=document.getElementById('ctype-'+x); if(el) el.classList.toggle('act',x===t);
   });
 }
- 
+
 function toggleConnectMode(){
-  isConnectMode=!isConnectMode; connectSourceObj=null; braceFirstNode=null;
+  isConnectMode=!isConnectMode; connectSourceObj=null;
   let btn=document.getElementById("btn-connect-mode");
   if(isConnectMode){
-    btn.innerText="⚡ Seleccioná destino..."; btn.classList.add("btn-active");
-    document.getElementById("conn-type-bar").classList.add("visible");
-  } else { cancelConnect(); }
+    btn.innerText="⚡ Seleccioná origen..."; btn.classList.add("btn-active");
+    document.getElementById("conn-type-bar").classList.add("vis");
+    showConnectStatus("Hacé click en el ORIGEN de la conexión");
+  } else cancelConnect();
 }
- 
 function cancelConnect(){
-  isConnectMode=false; connectSourceObj=null; braceFirstNode=null;
-  let btn=document.getElementById("btn-connect-mode");
-  btn.innerText="⚡ Conectar"; btn.classList.remove("btn-active");
-  document.getElementById("conn-type-bar").classList.remove("visible");
+  isConnectMode=false; connectSourceObj=null;
+  document.getElementById("btn-connect-mode").innerText="⚡ Conectar";
+  document.getElementById("btn-connect-mode").classList.remove("btn-active");
+  document.getElementById("conn-type-bar").classList.remove("vis");
+  document.getElementById("connect-status-bar").classList.remove("vis");
 }
- 
+function showConnectStatus(msg){
+  document.getElementById("connect-status-text").innerText=msg;
+  document.getElementById("connect-status-bar").classList.add("vis");
+}
 function startConnectingFromMenu(){
   if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
   isConnectMode=true; connectSourceObj=rightClickedObject;
   document.getElementById("btn-connect-mode").innerText="⚡ Seleccioná destino...";
   document.getElementById("btn-connect-mode").classList.add("btn-active");
-  document.getElementById("conn-type-bar").classList.add("visible");
-  document.getElementById("context-menu").style.display="none";
+  document.getElementById("conn-type-bar").classList.add("vis");
+  showConnectStatus(`Origen: "${getObjLabel(rightClickedObject)}" — Hacé click en el DESTINO`);
+  document.getElementById("ctx").style.display="none";
 }
- 
-function createConnection(obj1, obj2, type){
-  if(type==='brace'){
-    createBraceConnection(obj1, obj2); return;
+function getObjLabel(obj){
+  let t=obj.customType==='text-only'?obj:obj.textRef;
+  let txt=t&&t.text?t.text.trim().substring(0,20):"bloque";
+  return txt||"bloque";
+}
+
+// Resolve the "connectable" object from a click target
+function resolveConnectable(target){
+  if(!target) return null;
+  // text-only can connect
+  if(target.isLinkedText&&target.shapeRef) return target.shapeRef;
+  if(target.customType==='text-only') return target;
+  if(target.customType&&target.customType!=='straight-line') return target;
+  return null;
+}
+
+function createConn(obj1,obj2,type){
+  // Remove any existing connection between these two (allows replacing)
+  let existing=connections.findIndex(c=>
+    (c.fromId===obj1.id&&c.toId===obj2.id)||(c.fromId===obj2.id&&c.toId===obj1.id)
+  );
+  if(existing!==-1){
+    let old=connections[existing];
+    if(old.braceLines) old.braceLines.forEach(l=>canvas.remove(l));
+    else{if(old.lineRef)canvas.remove(old.lineRef);if(old.arrowRef)canvas.remove(old.arrowRef);}
+    connections.splice(existing,1);
   }
-  let p1=obj1.getCenterPoint(); let p2=obj2.getCenterPoint();
-  let lineOpts={ stroke:'#888888', strokeWidth:3, selectable:false, evented:false };
-  if(type==='dashed') lineOpts.strokeDashArray=[8,5];
- 
-  let lineObj;
+
+  if(type==='brace'){createBraceConn(obj1,obj2);return;}
+  let p1=getCp(obj1),p2=getCp(obj2);
+  let opts={stroke:'#666',strokeWidth:2.5,selectable:false,evented:false};
+  if(type==='dashed') opts.strokeDashArray=[8,5];
+
+  if(type==='orthoH'||type==='orthoV'){
+    // Orthogonal (L-shaped) connector
+    createOrthoConn(obj1,obj2,type); return;
+  }
+
+  let lineObj=new fabric.Line([p1.x,p1.y,p2.x,p2.y],opts);
+  canvas.add(lineObj); canvas.sendToBack(lineObj);
+
   if(type==='arrow'){
-    // Arrow: line + triangle head
-    lineObj=new fabric.Line([p1.x,p1.y,p2.x,p2.y],lineOpts);
-    canvas.add(lineObj); canvas.sendToBack(lineObj);
-    let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x)*180/Math.PI;
-    let arrowHead=new fabric.Triangle({
-      width:14,height:14,fill:'#888888',
-      left:p2.x,top:p2.y,angle:angle+90,
-      originX:'center',originY:'center',selectable:false,evented:false
+    // Proper arrow: shorten line to not overlap arrowhead
+    let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
+    let headLen=14;
+    let lx2=p2.x-Math.cos(angle)*headLen*0.7;
+    let ly2=p2.y-Math.sin(angle)*headLen*0.7;
+    lineObj.set({x2:lx2,y2:ly2});
+    let angleDeg=angle*180/Math.PI;
+    let ah=new fabric.Triangle({
+      width:14,height:18,fill:'#666',
+      left:p2.x,top:p2.y,
+      angle:angleDeg+90,
+      originX:'center',originY:'center',
+      selectable:false,evented:false
     });
-    canvas.add(arrowHead); canvas.sendToBack(arrowHead);
-    connections.push({fromId:obj1.id,toId:obj2.id,lineRef:lineObj,arrowRef:arrowHead,type:'arrow'});
+    canvas.add(ah); canvas.bringToFront(ah);
+    connections.push({fromId:obj1.id,toId:obj2.id,lineRef:lineObj,arrowRef:ah,type:'arrow'});
   } else {
-    lineObj=new fabric.Line([p1.x,p1.y,p2.x,p2.y],lineOpts);
-    canvas.add(lineObj); canvas.sendToBack(lineObj);
-    connections.push({fromId:obj1.id,toId:obj2.id,lineRef:lineObj,type:type});
+    connections.push({fromId:obj1.id,toId:obj2.id,lineRef:lineObj,type:type||'line'});
   }
 }
- 
-// Brace connector: one line from obj1 to midpoint, brace shape, then to obj2
-function createBraceConnection(obj1, obj2){
-  let p1=obj1.getCenterPoint(); let p2=obj2.getCenterPoint();
-  // midpoint on the right (assuming horizontal layout)
-  let midX=Math.max(p1.x,p2.x)+80;
-  let midY=(p1.y+p2.y)/2;
- 
-  let line1=new fabric.Line([p1.x,p1.y,midX,p1.y],{stroke:'#555',strokeWidth:3,selectable:false,evented:false});
-  let line2=new fabric.Line([p2.x,p2.y,midX,p2.y],{stroke:'#555',strokeWidth:3,selectable:false,evented:false});
-  let lineV=new fabric.Line([midX,p1.y,midX,p2.y],{stroke:'#555',strokeWidth:3,selectable:false,evented:false});
-  let lineTip=new fabric.Line([midX,midY,midX+30,midY],{stroke:'#555',strokeWidth:3,selectable:false,evented:false});
- 
-  [line1,line2,lineV,lineTip].forEach(l=>{canvas.add(l);canvas.sendToBack(l);});
-  connections.push({
-    fromId:obj1.id,toId:obj2.id,type:'brace',
-    lineRef:line1, braceLines:[line1,line2,lineV,lineTip]
-  });
+
+function createOrthoConn(obj1,obj2,type){
+  let p1=getCp(obj1),p2=getCp(obj2);
+  // H: go horizontal first then vertical; V: vertical first
+  let midX=type==='orthoH'?(p1.x+p2.x)/2:p1.x;
+  let midY=type==='orthoV'?(p1.y+p2.y)/2:p1.y;
+  let ex=type==='orthoH'?p2.x:p1.x;
+  let ey=type==='orthoV'?p2.y:p1.y;
+
+  let ls=[
+    new fabric.Line([p1.x,p1.y, type==='orthoH'?midX:p1.x, type==='orthoH'?p1.y:midY],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false}),
+    new fabric.Line([type==='orthoH'?midX:p1.x, type==='orthoH'?p1.y:midY, type==='orthoH'?midX:p2.x, type==='orthoH'?p2.y:midY],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false}),
+    new fabric.Line([type==='orthoH'?midX:p2.x, type==='orthoH'?p2.y:midY, p2.x,p2.y],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false})
+  ];
+  ls.forEach(l=>{canvas.add(l);canvas.sendToBack(l);});
+  connections.push({fromId:obj1.id,toId:obj2.id,type:type,orthoLines:ls,lineRef:ls[0]});
 }
- 
+
+function createBraceConn(obj1,obj2){
+  let p1=getCp(obj1),p2=getCp(obj2);
+  let midX=Math.max(p1.x,p2.x)+80,midY=(p1.y+p2.y)/2;
+  let ls=[
+    new fabric.Line([p1.x,p1.y,midX,p1.y],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false}),
+    new fabric.Line([p2.x,p2.y,midX,p2.y],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false}),
+    new fabric.Line([midX,p1.y,midX,p2.y],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false}),
+    new fabric.Line([midX,midY,midX+30,midY],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false})
+  ];
+  ls.forEach(l=>{canvas.add(l);canvas.sendToBack(l);});
+  connections.push({fromId:obj1.id,toId:obj2.id,type:'brace',lineRef:ls[0],braceLines:ls});
+}
+
+function deleteConnector(){
+  if(rightClickedConnIdx===null) return;
+  let c=connections[rightClickedConnIdx];
+  removeConnVisuals(c);
+  connections.splice(rightClickedConnIdx,1);
+  rightClickedConnIdx=null;
+  document.getElementById("ctx").style.display="none";
+  canvas.renderAll(); snapshot();
+}
+function removeConnVisuals(c){
+  if(c.braceLines) c.braceLines.forEach(l=>canvas.remove(l));
+  else if(c.orthoLines) c.orthoLines.forEach(l=>canvas.remove(l));
+  else{if(c.lineRef)canvas.remove(c.lineRef);if(c.arrowRef)canvas.remove(c.arrowRef);}
+}
+
+function getCp(obj){return obj.getCenterPoint?obj.getCenterPoint():{x:obj.left,y:obj.top};}
+function findObj(id){return canvas.getObjects().find(o=>o.id===id&&!o.isLinkedText);}
+
 function updateLines(){
   connections.forEach(c=>{
-    let f=canvas.getObjects().find(o=>o.id===c.fromId&&!o.isLinkedText);
-    let t=canvas.getObjects().find(o=>o.id===c.toId&&!o.isLinkedText);
+    let f=findObj(c.fromId), t=findObj(c.toId);
     if(!f||!t) return;
-    let p1=f.getCenterPoint(); let p2=t.getCenterPoint();
- 
+    let p1=getCp(f),p2=getCp(t);
+
     if(c.type==='brace'&&c.braceLines){
-      let midX=Math.max(p1.x,p2.x)+80;
-      let midY=(p1.y+p2.y)/2;
-      let [l1,l2,lV,lTip]=c.braceLines;
+      let midX=Math.max(p1.x,p2.x)+80,midY=(p1.y+p2.y)/2;
+      let[l1,l2,lV,lT]=c.braceLines;
       l1.set({x1:p1.x,y1:p1.y,x2:midX,y2:p1.y});
       l2.set({x1:p2.x,y1:p2.y,x2:midX,y2:p2.y});
       lV.set({x1:midX,y1:p1.y,x2:midX,y2:p2.y});
-      lTip.set({x1:midX,y1:midY,x2:midX+30,y2:midY});
+      lT.set({x1:midX,y1:midY,x2:midX+30,y2:midY});
       return;
     }
- 
-    if(c.lineRef) c.lineRef.set({x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y});
- 
-    if(c.type==='arrow'&&c.arrowRef){
-      let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x)*180/Math.PI;
-      c.arrowRef.set({left:p2.x,top:p2.y,angle:angle+90});
+    if((c.type==='orthoH'||c.type==='orthoV')&&c.orthoLines){
+      let[l1,l2,l3]=c.orthoLines;
+      if(c.type==='orthoH'){
+        let midX=(p1.x+p2.x)/2;
+        l1.set({x1:p1.x,y1:p1.y,x2:midX,y2:p1.y});
+        l2.set({x1:midX,y1:p1.y,x2:midX,y2:p2.y});
+        l3.set({x1:midX,y1:p2.y,x2:p2.x,y2:p2.y});
+      } else {
+        let midY=(p1.y+p2.y)/2;
+        l1.set({x1:p1.x,y1:p1.y,x2:p1.x,y2:midY});
+        l2.set({x1:p1.x,y1:midY,x2:p2.x,y2:midY});
+        l3.set({x1:p2.x,y1:midY,x2:p2.x,y2:p2.y});
+      }
+      return;
+    }
+    if(c.lineRef){
+      if(c.type==='arrow'){
+        let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
+        let headLen=14;
+        c.lineRef.set({x1:p1.x,y1:p1.y,x2:p2.x-Math.cos(angle)*headLen*0.7,y2:p2.y-Math.sin(angle)*headLen*0.7});
+        if(c.arrowRef){
+          let deg=angle*180/Math.PI;
+          c.arrowRef.set({left:p2.x,top:p2.y,angle:deg+90});
+          canvas.bringToFront(c.arrowRef);
+        }
+      } else {
+        c.lineRef.set({x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y});
+      }
     }
   });
   canvas.renderAll();
 }
- 
-// ════════════════════════════════════════════════
-//  NOTE FORMATS — CREATE NEW
-// ════════════════════════════════════════════════
-function createNoteFormat(fmt){
-  let cx=canvas.getWidth()/2; let cy=canvas.getHeight()/2;
-  let vpt=canvas.viewportTransform;
-  let ox=(cx-vpt[4])/vpt[0]; let oy=(cy-vpt[5])/vpt[3];
-  let c=FORMAT_COLORS[fmt];
- 
-  if(fmt==='mindmap'){
-    let center=addUnifiedBlock('circle',{left:ox,top:oy,bg:c.center,text:'Idea Central',noteFormat:'mindmap',fromLoad:true});
-    let branches=[{dx:-200,dy:-120,t:'Rama 1'},{dx:200,dy:-120,t:'Rama 2'},{dx:-200,dy:120,t:'Rama 3'},{dx:200,dy:120,t:'Rama 4'}];
-    branches.forEach(b=>{
-      let br=addUnifiedBlock('circle',{left:ox+b.dx,top:oy+b.dy,bg:c.branch,text:b.t,noteFormat:'mindmap',fromLoad:true});
-      if(br&&center) setTimeout(()=>createConnection(center,br,'line'),50);
-    });
-  }
-  else if(fmt==='esquema'){
-    let title=addUnifiedBlock('square',{left:ox,top:oy-150,bg:c.title,text:'Título Principal',noteFormat:'esquema',fromLoad:true});
-    let items=[{t:'Item 1',dx:-120,dy:0},{t:'Item 2',dx:-120,dy:90},{t:'Item 3',dx:-120,dy:180}];
-    items.forEach(it=>{
-      let b=addUnifiedBlock('square',{left:ox+it.dx,top:oy+it.dy,bg:c.item,text:it.t,noteFormat:'esquema',fromLoad:true});
-      if(b&&title) setTimeout(()=>createConnection(title,b,'brace'),50);
-    });
-  }
-  else if(fmt==='linea-tiempo'){
-    let nodes=['Evento 1','Evento 2','Evento 3','Evento 4'];
-    let shapes=nodes.map((t,i)=>addUnifiedBlock('circle',{left:ox-300+i*200,top:oy,bg:c.node,text:t,noteFormat:'linea-tiempo',fromLoad:true}));
-    setTimeout(()=>{
-      for(let i=0;i<shapes.length-1;i++) createConnection(shapes[i],shapes[i+1],'arrow');
-    },50);
-  }
-  else if(fmt==='cornell'){
-    // Cornell: cue column left, notes right, summary below
-    let cue=addUnifiedBlock('square',{left:ox-170,top:oy-60,bg:c.cue,text:'Preguntas / Palabras clave',noteFormat:'cornell',fromLoad:true});
-    let notes=addUnifiedBlock('square',{left:ox+80,top:oy-60,bg:c.notes,text:'Apuntes principales',noteFormat:'cornell',fromLoad:true});
-    let sum=addUnifiedBlock('square',{left:ox,top:oy+120,bg:c.summary,text:'Resumen',noteFormat:'cornell',fromLoad:true});
-    cue&&cue.set({scaleX:1,scaleY:2}); notes&&notes.set({scaleX:2,scaleY:2}); sum&&sum.set({scaleX:3.5,scaleY:1});
+
+// ═══════════ LASSO (right-click drag on empty space) ═══════════
+function startLasso(x,y){
+  isLassoMode=true; lassoStart={x,y};
+  lassoEl.style.cssText=`display:block;left:${x}px;top:${y}px;width:0;height:0;position:fixed;`;
+  document.body.classList.add("lasso-mode");
+}
+function updateLasso(x,y){
+  if(!isLassoMode||!lassoStart) return;
+  let x0=Math.min(x,lassoStart.x),y0=Math.min(y,lassoStart.y);
+  let w=Math.abs(x-lassoStart.x),h=Math.abs(y-lassoStart.y);
+  lassoEl.style.left=x0+'px'; lassoEl.style.top=y0+'px';
+  lassoEl.style.width=w+'px'; lassoEl.style.height=h+'px';
+}
+function endLasso(x,y){
+  if(!isLassoMode) return;
+  let lx0=Math.min(x,lassoStart.x),ly0=Math.min(y,lassoStart.y);
+  let lw=Math.abs(x-lassoStart.x),lh=Math.abs(y-lassoStart.y);
+  closeLasso();
+  if(lw<5||lh<5) return;
+  let zoom=canvas.getZoom(),vpt=canvas.viewportTransform;
+  let cx0=(lx0-vpt[4])/zoom,cy0=(ly0-vpt[5])/zoom;
+  let cx1=cx0+lw/zoom,cy1=cy0+lh/zoom;
+  let objs=canvas.getObjects().filter(o=>{
+    if(!o.selectable||o.isLinkedText) return false;
+    let p=getCp(o); return p.x>=cx0&&p.x<=cx1&&p.y>=cy0&&p.y<=cy1;
+  });
+  if(objs.length){
+    canvas.discardActiveObject();
+    canvas.setActiveObject(new fabric.ActiveSelection(objs,{canvas}));
     canvas.renderAll();
   }
-  else if(fmt==='cuadro-comp'){
-    let headers=['Aspecto','Opción A','Opción B'];
-    let rows=['Característica 1','Característica 2','Característica 3'];
-    headers.forEach((h,i)=>addUnifiedBlock('square',{left:ox-160+i*160,top:oy-120,bg:c.header,text:h,noteFormat:'cuadro-comp',fromLoad:true}));
-    rows.forEach((r,ri)=>{
-      addUnifiedBlock('square',{left:ox-160,top:oy-40+ri*80,bg:c.header,text:r,noteFormat:'cuadro-comp',fromLoad:true});
-      [1,2].forEach(ci=>addUnifiedBlock('square',{left:ox-160+ci*160,top:oy-40+ri*80,bg:c.cell,text:'—',noteFormat:'cuadro-comp',fromLoad:true}));
-    });
-  }
-  else if(fmt==='flujo'){
-    let start=addUnifiedBlock('circle',{left:ox,top:oy-200,bg:c.start,text:'Inicio',noteFormat:'flujo',fromLoad:true});
-    let proc=addUnifiedBlock('square',{left:ox,top:oy-80,bg:c.process,text:'Proceso',noteFormat:'flujo',fromLoad:true});
-    let dec=addUnifiedBlock('diamond',{left:ox,top:oy+60,bg:c.decision,text:'¿Decisión?',noteFormat:'flujo',fromLoad:true});
-    let end=addUnifiedBlock('circle',{left:ox,top:oy+200,bg:c.end,text:'Fin',noteFormat:'flujo',fromLoad:true});
-    setTimeout(()=>{
-      [start,proc,dec,end].reduce((a,b)=>{ if(a&&b)createConnection(a,b,'arrow'); return b; });
-    },50);
-  }
-  else if(fmt==='concept-map'){
-    let main=addUnifiedBlock('square',{left:ox,top:oy,bg:c.main,text:'Concepto Central',noteFormat:'concept-map',fromLoad:true});
-    let subs=[{dx:-200,dy:-100,t:'Concepto A'},{dx:200,dy:-100,t:'Concepto B'},{dx:-200,dy:100,t:'Concepto C'},{dx:200,dy:100,t:'Concepto D'}];
-    subs.forEach(s=>{
-      let sub=addUnifiedBlock('square',{left:ox+s.dx,top:oy+s.dy,bg:c.secondary,text:s.t,noteFormat:'concept-map',fromLoad:true});
-      if(sub&&main) setTimeout(()=>createConnection(main,sub,'arrow'),50);
-      let det=addUnifiedBlock('square',{left:ox+s.dx+(s.dx>0?120:-120),top:oy+s.dy,bg:c.detail,text:'Detalle',noteFormat:'concept-map',fromLoad:true});
-      if(det&&sub) setTimeout(()=>createConnection(sub,det,'dashed'),80);
-    });
-  }
-  canvas.renderAll();
 }
- 
-// ════════════════════════════════════════════════
-//  NOTE FORMATS — ASSIGN TO SELECTION
-// ════════════════════════════════════════════════
-function openFormatModal(){
-  let selected=canvas.getActiveObjects();
-  if(!selected||selected.length<2){ alert("Seleccioná al menos 2 bloques primero."); return; }
-  document.getElementById("format-modal").classList.add("visible");
+function closeLasso(){
+  isLassoMode=false; lassoStart=null;
+  lassoEl.style.display="none";
+  document.body.classList.remove("lasso-mode");
 }
-function closeFormatModal(){
-  document.getElementById("format-modal").classList.remove("visible");
-}
- 
-function applyFormatToSelection(fmt){
-  closeFormatModal();
-  let selected=canvas.getActiveObjects().filter(o=>!o.isLinkedText&&o.customType!=='text-only'||o.customType==='text-only');
-  if(!selected||selected.length<1) return;
-  let c=FORMAT_COLORS[fmt];
- 
-  // Apply note format tag + appropriate color based on position in selection
-  selected.forEach((obj,i)=>{
-    obj.noteFormat=fmt;
-    if(fmt==='mindmap'){
-      obj.set('fill',i===0?c.center:i<2?c.branch:c.leaf);
-      if(i>0&&selected[0]) setTimeout(()=>createConnection(selected[0],obj,'line'),50);
-    } else if(fmt==='esquema'){
-      obj.set('fill',i===0?c.title:c.item);
-      if(i>0&&selected[0]) setTimeout(()=>createConnection(selected[0],obj,'brace'),50);
-    } else if(fmt==='linea-tiempo'){
-      obj.set('fill',c.node);
-      if(i>0&&selected[i-1]) setTimeout(()=>createConnection(selected[i-1],obj,'arrow'),50);
-    } else if(fmt==='flujo'){
-      let colors=[c.start,c.process,c.decision,c.end];
-      obj.set('fill',colors[Math.min(i,colors.length-1)]);
-      if(i>0&&selected[i-1]) setTimeout(()=>createConnection(selected[i-1],obj,'arrow'),50);
-    } else if(fmt==='concept-map'){
-      obj.set('fill',i===0?c.main:i<3?c.secondary:c.detail);
-      if(i===1||i===2) setTimeout(()=>createConnection(selected[0],obj,'arrow'),50);
-    }
-  });
-  canvas.renderAll();
-}
- 
-// ════════════════════════════════════════════════
-//  CANVAS EVENTS
-// ════════════════════════════════════════════════
+
+// ═══════════ CANVAS EVENTS ═══════════
 function setupCanvasEvents(){
-  // ─── ZOOM ───
+  // Block right-click menu on the canvas element specifically
+  canvas.upperCanvasEl.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();},true);
+
+  // ZOOM
   canvas.on('mouse:wheel',function(opt){
-    let delta=opt.e.deltaY; let zoom=canvas.getZoom();
-    zoom*=0.999**delta;
-    if(zoom>5) zoom=5; if(zoom<0.15) zoom=0.15;
-    canvas.zoomToPoint({x:opt.e.offsetX,y:opt.e.offsetY},zoom);
+    let d=opt.e.deltaY,z=canvas.getZoom();
+    z*=0.999**d; if(z>5)z=5; if(z<0.1)z=0.1;
+    canvas.zoomToPoint({x:opt.e.offsetX,y:opt.e.offsetY},z);
     opt.e.preventDefault(); opt.e.stopPropagation();
-    updateLines();
+    updateLines(); updateZoomUI();
   });
- 
-  // ─── MOUSE DOWN ───
+
+  // MOUSE DOWN
   canvas.on('mouse:down',function(opt){
     let evt=opt.e;
-    let menu=document.getElementById("context-menu");
- 
-    // Right-click context menu
-    if(evt.button===2||evt.which===3){
-      let activeObjects=canvas.getActiveObjects();
-      if(activeObjects.length>1){
-        rightClickedObject=activeObjects;
-        document.getElementById("shape-tools-section").style.display="none";
-        document.getElementById("text-tools-section").style.display="none";
-        document.getElementById("connect-item-menu").style.display="none";
-      } else if(opt.target){
-        let target=opt.target;
-        if(target.isLinkedText&&target.shapeRef) target=target.shapeRef;
-        rightClickedObject=target;
-        let isTextOnly=target.customType==='text-only';
-        document.getElementById("shape-tools-section").style.display=isTextOnly?"none":"block";
-        document.getElementById("text-tools-section").style.display="block";
-        document.getElementById("connect-item-menu").style.display=!isTextOnly?"flex":"none";
-      } else {
-        menu.style.display="none"; return;
+    let ctxMenu=document.getElementById("ctx");
+    let btn=evt.button;
+
+    // ── RIGHT CLICK (button 2) ──
+    if(btn===2){
+      evt.preventDefault(); evt.stopPropagation();
+      let target=opt.target;
+      if(target&&target.isLinkedText&&target.shapeRef) target=target.shapeRef;
+
+      // Check if a connector line was right-clicked
+      let hitIdx=null;
+      if(!target){
+        let ptr=canvas.getPointer(evt);
+        connections.forEach((c,idx)=>{
+          if(!c.lineRef) return;
+          let d=distSeg(ptr,{x:c.lineRef.x1,y:c.lineRef.y1},{x:c.lineRef.x2,y:c.lineRef.y2});
+          if(d<10) hitIdx=idx;
+        });
       }
-      menu.style.display="flex";
-      // Smart position: don't go off-screen
-      let mx=Math.min(evt.clientX,window.innerWidth-220);
-      let my=Math.min(evt.clientY,window.innerHeight-350);
-      menu.style.left=mx+"px"; menu.style.top=my+"px";
+
+      if(hitIdx!==null){
+        // Connector right-click
+        rightClickedConnIdx=hitIdx; rightClickedObject=null;
+        document.getElementById("ctx-conn-sec").style.display="block";
+        document.getElementById("ctx-shape-sec").style.display="none";
+        document.getElementById("ctx-text-sec").style.display="none";
+        document.getElementById("ctx-conn-mi").style.display="none";
+        showCtx(evt);
+      } else if(target){
+        // Object right-click
+        rightClickedConnIdx=null;
+        let act=canvas.getActiveObjects();
+        rightClickedObject=act.length>1?act:target;
+        let isTO=target.customType==='text-only';
+        document.getElementById("ctx-conn-sec").style.display="none";
+        document.getElementById("ctx-shape-sec").style.display=isTO?"none":"block";
+        document.getElementById("ctx-text-sec").style.display="block";
+        document.getElementById("ctx-conn-mi").style.display="flex";
+        showCtx(evt);
+      } else {
+        // Empty space: start lasso on mousedown, track on mousemove
+        ctxMenu.style.display="none";
+        rcStart={x:evt.clientX,y:evt.clientY};
+        rcDragging=false;
+        // We'll start lasso on first mousemove > threshold
+      }
       return;
     }
- 
-    menu.style.display="none";
- 
-    // Straight line drawing
-    if(straightLineMode){
-      let pointer=canvas.getPointer(evt);
-      if(!straightLineStartPoint){
-        straightLineStartPoint={x:pointer.x,y:pointer.y};
-      } else {
-        let x1=straightLineStartPoint.x,y1=straightLineStartPoint.y;
-        let x2=pointer.x,y2=pointer.y;
-        if(straightLineMode==='h') y2=y1;
-        if(straightLineMode==='v') x2=x1;
-        let line=new fabric.Line([x1,y1,x2,y2],{stroke:'#555',strokeWidth:3,selectable:true,evented:true,id:'line_'+Date.now(),customType:'straight-line',lineDir:straightLineMode});
-        canvas.add(line); canvas.renderAll();
-        straightLineStartPoint=null;
-        cancelStraightLine();
-      }
-      return;
-    }
- 
-    // Connect mode (click on object)
+
+    ctxMenu.style.display="none";
+
+    // ── CONNECT MODE ──
     let target=opt.target;
     if(target&&target.isLinkedText&&target.shapeRef) target=target.shapeRef;
- 
-    if(isConnectMode&&target&&target.customType&&target.customType!=='text-only'&&target.customType!=='straight-line'){
-      if(currentConnectorType==='brace'){
-        if(!connectSourceObj){ connectSourceObj=target; return; }
-        if(!braceFirstNode){ braceFirstNode=connectSourceObj; connectSourceObj=target; }
-        // Need exactly 2 targets for brace
-        createBraceConnection(braceFirstNode,connectSourceObj);
-        cancelConnect();
-      } else {
-        if(!connectSourceObj){ connectSourceObj=target; }
-        else if(connectSourceObj.id!==target.id){
-          createConnection(connectSourceObj,target,currentConnectorType);
-          cancelConnect();
-        }
+    let connectable=resolveConnectable(target);
+
+    if(isConnectMode&&connectable){
+      if(!connectSourceObj){
+        connectSourceObj=connectable;
+        showConnectStatus(`Origen: "${getObjLabel(connectSourceObj)}" — Hacé click en el DESTINO`);
+      } else if(connectSourceObj.id!==connectable.id){
+        createConn(connectSourceObj,connectable,currentConnectorType);
+        cancelConnect(); snapshot();
       }
       return;
     }
- 
-    // Pan: click on empty space OR middle click OR alt+click
-    if(!target||evt.altKey||evt.button===1){
+
+    // ── PAN on empty space or alt ──
+    if(!target||evt.altKey||btn===1){
       this.isDragging=true; this.selection=false;
       this.lastPosX=evt.clientX; this.lastPosY=evt.clientY;
       document.body.classList.add("panning");
     }
   });
- 
-  // ─── MOUSE MOVE ───
+
+  // MOUSE MOVE
   canvas.on('mouse:move',function(opt){
+    let evt=opt.e;
+    // Lasso tracking for right-click drag
+    if(rcStart){
+      let dx=Math.abs(evt.clientX-rcStart.x),dy=Math.abs(evt.clientY-rcStart.y);
+      if(!rcDragging&&(dx>6||dy>6)){
+        rcDragging=true;
+        startLasso(rcStart.x,rcStart.y);
+      }
+      if(rcDragging) updateLasso(evt.clientX,evt.clientY);
+      return;
+    }
+    if(isLassoMode){ updateLasso(evt.clientX,evt.clientY); return; }
     if(this.isDragging){
-      let e=opt.e; let vpt=this.viewportTransform;
-      vpt[4]+=e.clientX-this.lastPosX; vpt[5]+=e.clientY-this.lastPosY;
-      this.requestRenderAll(); this.lastPosX=e.clientX; this.lastPosY=e.clientY;
-      updateLines();
+      let vpt=this.viewportTransform;
+      vpt[4]+=evt.clientX-this.lastPosX; vpt[5]+=evt.clientY-this.lastPosY;
+      this.requestRenderAll(); this.lastPosX=evt.clientX; this.lastPosY=evt.clientY;
+      updateLines(); updateZoomUI();
     }
   });
- 
-  // ─── MOUSE UP ───
+
+  // MOUSE UP
   canvas.on('mouse:up',function(opt){
+    let evt=opt.e;
+    if(rcStart){
+      if(rcDragging) endLasso(evt.clientX,evt.clientY);
+      rcStart=null; rcDragging=false;
+      return;
+    }
+    if(isLassoMode){ endLasso(evt.clientX,evt.clientY); return; }
     if(this.isDragging){
       this.setViewportTransform(this.viewportTransform);
       this.isDragging=false; this.selection=true;
       document.body.classList.remove("panning");
     }
   });
- 
-  // ─── OBJECT EVENTS ───
-  canvas.on('object:moving',()=>{ syncTextsAndShapes(); updateLines(); });
-  canvas.on('object:scaling',()=>{ syncTextsAndShapes(); updateLines(); });
-  canvas.on('object:rotating',()=>{ syncTextsAndShapes(); updateLines(); });
- 
-  // ─── FIX: selection change → re-sync lines to prevent ghost connectors ───
+
+  // Also listen on document for right-click mouseup (fabric may not fire it)
+  document.addEventListener('mouseup',function(evt){
+    if(evt.button===2&&rcStart){
+      if(rcDragging) endLasso(evt.clientX,evt.clientY);
+      rcStart=null; rcDragging=false;
+    }
+  },true);
+  document.addEventListener('mousemove',function(evt){
+    if(rcStart&&!isLassoMode){
+      let dx=Math.abs(evt.clientX-rcStart.x),dy=Math.abs(evt.clientY-rcStart.y);
+      if(!rcDragging&&(dx>6||dy>6)){
+        rcDragging=true; startLasso(rcStart.x,rcStart.y);
+      }
+      if(rcDragging) updateLasso(evt.clientX,evt.clientY);
+    }
+  },true);
+
+  // OBJECT EVENTS
+  canvas.on('object:moving',function(opt){
+    let o=opt.target;
+    if(snapEnabled) o.set({left:sv(o.left),top:sv(o.top)});
+    syncText(); updateLines();
+  });
+  canvas.on('object:scaling',()=>{syncText();updateLines();});
+  canvas.on('object:rotating',()=>{syncText();updateLines();});
+  canvas.on('object:modified',()=>snapshot());
   canvas.on('selection:created',()=>updateLines());
   canvas.on('selection:updated',()=>updateLines());
   canvas.on('selection:cleared',()=>updateLines());
- 
-  // Hide context menu on canvas click
+
   document.addEventListener('click',e=>{
-    if(!document.getElementById("context-menu").contains(e.target)){
-      document.getElementById("context-menu").style.display="none";
-    }
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'){ cancelConnect(); cancelStraightLine(); closeFormatModal(); }
-  });
+    if(!document.getElementById("ctx").contains(e.target))
+      document.getElementById("ctx").style.display="none";
+  },{capture:false});
 }
- 
-// ════════════════════════════════════════════════
-//  SYNC & RENDER HELPERS
-// ════════════════════════════════════════════════
-function syncTextsAndShapes(){
+
+function showCtx(evt){
+  let ctxMenu=document.getElementById("ctx");
+  ctxMenu.style.display="flex";
+  let mx=Math.min(evt.clientX,window.innerWidth-225);
+  let my=Math.min(evt.clientY,window.innerHeight-400);
+  ctxMenu.style.left=mx+"px"; ctxMenu.style.top=my+"px";
+}
+
+// ═══════════ GEOMETRY ═══════════
+function distSeg(p,a,b){
+  let dx=b.x-a.x,dy=b.y-a.y;
+  if(dx===0&&dy===0) return Math.hypot(p.x-a.x,p.y-a.y);
+  let t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));
+  return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy));
+}
+
+// ═══════════ SYNC TEXT ═══════════
+function syncText(){
   canvas.getObjects().forEach(o=>{
-    if(o.textRef){ o.textRef.set({left:o.left,top:o.top}); o.textRef.setCoords(); }
+    if(o.textRef){o.textRef.set({left:o.left,top:o.top});o.textRef.setCoords();}
   });
-  canvas.renderAll();
 }
- 
-// ════════════════════════════════════════════════
-//  CONTEXT MENU ACTIONS
-// ════════════════════════════════════════════════
-function updateSelectedShapeColor(val){
-  if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
-  if(rightClickedObject.customType!=='text-only') rightClickedObject.set('fill',val);
-  canvas.renderAll();
+
+// ═══════════ CONTEXT MENU ACTIONS ═══════════
+function updateSelectedShapeColor(v){
+  let obj=rightClickedObject; if(!obj||Array.isArray(obj)) return;
+  if(obj.customType!=='text-only') obj.set('fill',v);
+  canvas.renderAll(); snapshot();
 }
- 
+function updateSelectedStroke(v){
+  let obj=rightClickedObject; if(!obj||Array.isArray(obj)) return;
+  obj.set('stroke',v); canvas.renderAll(); snapshot();
+}
+function updateSelectedStrokeWidth(v){
+  let obj=rightClickedObject; if(!obj||Array.isArray(obj)) return;
+  obj.set('strokeWidth',v); canvas.renderAll(); snapshot();
+}
 function toggleGlowEffect(){
-  if(!rightClickedObject) return;
-  let apply=obj=>{ obj.shadow=obj.shadow?null:new fabric.Shadow({color:'#2196F3',blur:25,offsetX:0,offsetY:0}); };
-  if(Array.isArray(rightClickedObject)) rightClickedObject.forEach(o=>{ if(!o.isLinkedText) apply(o); });
-  else apply(rightClickedObject);
-  document.getElementById("context-menu").style.display="none"; canvas.renderAll();
+  let obj=rightClickedObject; if(!obj) return;
+  let apply=o=>{o.shadow=o.shadow?null:new fabric.Shadow({color:'#2196F3',blur:25,offsetX:0,offsetY:0});};
+  if(Array.isArray(obj)) obj.forEach(o=>{if(!o.isLinkedText)apply(o);}); else apply(obj);
+  document.getElementById("ctx").style.display="none"; canvas.renderAll(); snapshot();
 }
- 
 function updateSelectedTextProp(prop,val){
-  if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
-  let t=rightClickedObject.customType==='text-only'?rightClickedObject:rightClickedObject.textRef;
-  if(t){ t.set(prop,val); canvas.renderAll(); }
+  let obj=rightClickedObject; if(!obj||Array.isArray(obj)) return;
+  let t=obj.customType==='text-only'?obj:obj.textRef;
+  if(t){t.set(prop,val);canvas.renderAll();snapshot();}
 }
- 
-function toggleStyle(prop,styleVal){
-  if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
-  let t=rightClickedObject.customType==='text-only'?rightClickedObject:rightClickedObject.textRef;
-  if(t){ t.set(prop,t.get(prop)===styleVal?'normal':styleVal); canvas.renderAll(); }
+function toggleStyle(prop,sv2){
+  let obj=rightClickedObject; if(!obj||Array.isArray(obj)) return;
+  let t=obj.customType==='text-only'?obj:obj.textRef;
+  if(t){t.set(prop,t.get(prop)===sv2?'normal':sv2);canvas.renderAll();snapshot();}
 }
- 
 function deleteCurrentObject(){
   if(!rightClickedObject) return;
-  let removeObj=(target)=>{
+  let rm=target=>{
     connections=connections.filter(c=>{
-      if(c.fromId===target.id||c.toId===target.id){
-        if(c.braceLines) c.braceLines.forEach(l=>canvas.remove(l));
-        else{ if(c.lineRef) canvas.remove(c.lineRef); if(c.arrowRef) canvas.remove(c.arrowRef); }
-        return false;
-      } return true;
+      if(c.fromId===target.id||c.toId===target.id){removeConnVisuals(c);return false;}
+      return true;
     });
     if(target.textRef) canvas.remove(target.textRef);
     canvas.remove(target);
   };
-  if(Array.isArray(rightClickedObject)){
-    rightClickedObject.forEach(o=>removeObj(o)); canvas.discardActiveObject();
-  } else { removeObj(rightClickedObject); }
-  document.getElementById("context-menu").style.display="none"; canvas.renderAll();
+  if(Array.isArray(rightClickedObject)){rightClickedObject.forEach(o=>rm(o));canvas.discardActiveObject();}
+  else rm(rightClickedObject);
+  document.getElementById("ctx").style.display="none"; canvas.renderAll(); snapshot();
 }
- 
-// ════════════════════════════════════════════════
-//  SAVE / LOAD
-// ════════════════════════════════════════════════
-function saveToDatabase(){
-  if(!currentProject) return;
-  let objectsData=[];
-  canvas.getObjects().forEach(o=>{
-    if(o.id&&!o.isLinkedText){
-      if(o.customType==='straight-line'){
-        objectsData.push({id:o.id,type:'straight-line',lineDir:o.lineDir,x1:o.x1,y1:o.y1,x2:o.x2,y2:o.y2});
-        return;
-      }
-      let isTextOnly=o.customType==='text-only'; let t=isTextOnly?o:o.textRef;
-      objectsData.push({
-        id:o.id, type:o.customType, left:o.left, top:o.top, scaleX:o.scaleX, scaleY:o.scaleY,
-        bg:isTextOnly?null:o.fill, text:t?t.text:"", fontSize:t?t.fontSize:14, fontFamily:t?t.fontFamily:'Segoe UI',
-        textColor:t?t.fill:'#333', fontWeight:t?t.fontWeight:'normal', fontStyle:t?t.fontStyle:'normal',
-        hasGlow:!!o.shadow, noteFormat:o.noteFormat||null, fromLoad:true
-      });
-    }
+
+// ═══════════ NOTE FORMATS ═══════════
+function createNoteFormat(fmt){
+  let vpt=canvas.viewportTransform,z=canvas.getZoom();
+  let ox=(canvas.getWidth()/2-vpt[4])/z, oy=(canvas.getHeight()/2-vpt[5])/z;
+  let c=FMT[fmt];
+  let bl=(t,x,y,bg,shape)=>addBlock(shape||'square',{left:ox+x,top:oy+y,bg,text:t,noteFormat:fmt,fromLoad:true});
+
+  if(fmt==='mindmap'){
+    let center=bl('Idea Central',0,0,c.center,'circle');
+    [[-200,-120,'Rama 1'],[200,-120,'Rama 2'],[-200,120,'Rama 3'],[200,120,'Rama 4']].forEach(([dx,dy,t])=>{
+      let br=bl(t,dx,dy,c.branch,'circle');
+      if(br&&center) setTimeout(()=>createConn(center,br,'line'),60);
+    });
+  } else if(fmt==='esquema'){
+    let title=bl('Título Principal',0,-160,c.title);
+    [[-120,0,'Item 1'],[-120,90,'Item 2'],[-120,180,'Item 3']].forEach(([dx,dy,t])=>{
+      let b=bl(t,dx,dy,c.item);
+      if(b&&title) setTimeout(()=>createConn(title,b,'brace'),60);
+    });
+  } else if(fmt==='linea-tiempo'){
+    let sh=[-300,-100,100,300].map((dx,i)=>bl(`Evento ${i+1}`,dx,0,c.node));
+    setTimeout(()=>{for(let i=0;i<sh.length-1;i++) createConn(sh[i],sh[i+1],'arrow');},60);
+  } else if(fmt==='cornell'){
+    let cue=bl('Preguntas / Palabras clave',-170,-60,c.cue);
+    let notes=bl('Apuntes principales',80,-60,c.notes);
+    bl('Resumen',0,130,c.summary);
+    if(cue) cue.set({scaleX:1,scaleY:2});
+    if(notes) notes.set({scaleX:2,scaleY:2});
+  } else if(fmt==='cuadro-comp'){
+    ['Aspecto','Opción A','Opción B'].forEach((h,i)=>bl(h,-160+i*160,-120,c.header));
+    ['Caract. 1','Caract. 2','Caract. 3'].forEach((r,ri)=>{
+      bl(r,-160,-40+ri*80,c.header);
+      [1,2].forEach(ci=>bl('—',-160+ci*160,-40+ri*80,c.cell));
+    });
+  } else if(fmt==='flujo'){
+    let s=bl('Inicio',0,-200,c.start,'circle'),p=bl('Proceso',0,-80,c.process),
+        d=bl('¿Decisión?',0,60,c.decision,'diamond'),e=bl('Fin',0,210,c.end,'circle');
+    setTimeout(()=>{[s,p,d,e].reduce((a,b)=>{if(a&&b)createConn(a,b,'arrow');return b;});},60);
+  } else if(fmt==='concept-map'){
+    let main=bl('Concepto Central',0,0,c.main);
+    [[-200,-100,'Concepto A'],[200,-100,'Concepto B'],[-200,100,'Concepto C'],[200,100,'Concepto D']].forEach(([dx,dy,t])=>{
+      let sub=bl(t,dx,dy,c.secondary);
+      if(sub&&main) setTimeout(()=>createConn(main,sub,'arrow'),60);
+      let det=bl('Detalle',dx+(dx>0?120:-120),dy,c.detail);
+      if(det&&sub) setTimeout(()=>createConn(sub,det,'dashed'),90);
+    });
+  }
+  canvas.renderAll();
+  setTimeout(()=>snapshot(),500);
+}
+
+function openFormatModal(){
+  if(canvas.getActiveObjects().length<2){alert("Seleccioná al menos 2 bloques primero.");return;}
+  document.getElementById("format-modal").classList.add("vis");
+}
+function closeFormatModal(){document.getElementById("format-modal").classList.remove("vis");}
+function applyFormatToSelection(fmt){
+  closeFormatModal();
+  let c=FMT[fmt], sel=canvas.getActiveObjects().filter(o=>!o.isLinkedText);
+  if(!sel.length) return;
+  sel.forEach((obj,i)=>{
+    obj.noteFormat=fmt;
+    if(fmt==='mindmap') obj.set('fill',i===0?c.center:c.branch);
+    else if(fmt==='esquema') obj.set('fill',i===0?c.title:c.item);
+    else if(fmt==='linea-tiempo') obj.set('fill',c.node);
+    else if(fmt==='flujo'){let cs=[c.start,c.process,c.decision,c.end];obj.set('fill',cs[Math.min(i,cs.length-1)]);}
+    else if(fmt==='concept-map') obj.set('fill',i===0?c.main:c.secondary);
+    if(fmt==='linea-tiempo'&&i>0&&sel[i-1]) setTimeout(()=>createConn(sel[i-1],obj,'arrow'),60);
+    if(fmt==='esquema'&&i>0&&sel[0]) setTimeout(()=>createConn(sel[0],obj,'brace'),60);
+    if(fmt==='mindmap'&&i>0&&sel[0]) setTimeout(()=>createConn(sel[0],obj,'line'),60);
+    if(fmt==='flujo'&&i>0&&sel[i-1]) setTimeout(()=>createConn(sel[i-1],obj,'arrow'),60);
   });
-  db.users[currentUser].projects[currentProject]={
-    objects:objectsData,
-    connections:connections.map(c=>({fromId:c.fromId,toId:c.toId,type:c.type||'line'})),
-    wordText:document.getElementById("word-editor").innerHTML
-  };
-  saveDB();
-  let toast=document.getElementById("toast"); toast.style.display="block";
-  setTimeout(()=>{ toast.style.display="none"; },2000);
+  canvas.renderAll(); snapshot();
 }
- 
+
+// ═══════════ TOAST ═══════════
+function showToast(msg='💾 ¡Guardado!'){
+  let t=document.getElementById("toast"); t.innerText=msg; t.style.display="block";
+  clearTimeout(window._tt); window._tt=setTimeout(()=>t.style.display="none",2000);
+}
+
+// ═══════════ SERIALIZE / SAVE / LOAD ═══════════
+function serializeObjects(){
+  let arr=[];
+  canvas.getObjects().forEach(o=>{
+    if(!o.id||o.isLinkedText) return;
+    if(o.customType==='straight-line'){arr.push({id:o.id,type:'straight-line',lineDir:o.lineDir,x1:o.x1,y1:o.y1,x2:o.x2,y2:o.y2});return;}
+    let isTO=o.customType==='text-only', t=isTO?o:o.textRef;
+    arr.push({
+      id:o.id,type:o.customType,left:o.left,top:o.top,scaleX:o.scaleX,scaleY:o.scaleY,
+      bg:isTO?null:o.fill,text:t?t.text:"",fontSize:t?t.fontSize:14,
+      fontFamily:t?t.fontFamily:'Segoe UI',textColor:t?t.fill:'#333',
+      fontWeight:t?t.fontWeight:'normal',fontStyle:t?t.fontStyle:'normal',
+      textAlign:t?t.textAlign:'center',
+      hasGlow:!!o.shadow,noteFormat:o.noteFormat||null,
+      stroke:o.stroke||null,strokeWidth:o.strokeWidth||0,fromLoad:true,
+      // Save shape size in case it was resized by text
+      width:o.width,height:o.height
+    });
+  });
+  return arr;
+}
+function saveToDatabase(silent=false){
+  if(!currentProject) return;
+  db.users[currentUser].projects[currentProject]={
+    objects:serializeObjects(),
+    connections:connections.map(c=>({fromId:c.fromId,toId:c.toId,type:c.type||'line'})),
+    wordText:document.getElementById("word-editor").innerHTML,
+    canvasBg:canvasBgColor
+  };
+  saveDB(); if(!silent) showToast('💾 ¡Guardado!');
+}
 function loadProjectData(){
-  canvas.clear(); connections=[];
+  batchSaving=true; canvas.clear(); connections=[]; history=[]; historyIdx=-1;
   let proj=db.users[currentUser].projects[currentProject]; if(!proj) return;
+  if(proj.canvasBg){canvasBgColor=proj.canvasBg;canvas.setBackgroundColor(proj.canvasBg,()=>{});}
   if(proj.objects) proj.objects.forEach(o=>{
-    if(o.type==='straight-line'){
-      let line=new fabric.Line([o.x1,o.y1,o.x2,o.y2],{stroke:'#555',strokeWidth:3,selectable:true,evented:true,id:o.id,customType:'straight-line',lineDir:o.lineDir});
-      canvas.add(line); return;
-    }
-    addUnifiedBlock(o.type,o);
+    if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    addBlock(o.type,o);
   });
   document.getElementById("word-editor").innerHTML=proj.wordText||"";
   setTimeout(()=>{
     if(proj.connections) proj.connections.forEach(c=>{
-      let o1=canvas.getObjects().find(o=>o.id===c.fromId&&!o.isLinkedText);
-      let o2=canvas.getObjects().find(o=>o.id===c.toId&&!o.isLinkedText);
-      if(o1&&o2) createConnection(o1,o2,c.type||'line');
+      let o1=findObj(c.fromId),o2=findObj(c.toId);
+      if(o1&&o2) createConn(o1,o2,c.type||'line');
     });
-    canvas.renderAll();
+    canvas.renderAll(); batchSaving=false; snapshot();
   },300);
 }
 </script>

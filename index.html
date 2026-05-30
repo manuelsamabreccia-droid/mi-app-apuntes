@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Apuntes Pro V14</title>
+<title>Apuntes Pro V15</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
 :root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
@@ -416,7 +416,18 @@ function updateZoomUI(){document.getElementById('zoom-indicator').innerText=Math
 // ═══════════ AUTH ═══════════
 function checkAutoLogin(){
   let users=Object.keys(db.users);
-  if(users.length===1){document.getElementById("username").value=users[0];document.getElementById("username").readOnly=true;document.getElementById("password").focus();}
+  // Check for saved auto-login token on this device
+  let savedLogin=localStorage.getItem("apuntes_autologin");
+  if(savedLogin&&db.users[savedLogin]){
+    currentUser=savedLogin; showProjectWorkspace();
+    document.getElementById("auth-screen").style.display="flex"; // keep visible until project chosen
+    return;
+  }
+  if(users.length===1){
+    document.getElementById("username").value=users[0];
+    document.getElementById("username").readOnly=true;
+    document.getElementById("password").focus();
+  }
   renderSavedAccountsUI();
 }
 function renderSavedAccountsUI(){
@@ -427,8 +438,14 @@ function renderSavedAccountsUI(){
   sec.classList.remove("hidden");
   users.forEach(u=>{
     let li=document.createElement("li"); li.className="saved-account-item";
-    li.innerHTML=`<span>👤 ${u}</span><span class="acc-badge">Guardado</span>`;
-    li.onclick=()=>{document.getElementById("username").value=u;document.getElementById("username").readOnly=false;document.getElementById("password").focus();};
+    let hasToken=localStorage.getItem("apuntes_autologin")===u;
+    li.innerHTML=`<span>👤 ${u}</span><span class="acc-badge" style="${hasToken?'background:#4CAF50':''}">` + (hasToken?'Este dispositivo':'Guardado') + `</span>`;
+    li.onclick=()=>{
+      if(hasToken){ currentUser=u; showProjectWorkspace(); return; }
+      document.getElementById("username").value=u;
+      document.getElementById("username").readOnly=false;
+      document.getElementById("password").focus();
+    };
     list.appendChild(li);
   });
 }
@@ -444,10 +461,10 @@ function handleAuthAction(){
   if(isLoginMode){
     if(!db.users[u]) return alert("El usuario no existe.");
     if(db.users[u].password!==p) return alert("Contraseña incorrecta.");
-    currentUser=u; showProjectWorkspace();
+    currentUser=u; localStorage.setItem("apuntes_autologin",u); showProjectWorkspace();
   } else {
     if(db.users[u]) return alert("Usuario ya registrado.");
-    db.users[u]={password:p,projects:{},lastOpen:null}; saveDB(); currentUser=u; showProjectWorkspace();
+    db.users[u]={password:p,projects:{},lastOpen:null}; saveDB(); currentUser=u; localStorage.setItem("apuntes_autologin",u); showProjectWorkspace();
   }
 }
 function showProjectWorkspace(){
@@ -461,7 +478,7 @@ function renderProjectList(){
   let projects=db.users[currentUser].projects;
   for(let n in projects){
     let li=document.createElement("li"); li.className="project-item";
-    let ns=document.createElement("span"); ns.innerText=n; ns.style.cssText="flex:1;cursor:pointer;text-align:left;"; ns.onclick=()=>openProject(n);
+    let ns=document.createElement("span"); ns.innerText=n; ns.style.cssText="flex:1;cursor:pointer;text-align:left;font-weight:600;"; li.onclick=(e)=>{if(!e.target.classList.contains('pi-btn'))openProject(n);};
     let acts=document.createElement("div"); acts.className="pi-actions";
     let rb=document.createElement("button"); rb.className="pi-btn"; rb.innerText="✏️"; rb.title="Renombrar"; rb.onclick=e=>{e.stopPropagation();renameProject(n);};
     let db2=document.createElement("button"); db2.className="pi-btn del"; db2.innerText="🗑️"; db2.title="Borrar"; db2.onclick=e=>{e.stopPropagation();deleteProject(n);};
@@ -492,6 +509,7 @@ function openProject(name){
 }
 function exitToWorkspace(){
   saveToDatabase(); currentProject=null;
+  // Don't clear autologin here so user stays logged in
   document.getElementById("toolbar").classList.add("hidden");
   document.getElementById("word-wrapper").classList.remove("open");
   document.getElementById("btn-word").classList.remove("btn-active");
@@ -789,16 +807,16 @@ function createConn(obj1,obj2,type){
   canvas.add(lineObj); canvas.sendToBack(lineObj);
 
   if(type==='arrow'){
-    // Proper arrow: shorten line to not overlap arrowhead
     let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
-    let headLen=14;
-    let lx2=p2.x-Math.cos(angle)*headLen*0.7;
-    let ly2=p2.y-Math.sin(angle)*headLen*0.7;
-    lineObj.set({x2:lx2,y2:ly2});
+    let edgeOff=getShapeEdgeOffset(obj2,angle);
+    let tipX=p2.x-Math.cos(angle)*edgeOff;
+    let tipY=p2.y-Math.sin(angle)*edgeOff;
+    let headLen=16;
+    lineObj.set({x1:p1.x,y1:p1.y,x2:tipX-Math.cos(angle)*headLen*0.5,y2:tipY-Math.sin(angle)*headLen*0.5});
     let angleDeg=angle*180/Math.PI;
     let ah=new fabric.Triangle({
       width:14,height:18,fill:'#666',
-      left:p2.x,top:p2.y,
+      left:tipX,top:tipY,
       angle:angleDeg+90,
       originX:'center',originY:'center',
       selectable:false,evented:false
@@ -856,6 +874,20 @@ function removeConnVisuals(c){
 }
 
 function getCp(obj){return obj.getCenterPoint?obj.getCenterPoint():{x:obj.left,y:obj.top};}
+// Returns approximate distance from center to edge in direction 'angle' (radians)
+function getShapeEdgeOffset(obj,angle){
+  if(!obj) return 0;
+  let type=obj.customType;
+  if(type==='circle') return (obj.radius||55)*Math.max(obj.scaleX||1,obj.scaleY||1)+4;
+  if(type==='diamond') return 55*(obj.scaleX||1)+4;
+  let hw=(obj.width||140)*(obj.scaleX||1)/2+4;
+  let hh=(obj.height||95)*(obj.scaleY||1)/2+4;
+  // For rect/square/post-it use bounding box edge
+  let cos=Math.abs(Math.cos(angle)), sin=Math.abs(Math.sin(angle));
+  if(cos<0.001) return hh;
+  if(sin<0.001) return hw;
+  return Math.min(hw/cos, hh/sin);
+}
 function findObj(id){return canvas.getObjects().find(o=>o.id===id&&!o.isLinkedText);}
 
 function updateLines(){
@@ -891,11 +923,15 @@ function updateLines(){
     if(c.lineRef){
       if(c.type==='arrow'){
         let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
-        let headLen=14;
-        c.lineRef.set({x1:p1.x,y1:p1.y,x2:p2.x-Math.cos(angle)*headLen*0.7,y2:p2.y-Math.sin(angle)*headLen*0.7});
+        // Compute edge offset for destination shape so arrow tip lands on border
+        let edgeOff=getShapeEdgeOffset(t,angle);
+        let tipX=p2.x-Math.cos(angle)*edgeOff;
+        let tipY=p2.y-Math.sin(angle)*edgeOff;
+        let headLen=16;
+        c.lineRef.set({x1:p1.x,y1:p1.y,x2:tipX-Math.cos(angle)*headLen*0.5,y2:tipY-Math.sin(angle)*headLen*0.5});
         if(c.arrowRef){
           let deg=angle*180/Math.PI;
-          c.arrowRef.set({left:p2.x,top:p2.y,angle:deg+90});
+          c.arrowRef.set({left:tipX,top:tipY,angle:deg+90});
           canvas.bringToFront(c.arrowRef);
         }
       } else {
@@ -1178,6 +1214,12 @@ function deleteCurrentObject(){
       return true;
     });
     if(target.textRef) canvas.remove(target.textRef);
+    // If madre, remove toggle and badge too
+    if(target.customType==='madre'){
+      if(target.toggleRef) canvas.remove(target.toggleRef);
+      if(target.badgeRef) canvas.remove(target.badgeRef);
+      delete madreBlocks[target.id];
+    }
     canvas.remove(target);
   };
   if(Array.isArray(rightClickedObject)){rightClickedObject.forEach(o=>rm(o));canvas.discardActiveObject();}
@@ -1354,14 +1396,19 @@ function addMadreBlock(opts={}){
       [labelText,toggleBtn,badge].forEach(o=>{
         o.set({left:o.left+dx, top:o.top+dy}); o.setCoords();
       });
-      // If collapsed, move children too
-      if(madreBlocks[id]&&madreBlocks[id].collapsed){
+      // Move children always (collapsed or expanded)
+      if(madreBlocks[id]){
         madreBlocks[id].childIds.forEach(cid=>{
           let child=findObj(cid);
           if(child){
             child.set({left:child.left+dx, top:child.top+dy});
             if(child.textRef) child.textRef.set({left:child.left, top:child.top});
             child.setCoords();
+            // Update saved position too
+            if(madreBlocks[id].savedPositions[cid]){
+              madreBlocks[id].savedPositions[cid].left+=dx;
+              madreBlocks[id].savedPositions[cid].top+=dy;
+            }
           }
         });
       }
@@ -1413,13 +1460,16 @@ function hideMadreChildren(madreId){
     if(child){
       child.set({visible:false, selectable:false, evented:false});
       if(child.textRef) child.textRef.set({visible:false});
-      // Hide connectors involving this child
+      // Hide connectors where at least one end is hidden
       connections.forEach(c=>{
         if(c.fromId===cid||c.toId===cid){
-          if(c.lineRef) c.lineRef.set('visible',false);
-          if(c.arrowRef) c.arrowRef.set('visible',false);
-          if(c.braceLines) c.braceLines.forEach(l=>l.set('visible',false));
-          if(c.orthoLines) c.orthoLines.forEach(l=>l.set('visible',false));
+          let setVis=v=>{
+            if(c.lineRef) c.lineRef.set('visible',v);
+            if(c.arrowRef) c.arrowRef.set('visible',v);
+            if(c.braceLines) c.braceLines.forEach(l=>l.set('visible',v));
+            if(c.orthoLines) c.orthoLines.forEach(l=>l.set('visible',v));
+          };
+          setVis(false);
         }
       });
     }

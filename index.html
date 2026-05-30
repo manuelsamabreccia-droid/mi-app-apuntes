@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Apuntes Pro V12</title>
+<title>Apuntes Pro V13</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
 :root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
@@ -81,6 +81,13 @@ body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Se
 #lasso-rect{position:fixed;border:2px solid #2196F3;background:rgba(33,150,243,.12);pointer-events:none;display:none;z-index:300;border-radius:3px;}
 body.panning{cursor:grabbing!important;}
 body.lasso-mode *{cursor:crosshair!important;}
+/* MADRE BLOCK */
+.madre-overlay{position:fixed;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:7000;inset:0;}
+.madre-overlay.vis{display:flex;}
+.madre-panel{background:var(--bg-box);border-radius:18px;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,.3);min-width:300px;max-width:420px;color:var(--text-main);border:1px solid var(--border-color);}
+.madre-panel h3{margin:0 0 12px;font-size:17px;}
+.madre-panel p{margin:0 0 14px;font-size:13px;opacity:.65;}
+
 </style>
 </head>
 <body>
@@ -169,6 +176,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   </div>
   <div class="mi" onclick="toggleGlowEffect()" style="font-weight:700;color:#ff007f;">✨ Alternar Brillo</div>
   <div id="ctx-conn-mi" class="mi" onclick="startConnectingFromMenu()" style="color:#ff9800;font-weight:700;">🔗 Conectar Objeto</div>
+  <div id="ctx-madre-mi" class="mi" onclick="openMadreAssign()" style="color:#2196F3;font-weight:700;display:none;">📦 Asignar bloques hijos</div>
 </div>
 
 <!-- TOOLBAR -->
@@ -182,6 +190,9 @@ body.lasso-mode *{cursor:crosshair!important;}
       <button onclick="addBlock('diamond')">🔷 Rombo</button>
       <button onclick="addBlock('post-it')">📝 Post-it</button>
       <button onclick="addBlock('text-only')">🔤 Texto Libre</button>
+      <div class="ddd"></div>
+      <div class="ddl">Especial</div>
+      <button onclick="addBlock('madre')">📦 Bloque Madre</button>
     </div>
   </div>
   <div class="dropdown">
@@ -210,22 +221,17 @@ body.lasso-mode *{cursor:crosshair!important;}
   <button class="btn" onclick="exitToWorkspace()" style="background:#f44336;color:#fff;">🏠 Salir</button>
 </div>
 
-<!-- CONNECTOR TYPE BAR -->
+<!-- CONNECTOR BAR (unified) -->
 <div id="conn-type-bar" class="bot-bar">
-  <span style="font-size:12px;font-weight:700;opacity:.6;">Tipo:</span>
+  <span id="connect-status-text" style="font-size:12px;font-weight:700;color:#ff9800;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+  <div style="width:1px;height:18px;background:var(--border-color);"></div>
   <button class="cob act" id="ctype-line" onclick="setConnectorType('line')">── Línea</button>
   <button class="cob" id="ctype-arrow" onclick="setConnectorType('arrow')">→ Flecha</button>
-  <button class="cob" id="ctype-dashed" onclick="setConnectorType('dashed')">╌╌ Punteada</button>
+  <button class="cob" id="ctype-dashed" onclick="setConnectorType('dashed')">╌╌ Punt.</button>
   <button class="cob" id="ctype-brace" onclick="setConnectorType('brace')">} Llave</button>
-  <button class="cob" id="ctype-orthoH" onclick="setConnectorType('orthoH')">⊢ Ortogonal H</button>
-  <button class="cob" id="ctype-orthoV" onclick="setConnectorType('orthoV')">⊤ Ortogonal V</button>
-  <button class="cob cancel" onclick="cancelConnect()">✕ Cancelar</button>
-</div>
-
-<!-- CONNECT STATUS BAR -->
-<div id="connect-status-bar" class="bot-bar" style="background:rgba(255,152,0,.12);border-color:#ff9800;">
-  <span id="connect-status-text" style="font-size:13px;font-weight:700;color:#ff9800;"></span>
-  <button class="cob cancel" onclick="cancelConnect()">✕ Cancelar</button>
+  <button class="cob" id="ctype-orthoH" onclick="setConnectorType('orthoH')">⊢ L-H</button>
+  <button class="cob" id="ctype-orthoV" onclick="setConnectorType('orthoV')">⊤ L-V</button>
+  <button class="cob cancel" onclick="cancelConnect()">✕</button>
 </div>
 
 <!-- FORMAT MODAL -->
@@ -243,6 +249,16 @@ body.lasso-mode *{cursor:crosshair!important;}
   </div>
 </div>
 
+
+<!-- MADRE MODAL -->
+<div id="madre-overlay" class="madre-overlay">
+  <div class="madre-panel">
+    <h3>📦 Configurar Bloque Madre</h3>
+    <p id="madre-modal-msg">Seleccioná los bloques que querés guardar dentro de este bloque madre, luego hacé click en "Confirmar".</p>
+    <button class="fm-btn" onclick="confirmMadreSelection()" style="background:#2196F3;color:#fff;border-color:#2196F3;">✅ Confirmar selección</button>
+    <button class="fm-btn" onclick="closeMadreModal()" style="color:red;border-color:red;">✕ Cancelar</button>
+  </div>
+</div>
 <canvas id="mainCanvas"></canvas>
 
 <div id="word-wrapper">
@@ -334,6 +350,7 @@ function restoreSnap(s){
   batchSaving=true; canvas.clear(); connections=[];
   if(s.objects) s.objects.forEach(o=>{
     if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    if(o.type==='madre'){addMadreBlock({...o,fromLoad:true});return;}
     addBlock(o.type,o);
   });
   setTimeout(()=>{
@@ -546,6 +563,7 @@ function addBlock(type, opts={}){
   let defBg=opts.bg||(isDark?THEME.dark[type]:THEME.light[type])||'#e3fafc';
 
   // ── TEXT ONLY ──
+  if(type==='madre') return addMadreBlock(opts);
   if(type==='text-only'){
     let t=new fabric.Textbox(savedText||"Doble clic para editar...",{
       width:opts.width||200, fontSize:opts.fontSize||14, fontFamily:opts.fontFamily||'Segoe UI',
@@ -705,11 +723,9 @@ function cancelConnect(){
   document.getElementById("btn-connect-mode").innerText="⚡ Conectar";
   document.getElementById("btn-connect-mode").classList.remove("btn-active");
   document.getElementById("conn-type-bar").classList.remove("vis");
-  document.getElementById("connect-status-bar").classList.remove("vis");
 }
 function showConnectStatus(msg){
   document.getElementById("connect-status-text").innerText=msg;
-  document.getElementById("connect-status-bar").classList.add("vis");
 }
 function startConnectingFromMenu(){
   if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
@@ -972,6 +988,7 @@ function setupCanvasEvents(){
         document.getElementById("ctx-shape-sec").style.display=isTO?"none":"block";
         document.getElementById("ctx-text-sec").style.display="block";
         document.getElementById("ctx-conn-mi").style.display="flex";
+        document.getElementById("ctx-madre-mi").style.display=target.customType==='madre'?'flex':'none';
         showCtx(evt);
       } else {
         // Empty space: start lasso on mousedown, track on mousemove
@@ -1226,6 +1243,243 @@ function applyFormatToSelection(fmt){
   canvas.renderAll(); snapshot();
 }
 
+
+// ═══════════ BLOQUE MADRE ═══════════
+// madreBlocks = { madreId: { childIds:[], collapsed:false, savedPositions:{id:{left,top}} } }
+let madreBlocks = {};
+let pendingMadreId = null;  // madre block waiting for child selection
+
+function addMadreBlock(opts={}){
+  let left=opts.left!==undefined?opts.left:canvas.getWidth()/2;
+  let top=opts.top!==undefined?opts.top:canvas.getHeight()/2;
+  if(!opts.fromLoad){
+    let vpt=canvas.viewportTransform;
+    left=(left-vpt[4])/vpt[0]; top=(top-vpt[5])/vpt[3];
+  }
+  let id=opts.id||"madre_"+Date.now()+Math.floor(Math.random()*9999);
+  let isDark=document.body.classList.contains("dark-mode");
+  let label=opts.text||"Bloque Madre";
+  let isCollapsed=opts.collapsed||false;
+
+  // Main container rect
+  let rect=new fabric.Rect({
+    width:200, height:70, rx:14, ry:14,
+    fill: isDark?'#1a2a3a':'#e8f4fd',
+    stroke:'#2196F3', strokeWidth:2.5,
+    originX:'center', originY:'center',
+    left:left, top:top,
+    id:id, customType:'madre',
+    selectable:true, evented:true,
+    shadow: new fabric.Shadow({color:'rgba(33,150,243,0.3)',blur:18,offsetX:0,offsetY:4})
+  });
+
+  // Label text
+  let labelText=new fabric.Textbox(label,{
+    width:160, fontSize:13, fontFamily:'Segoe UI', fontWeight:'700',
+    fill: isDark?'#90caf9':'#1565c0', textAlign:'center',
+    originX:'center', originY:'center',
+    left:left, top:top-10,
+    selectable:false, evented:false, isLinkedText:true
+  });
+  labelText.shapeRef=rect; rect.textRef=labelText;
+
+  // Toggle button (▶ collapsed / ▼ expanded)
+  let toggleBtn=new fabric.Text(isCollapsed?'▶ Abrir':'▼ Cerrar',{
+    fontSize:11, fontFamily:'Segoe UI', fontWeight:'600',
+    fill:'#2196F3', textAlign:'center',
+    originX:'center', originY:'center',
+    left:left, top:top+18,
+    selectable:false, evented:true,
+    hoverCursor:'pointer',
+    isMadreToggle:true, madreId:id
+  });
+
+  // Counter badge
+  let childCount=(opts.childIds||[]).length;
+  let badge=new fabric.Text(childCount>0?`${childCount} bloques`:'Sin bloques',{
+    fontSize:10, fontFamily:'Segoe UI',
+    fill: isDark?'rgba(255,255,255,0.45)':'rgba(0,0,0,0.4)', textAlign:'center',
+    originX:'center', originY:'center',
+    left:left, top:top+32,
+    selectable:false, evented:false, isLinkedText:true, isMadreBadge:true
+  });
+  badge.shapeRef=rect; rect.badgeRef=badge;
+
+  toggleBtn.on('mousedown',()=>toggleMadre(id));
+  rect.on('mousedblclick',()=>{
+    // Edit label on double click
+    labelText.selectable=true; labelText.evented=true;
+    canvas.setActiveObject(labelText); labelText.enterEditing();
+  });
+  labelText.on('editing:exited',()=>{
+    labelText.selectable=false; labelText.evented=false;
+    canvas.setActiveObject(rect); canvas.renderAll(); snapshot();
+  });
+
+  canvas.add(rect); canvas.add(labelText); canvas.add(toggleBtn); canvas.add(badge);
+  canvas.setActiveObject(rect);
+
+  // Register in madreBlocks
+  madreBlocks[id]={
+    childIds: opts.childIds||[],
+    collapsed: isCollapsed,
+    savedPositions: opts.savedPositions||{},
+    toggleRef: toggleBtn,
+    badgeRef: badge
+  };
+
+  rect.toggleRef=toggleBtn;
+
+  // Move all parts together when madre moves
+  rect.on('moving',()=>{
+    let dx=rect.left-rect._lastLeft||0, dy=rect.top-rect._lastTop||0;
+    if(rect._lastLeft!==undefined){
+      [labelText,toggleBtn,badge].forEach(o=>{
+        o.set({left:o.left+dx, top:o.top+dy}); o.setCoords();
+      });
+      // If collapsed, move children too
+      if(madreBlocks[id]&&madreBlocks[id].collapsed){
+        madreBlocks[id].childIds.forEach(cid=>{
+          let child=findObj(cid);
+          if(child){
+            child.set({left:child.left+dx, top:child.top+dy});
+            if(child.textRef) child.textRef.set({left:child.left, top:child.top});
+            child.setCoords();
+          }
+        });
+      }
+    }
+    rect._lastLeft=rect.left; rect._lastTop=rect.top;
+    updateLines(); canvas.renderAll();
+  });
+
+  if(opts.fromLoad&&isCollapsed){
+    // Hide children on load if collapsed
+    setTimeout(()=>hideMadreChildren(id),100);
+  }
+
+  updateMadreBadge(id);
+  return rect;
+}
+
+function updateMadreBadge(madreId){
+  let m=madreBlocks[madreId]; if(!m) return;
+  let n=m.childIds.length;
+  if(m.badgeRef) m.badgeRef.set('text', n>0?`${n} bloque${n!==1?'s':''}`:'Sin bloques');
+  if(m.toggleRef) m.toggleRef.set('text', m.collapsed?'▶ Abrir':'▼ Cerrar');
+  canvas.renderAll();
+}
+
+function toggleMadre(madreId){
+  let m=madreBlocks[madreId]; if(!m) return;
+  if(m.collapsed) expandMadre(madreId);
+  else collapseMadre(madreId);
+}
+
+function collapseMadre(madreId){
+  let m=madreBlocks[madreId]; if(!m) return;
+  // Save positions before hiding
+  m.childIds.forEach(cid=>{
+    let child=findObj(cid);
+    if(child) m.savedPositions[cid]={left:child.left, top:child.top};
+  });
+  m.collapsed=true;
+  hideMadreChildren(madreId);
+  updateMadreBadge(madreId);
+  snapshot();
+}
+
+function hideMadreChildren(madreId){
+  let m=madreBlocks[madreId]; if(!m) return;
+  m.childIds.forEach(cid=>{
+    let child=findObj(cid);
+    if(child){
+      child.set({visible:false, selectable:false, evented:false});
+      if(child.textRef) child.textRef.set({visible:false});
+      // Hide connectors involving this child
+      connections.forEach(c=>{
+        if(c.fromId===cid||c.toId===cid){
+          if(c.lineRef) c.lineRef.set('visible',false);
+          if(c.arrowRef) c.arrowRef.set('visible',false);
+          if(c.braceLines) c.braceLines.forEach(l=>l.set('visible',false));
+          if(c.orthoLines) c.orthoLines.forEach(l=>l.set('visible',false));
+        }
+      });
+    }
+  });
+  canvas.renderAll();
+}
+
+function expandMadre(madreId){
+  let m=madreBlocks[madreId]; if(!m) return;
+  m.collapsed=false;
+  m.childIds.forEach(cid=>{
+    let child=findObj(cid);
+    if(child){
+      // Restore saved position
+      if(m.savedPositions[cid]){
+        child.set({left:m.savedPositions[cid].left, top:m.savedPositions[cid].top});
+        if(child.textRef) child.textRef.set({left:child.left, top:child.top});
+      }
+      child.set({visible:true, selectable:true, evented:true});
+      if(child.textRef) child.textRef.set({visible:true});
+      // Show connectors
+      connections.forEach(c=>{
+        if(c.fromId===cid||c.toId===cid){
+          if(c.lineRef) c.lineRef.set('visible',true);
+          if(c.arrowRef) c.arrowRef.set('visible',true);
+          if(c.braceLines) c.braceLines.forEach(l=>l.set('visible',true));
+          if(c.orthoLines) c.orthoLines.forEach(l=>l.set('visible',true));
+        }
+      });
+    }
+  });
+  updateMadreBadge(madreId);
+  updateLines(); canvas.renderAll(); snapshot();
+}
+
+function openMadreModal(madreId){
+  pendingMadreId=madreId;
+  let m=madreBlocks[madreId];
+  let n=m?m.childIds.length:0;
+  document.getElementById("madre-modal-msg").innerText=
+    n>0
+    ? `Este bloque ya tiene ${n} bloque(s). Seleccioná los bloques que querés agregar o quitar y confirmá.`
+    : "Seleccioná los bloques que querés guardar dentro. Podés usar el lasso (click derecho + arrastrar) para seleccionar varios a la vez. Luego hacé click en Confirmar.";
+  document.getElementById("madre-overlay").classList.add("vis");
+}
+
+function confirmMadreSelection(){
+  if(!pendingMadreId) return;
+  let m=madreBlocks[pendingMadreId]; if(!m) return;
+  let selected=canvas.getActiveObjects().filter(o=>
+    !o.isLinkedText && o.id && o.id!==pendingMadreId &&
+    o.customType!=='madre' && !o.isMadreToggle && !o.isMadreBadge
+  );
+  m.childIds=selected.map(o=>o.id);
+  m.savedPositions={};
+  selected.forEach(o=>{ m.savedPositions[o.id]={left:o.left, top:o.top}; });
+  closeMadreModal();
+  canvas.discardActiveObject();
+  updateMadreBadge(pendingMadreId);
+  pendingMadreId=null;
+  showToast(`📦 ${m.childIds.length} bloque(s) asignados`);
+  snapshot();
+}
+
+function closeMadreModal(){
+  document.getElementById("madre-overlay").classList.remove("vis");
+  pendingMadreId=null;
+}
+
+// Add "Asignar hijos" to context menu for madre blocks
+function openMadreAssign(){
+  if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
+  if(rightClickedObject.customType!=='madre') return;
+  document.getElementById("ctx").style.display="none";
+  openMadreModal(rightClickedObject.id);
+}
+
 // ═══════════ TOAST ═══════════
 function showToast(msg='💾 ¡Guardado!'){
   let t=document.getElementById("toast"); t.innerText=msg; t.style.display="block";
@@ -1238,6 +1492,7 @@ function serializeObjects(){
   canvas.getObjects().forEach(o=>{
     if(!o.id||o.isLinkedText) return;
     if(o.customType==='straight-line'){arr.push({id:o.id,type:'straight-line',lineDir:o.lineDir,x1:o.x1,y1:o.y1,x2:o.x2,y2:o.y2});return;}
+    if(o.customType==='madre'){let m=madreBlocks[o.id]||{};arr.push({id:o.id,type:'madre',left:o.left,top:o.top,text:o.textRef?o.textRef.text:'Bloque Madre',childIds:m.childIds||[],collapsed:m.collapsed||false,savedPositions:m.savedPositions||{},fromLoad:true});return;}
     let isTO=o.customType==='text-only', t=isTO?o:o.textRef;
     arr.push({
       id:o.id,type:o.customType,left:o.left,top:o.top,scaleX:o.scaleX,scaleY:o.scaleY,
@@ -1259,7 +1514,8 @@ function saveToDatabase(silent=false){
     objects:serializeObjects(),
     connections:connections.map(c=>({fromId:c.fromId,toId:c.toId,type:c.type||'line'})),
     wordText:document.getElementById("word-editor").innerHTML,
-    canvasBg:canvasBgColor
+    canvasBg:canvasBgColor,
+    madreBlocks:Object.fromEntries(Object.entries(madreBlocks).map(([k,v])=>([k,{childIds:v.childIds,collapsed:v.collapsed,savedPositions:v.savedPositions}])))
   };
   saveDB(); if(!silent) showToast('💾 ¡Guardado!');
 }
@@ -1267,8 +1523,10 @@ function loadProjectData(){
   batchSaving=true; canvas.clear(); connections=[]; history=[]; historyIdx=-1;
   let proj=db.users[currentUser].projects[currentProject]; if(!proj) return;
   if(proj.canvasBg){canvasBgColor=proj.canvasBg;canvas.setBackgroundColor(proj.canvasBg,()=>{});}
+  if(proj.madreBlocks){ Object.keys(proj.madreBlocks).forEach(k=>{ let m=proj.madreBlocks[k]; madreBlocks[k]=m; }); }
   if(proj.objects) proj.objects.forEach(o=>{
     if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    if(o.type==='madre'){addMadreBlock({...o,fromLoad:true});return;}
     addBlock(o.type,o);
   });
   document.getElementById("word-editor").innerHTML=proj.wordText||"";

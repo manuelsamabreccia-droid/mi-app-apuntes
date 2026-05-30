@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Apuntes Pro V13</title>
+<title>Apuntes Pro V14</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
 :root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
@@ -42,7 +42,7 @@ body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Se
 .ddl{padding:6px 16px 4px;font-size:10px;font-weight:700;opacity:.45;text-transform:uppercase;letter-spacing:.5px;}
 .ddd{height:1px;background:var(--border-color);margin:4px 0;}
 /* CONTEXT MENU */
-#ctx{position:fixed;background:var(--bg-box);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.2);border:1px solid var(--border-color);display:none;flex-direction:column;padding:6px 0;z-index:9999;min-width:215px;color:var(--text-main);}
+#ctx{position:fixed;background:var(--bg-box);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.2);border:1px solid var(--border-color);display:none;flex-direction:column;padding:6px 0;z-index:9999;min-width:215px;max-width:240px;color:var(--text-main);max-height:90vh;overflow-y:auto;}
 #ctx .mi{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 #ctx .mi:hover{background:rgba(128,128,128,.15);}
 #ctx select,#ctx input[type=color]{padding:3px;font-size:12px;max-width:95px;background:var(--bg-app);color:var(--text-main);border:1px solid var(--border-color);border-radius:4px;}
@@ -214,6 +214,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   <div class="sep"></div>
   <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Conectar</button>
   <button class="btn" id="btn-snap" onclick="toggleSnap()" title="Snap a grilla (S)">🧲 Snap</button>
+  <button class="btn" id="btn-hacer-madre" onclick="convertirSeleccionEnMadre()" style="background:rgba(33,150,243,.12);color:#2196F3;" title="Convertir selección en Bloque Madre">📦 Hacer Madre</button>
   <div class="sep"></div>
   <button class="btn" id="btn-word" onclick="toggleWordPanel()" style="background:rgba(156,39,176,.12);color:#9c27b0;">📝 Hoja Resumen</button>
   <div class="sep"></div>
@@ -259,6 +260,12 @@ body.lasso-mode *{cursor:crosshair!important;}
     <button class="fm-btn" onclick="closeMadreModal()" style="color:red;border-color:red;">✕ Cancelar</button>
   </div>
 </div>
+<!-- MADRE PICK BAR -->
+<div id="madre-pick-bar" class="bot-bar" style="background:rgba(33,150,243,.1);border-color:#2196F3;">
+  <span style="font-size:12px;font-weight:700;color:#2196F3;">Seleccioná los bloques hijos</span>
+  <button class="cob act" onclick="confirmMadrePickBar()">✅ Confirmar</button>
+  <button class="cob cancel" onclick="document.getElementById('madre-pick-bar').classList.remove('vis');pendingMadreId=null;">✕</button>
+</div>
 <canvas id="mainCanvas"></canvas>
 
 <div id="word-wrapper">
@@ -274,7 +281,7 @@ body.lasso-mode *{cursor:crosshair!important;}
 
 <script>
 // ═══════════ STATE ═══════════
-let db = JSON.parse(localStorage.getItem("apuntes_v12_db")) || { users:{} };
+let db = JSON.parse(localStorage.getItem("apuntes_v12_db")||localStorage.getItem("apuntes_v11_db")||localStorage.getItem("apuntes_v10_db")) || { users:{} };
 let currentUser=null, currentProject=null;
 let canvas, isConnectMode=false, connectSourceObj=null, rightClickedObject=null;
 let connections=[];
@@ -377,7 +384,11 @@ function setupKeyboard(){
       let act=canvas.getActiveObjects();
       if(act.length){rightClickedObject=act.length>1?act:act[0];deleteCurrentObject();}
     }
-    else if(e.key==='Escape'){cancelConnect();closeLasso();closeFormatModal();}
+    else if(e.key==='Escape'){cancelConnect();closeLasso();closeFormatModal();document.getElementById('madre-pick-bar').classList.remove('vis');pendingMadreId=null;}
+    else if(e.key==='Enter'&&pendingMadreId){confirmMadrePickBar();}
+    else if((e.key==='q'||e.key==='Q')&&!e.ctrlKey){addBlock('square');}
+    else if((e.key==='c'||e.key==='C')&&!e.ctrlKey){addBlock('circle');}
+    else if((e.key==='t'||e.key==='T')&&!e.ctrlKey){addBlock('text-only');}
     else if((e.key==='s'||e.key==='S')&&!e.ctrlKey) toggleSnap();
   });
 }
@@ -1103,9 +1114,15 @@ function setupCanvasEvents(){
 function showCtx(evt){
   let ctxMenu=document.getElementById("ctx");
   ctxMenu.style.display="flex";
-  let mx=Math.min(evt.clientX,window.innerWidth-225);
-  let my=Math.min(evt.clientY,window.innerHeight-400);
-  ctxMenu.style.left=mx+"px"; ctxMenu.style.top=my+"px";
+  ctxMenu.style.left="-9999px"; ctxMenu.style.top="-9999px";
+  // Measure after display so we get real height
+  requestAnimationFrame(()=>{
+    let mw=ctxMenu.offsetWidth||225, mh=ctxMenu.offsetHeight||300;
+    let mx=evt.clientX+mw>window.innerWidth ? evt.clientX-mw : evt.clientX;
+    let my=evt.clientY+mh>window.innerHeight ? window.innerHeight-mh-8 : evt.clientY;
+    mx=Math.max(4,mx); my=Math.max(4,my);
+    ctxMenu.style.left=mx+"px"; ctxMenu.style.top=my+"px";
+  });
 }
 
 // ═══════════ GEOMETRY ═══════════
@@ -1449,35 +1466,75 @@ function openMadreModal(madreId){
   document.getElementById("madre-overlay").classList.add("vis");
 }
 
-function confirmMadreSelection(){
-  if(!pendingMadreId) return;
-  let m=madreBlocks[pendingMadreId]; if(!m) return;
-  let selected=canvas.getActiveObjects().filter(o=>
-    !o.isLinkedText && o.id && o.id!==pendingMadreId &&
-    o.customType!=='madre' && !o.isMadreToggle && !o.isMadreBadge
-  );
-  m.childIds=selected.map(o=>o.id);
-  m.savedPositions={};
-  selected.forEach(o=>{ m.savedPositions[o.id]={left:o.left, top:o.top}; });
-  closeMadreModal();
-  canvas.discardActiveObject();
-  updateMadreBadge(pendingMadreId);
-  pendingMadreId=null;
-  showToast(`📦 ${m.childIds.length} bloque(s) asignados`);
-  snapshot();
-}
-
 function closeMadreModal(){
   document.getElementById("madre-overlay").classList.remove("vis");
   pendingMadreId=null;
 }
 
-// Add "Asignar hijos" to context menu for madre blocks
+// Convert selection to madre OR assign to existing madre
+function convertirSeleccionEnMadre(){
+  let sel=canvas.getActiveObjects().filter(o=>
+    !o.isLinkedText && o.id && o.customType!=='madre' && !o.isMadreToggle && !o.isMadreBadge
+  );
+  if(!sel.length){ showToast('Seleccioná al menos 1 bloque primero'); return; }
+
+  // If exactly one selected AND it is already a shape → convert IT into madre
+  // Otherwise create a new madre and assign selected as children
+  if(sel.length===1 && sel[0].customType && sel[0].customType!=='text-only'){
+    let obj=sel[0];
+    let t=obj.textRef; let label=t?t.text:'Bloque Madre';
+    let left=obj.left, top=obj.top;
+    // Remove original
+    if(t) canvas.remove(t);
+    canvas.remove(obj);
+    let newMadre=addMadreBlock({left,top,text:label,fromLoad:true});
+    showToast('📦 Bloque convertido en Madre');
+    canvas.discardActiveObject(); snapshot(); return;
+  }
+
+  // Multiple selected: create madre at center of selection, assign all as children
+  let xs=sel.map(o=>o.left), ys=sel.map(o=>o.top);
+  let cx=(Math.min(...xs)+Math.max(...xs))/2;
+  let cy=Math.min(...ys)-90;
+  let newMadre=addMadreBlock({left:cx,top:cy,text:'Grupo',fromLoad:true});
+  if(!newMadre) return;
+  let mid=madreBlocks[newMadre.id];
+  mid.childIds=sel.map(o=>o.id);
+  sel.forEach(o=>{mid.savedPositions[o.id]={left:o.left,top:o.top};});
+  updateMadreBadge(newMadre.id);
+  canvas.discardActiveObject();
+  showToast(`📦 ${sel.length} bloques asignados al nuevo Madre`);
+  snapshot();
+}
+
+// Context menu: edit children of an existing madre
 function openMadreAssign(){
   if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
   if(rightClickedObject.customType!=='madre') return;
   document.getElementById("ctx").style.display="none";
-  openMadreModal(rightClickedObject.id);
+  // Enter "pick children" mode
+  let madreId=rightClickedObject.id;
+  pendingMadreId=madreId;
+  showToast('📦 Seleccioná los bloques hijos y presioná Enter para confirmar');
+  // Show a floating confirm bar
+  document.getElementById("madre-pick-bar").classList.add("vis");
+}
+
+function confirmMadrePickBar(){
+  if(!pendingMadreId) return;
+  let m=madreBlocks[pendingMadreId]; if(!m) return;
+  let sel=canvas.getActiveObjects().filter(o=>
+    !o.isLinkedText && o.id && o.id!==pendingMadreId &&
+    o.customType!=='madre' && !o.isMadreToggle && !o.isMadreBadge
+  );
+  m.childIds=sel.map(o=>o.id);
+  m.savedPositions={};
+  sel.forEach(o=>{m.savedPositions[o.id]={left:o.left,top:o.top};});
+  document.getElementById("madre-pick-bar").classList.remove("vis");
+  canvas.discardActiveObject();
+  updateMadreBadge(pendingMadreId);
+  showToast(`📦 ${sel.length} bloque(s) asignados`);
+  pendingMadreId=null; snapshot();
 }
 
 // ═══════════ TOAST ═══════════

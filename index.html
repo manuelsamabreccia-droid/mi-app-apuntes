@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Apuntes Pro V15</title>
+<title>Apuntes Pro V16</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
 :root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
@@ -87,11 +87,11 @@ body.lasso-mode *{cursor:crosshair!important;}
 .madre-panel{background:var(--bg-box);border-radius:18px;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,.3);min-width:300px;max-width:420px;color:var(--text-main);border:1px solid var(--border-color);}
 .madre-panel h3{margin:0 0 12px;font-size:17px;}
 .madre-panel p{margin:0 0 14px;font-size:13px;opacity:.65;}
- 
+
 </style>
 </head>
 <body>
- 
+
 <button id="dark-toggle-btn" onclick="toggleDarkMode()">🌙</button>
 <button id="bg-color-btn" title="Color de fondo" onclick="document.getElementById('cbgi').click()">🎨</button>
 <input type="color" id="cbgi" style="display:none" onchange="setCanvasBg(this.value)">
@@ -101,7 +101,7 @@ body.lasso-mode *{cursor:crosshair!important;}
 <div id="toast">💾 ¡Guardado!</div>
 <div id="lasso-rect"></div>
 <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importDatabase(event)">
- 
+
 <!-- AUTH -->
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
@@ -128,7 +128,7 @@ body.lasso-mode *{cursor:crosshair!important;}
     <button onclick="exportDatabaseBackup()" style="background:#9c27b0;font-size:12px;padding:10px;">📥 Guardar Backup</button>
   </div>
 </div>
- 
+
 <!-- CONTEXT MENU -->
 <div id="ctx">
   <div class="mi" onclick="deleteCurrentObject()" style="color:red;font-weight:700;">🗑️ Eliminar</div>
@@ -178,7 +178,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   <div id="ctx-conn-mi" class="mi" onclick="startConnectingFromMenu()" style="color:#ff9800;font-weight:700;">🔗 Conectar Objeto</div>
   <div id="ctx-madre-mi" class="mi" onclick="openMadreAssign()" style="color:#2196F3;font-weight:700;display:none;">📦 Asignar bloques hijos</div>
 </div>
- 
+
 <!-- TOOLBAR -->
 <div id="toolbar" class="hidden">
   <div class="dropdown">
@@ -221,7 +221,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   <button class="btn" onclick="saveToDatabase()" style="background:#4CAF50;color:#fff;">💾 Guardar</button>
   <button class="btn" onclick="exitToWorkspace()" style="background:#f44336;color:#fff;">🏠 Salir</button>
 </div>
- 
+
 <!-- CONNECTOR BAR (unified) -->
 <div id="conn-type-bar" class="bot-bar">
   <span id="connect-status-text" style="font-size:12px;font-weight:700;color:#ff9800;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
@@ -234,7 +234,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   <button class="cob" id="ctype-orthoV" onclick="setConnectorType('orthoV')">⊤ L-V</button>
   <button class="cob cancel" onclick="cancelConnect()">✕</button>
 </div>
- 
+
 <!-- FORMAT MODAL -->
 <div id="format-modal" class="modal-bg">
   <div class="modal-box">
@@ -249,8 +249,8 @@ body.lasso-mode *{cursor:crosshair!important;}
     <button class="fm-btn" onclick="closeFormatModal()" style="color:red;border-color:red;margin-top:4px;">✕ Cancelar</button>
   </div>
 </div>
- 
- 
+
+
 <!-- MADRE MODAL -->
 <div id="madre-overlay" class="madre-overlay">
   <div class="madre-panel">
@@ -267,7 +267,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   <button class="cob cancel" onclick="document.getElementById('madre-pick-bar').classList.remove('vis');pendingMadreId=null;">✕</button>
 </div>
 <canvas id="mainCanvas"></canvas>
- 
+
 <div id="word-wrapper">
   <h3 style="margin:0 0 10px;font-size:16px;">Apuntes Formalizados</h3>
   <div id="word-toolbar">
@@ -278,7 +278,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   </div>
   <div id="word-editor" contenteditable="true"></div>
 </div>
- 
+
 <script>
 // ═══════════ STATE ═══════════
 let db = JSON.parse(localStorage.getItem("apuntes_v12_db")||localStorage.getItem("apuntes_v11_db")||localStorage.getItem("apuntes_v10_db")) || { users:{} };
@@ -297,7 +297,7 @@ let isLassoMode=false, lassoStart=null;
 const lassoEl=document.getElementById('lasso-rect');
 // Right-click lasso state
 let rcHoldTimer=null, rcDragging=false, rcStart=null;
- 
+
 const THEME={
   light:{square:'#e3fafc',circle:'#ffebf0',diamond:'#fff0e0','post-it':'#fff740'},
   dark:{square:'#1a3a4a',circle:'#4a1d2e',diamond:'#3a2a10','post-it':'#524e10'}
@@ -311,12 +311,12 @@ const FMT={
   flujo:{start:'#c8e6c9',process:'#e3f2fd',decision:'#fff3e0',end:'#ffcdd2'},
   'concept-map':{main:'#ede7f6',secondary:'#fce4ec',detail:'#e0f2f1'}
 };
- 
+
 // ═══════════ INIT ═══════════
 window.onload=function(){
   // Block native context menu everywhere
   document.addEventListener('contextmenu',e=>e.preventDefault(),true);
- 
+
   canvas=new fabric.Canvas('mainCanvas',{
     width:window.innerWidth,height:window.innerHeight,
     backgroundColor:'#f5f7fa',fireRightClick:true,stopContextMenu:true,
@@ -336,7 +336,7 @@ window.onload=function(){
 window.addEventListener('resize',()=>{
   if(canvas){canvas.setWidth(window.innerWidth);canvas.setHeight(window.innerHeight);canvas.renderAll();}
 });
- 
+
 // ═══════════ UNDO/REDO ═══════════
 function snapshot(){
   if(batchSaving) return;
@@ -366,9 +366,14 @@ function restoreSnap(s){
       if(o1&&o2) createConn(o1,o2,c.type||'line');
     });
     canvas.renderAll(); batchSaving=false;
+    // Re-apply collapsed state after undo/redo
+    Object.keys(madreBlocks).forEach(mid=>{
+      if(madreBlocks[mid].collapsed) hideMadreChildren(mid);
+    });
+    canvas.renderAll();
   },200);
 }
- 
+
 // ═══════════ KEYBOARD ═══════════
 function setupKeyboard(){
   document.addEventListener('keydown',e=>{
@@ -399,7 +404,7 @@ function selectAll(){
   canvas.setActiveObject(new fabric.ActiveSelection(objs,{canvas}));
   canvas.renderAll();
 }
- 
+
 // ═══════════ SNAP ═══════════
 function toggleSnap(){
   snapEnabled=!snapEnabled;
@@ -407,20 +412,24 @@ function toggleSnap(){
   document.getElementById('snap-hint').style.display=snapEnabled?'block':'none';
 }
 function sv(v){return snapEnabled?Math.round(v/SNAP)*SNAP:v;}
- 
+
 // ═══════════ CANVAS BG / CENTER ═══════════
 function setCanvasBg(c){canvasBgColor=c;canvas.setBackgroundColor(c,()=>canvas.renderAll());}
 function centerCanvas(){canvas.setViewportTransform([1,0,0,1,0,0]);updateLines();updateZoomUI();}
 function updateZoomUI(){document.getElementById('zoom-indicator').innerText=Math.round(canvas.getZoom()*100)+'%';}
- 
+
 // ═══════════ AUTH ═══════════
 function checkAutoLogin(){
   let users=Object.keys(db.users);
-  // Check for saved auto-login token on this device
+  // Auto-login if token saved on this device
   let savedLogin=localStorage.getItem("apuntes_autologin");
   if(savedLogin&&db.users[savedLogin]){
-    currentUser=savedLogin; showProjectWorkspace();
-    document.getElementById("auth-screen").style.display="flex"; // keep visible until project chosen
+    currentUser=savedLogin;
+    // Go directly to project selection (skip password)
+    document.getElementById("login-step").classList.add("hidden");
+    document.getElementById("project-step").classList.remove("hidden");
+    document.getElementById("welcome-text").innerText=`Conectado como: ${currentUser}`;
+    renderProjectList();
     return;
   }
   if(users.length===1){
@@ -441,7 +450,14 @@ function renderSavedAccountsUI(){
     let hasToken=localStorage.getItem("apuntes_autologin")===u;
     li.innerHTML=`<span>👤 ${u}</span><span class="acc-badge" style="${hasToken?'background:#4CAF50':''}">` + (hasToken?'Este dispositivo':'Guardado') + `</span>`;
     li.onclick=()=>{
-      if(hasToken){ currentUser=u; showProjectWorkspace(); return; }
+      if(hasToken){
+        currentUser=u;
+        document.getElementById("login-step").classList.add("hidden");
+        document.getElementById("project-step").classList.remove("hidden");
+        document.getElementById("welcome-text").innerText=`Conectado como: ${u}`;
+        renderProjectList();
+        return;
+      }
       document.getElementById("username").value=u;
       document.getElementById("username").readOnly=false;
       document.getElementById("password").focus();
@@ -533,7 +549,7 @@ window.importDatabase=function(ev){
   r.onload=e=>{try{let d=JSON.parse(e.target.result);if(d.users){db=d;saveDB();alert("¡Backup cargado!");location.reload();}else alert("Archivo inválido.");}catch(e){alert("Error al procesar.");}};
   r.readAsText(f);
 };
- 
+
 // ═══════════ DARK MODE ═══════════
 function toggleDarkMode(force=false){
   let body=document.body;
@@ -557,14 +573,14 @@ function toggleDarkMode(force=false){
     });
   }
 }
- 
+
 // ═══════════ WORD PANEL ═══════════
 function toggleWordPanel(){
   let p=document.getElementById("word-wrapper"),b=document.getElementById("btn-word");
   p.classList.toggle("open"); b.classList.toggle("btn-active",p.classList.contains("open"));
 }
 function execWordCmd(cmd){document.execCommand(cmd,false,null);document.getElementById("word-editor").focus();}
- 
+
 // ═══════════ SHAPE DIMENSIONS ═══════════
 // Returns the visual width/height of a shape in canvas units (accounting for scale)
 function getShapeDims(shape){
@@ -574,7 +590,7 @@ function getShapeDims(shape){
   else {w=(shape.width||120)*shape.scaleX; h=(shape.height||95)*shape.scaleY;}
   return {w,h};
 }
- 
+
 // ═══════════ ADD BLOCK ═══════════
 function addBlock(type, opts={}){
   // Screen-center default, converted to canvas coords
@@ -590,7 +606,7 @@ function addBlock(type, opts={}){
   let isDark=document.body.classList.contains("dark-mode");
   let defColor=isDark?'#ffffff':'#333333';
   let defBg=opts.bg||(isDark?THEME.dark[type]:THEME.light[type])||'#e3fafc';
- 
+
   // ── TEXT ONLY ──
   if(type==='madre') return addMadreBlock(opts);
   if(type==='text-only'){
@@ -607,14 +623,14 @@ function addBlock(type, opts={}){
     t.on('editing:exited',()=>snapshot());
     canvas.add(t); canvas.setActiveObject(t); canvas.renderAll(); return t;
   }
- 
+
   // ── SHAPE ──
   // Determine base shape dimensions
   let baseW=140, baseH=95;
   if(type==='circle'){baseW=110; baseH=110;}
   else if(type==='post-it'){baseW=120; baseH=120;}
   else if(type==='diamond'){baseW=150; baseH=110;}
- 
+
   let scaleX=opts.scaleX||1, scaleY=opts.scaleY||1;
   let shape;
   if(type==='square'){shape=new fabric.Rect({width:baseW,height:baseH,fill:defBg,rx:10,ry:10});}
@@ -622,7 +638,7 @@ function addBlock(type, opts={}){
   else if(type==='post-it'){shape=new fabric.Rect({width:baseW,height:baseH,fill:defBg});}
   else if(type==='diamond'){shape=new fabric.Polygon([{x:75,y:0},{x:150,y:55},{x:75,y:110},{x:0,y:55}],{fill:defBg});}
   else return null;
- 
+
   shape.set({
     left:left, top:top, originX:'center', originY:'center',
     id:id, customType:type,
@@ -630,14 +646,14 @@ function addBlock(type, opts={}){
     noteFormat:opts.noteFormat||null,
     stroke:opts.stroke||null, strokeWidth:opts.strokeWidth||0
   });
- 
+
   // ── TEXTBOX linked to shape ──
   // Compute text wrap width from shape's actual pixel size
   let textPadding=16;
   let textW=Math.max(40, baseW*scaleX - textPadding);
   if(type==='circle') textW=Math.max(40,(110*scaleX)*0.75);
   if(type==='diamond') textW=Math.max(40,(baseW*scaleX)*0.55);
- 
+
   let textObj=new fabric.Textbox(savedText,{
     width:textW,
     fontSize:opts.fontSize||14, fontFamily:opts.fontFamily||'Segoe UI',
@@ -648,10 +664,10 @@ function addBlock(type, opts={}){
     selectable:false, evented:false, isLinkedText:true,
     splitByGrapheme:false
   });
- 
+
   shape.textRef=textObj;
   textObj.shapeRef=shape;
- 
+
   // Resize shape to fit text height
   function fitShapeToText(){
     let tH=textObj.calcTextHeight?textObj.calcTextHeight():textObj.height;
@@ -669,7 +685,7 @@ function addBlock(type, opts={}){
     shape.setCoords(); textObj.setCoords();
     canvas.renderAll();
   }
- 
+
   // When shape is scaled horizontally, update text wrap width
   function updateTextWidthFromShape(){
     let sX=shape.scaleX, sY=shape.scaleY;
@@ -680,7 +696,7 @@ function addBlock(type, opts={}){
     textObj.set('width',newW);
     fitShapeToText();
   }
- 
+
   shape.on('mousedblclick',()=>{
     textObj.selectable=true; textObj.evented=true;
     canvas.setActiveObject(textObj); textObj.enterEditing();
@@ -693,20 +709,20 @@ function addBlock(type, opts={}){
   textObj.on('changed',()=>fitShapeToText());
   shape.on('scaling',()=>updateTextWidthFromShape());
   shape.on('scaled',()=>{updateTextWidthFromShape();snapshot();});
- 
+
   if(opts.hasGlow) shape.set('shadow',new fabric.Shadow({color:'#2196F3',blur:25,offsetX:0,offsetY:0}));
- 
+
   canvas.add(shape); canvas.add(textObj); canvas.setActiveObject(shape);
   fitShapeToText();
   syncText(); updateLines();
   return shape;
 }
- 
+
 function addStraightLineObj(o){
   let l=new fabric.Line([o.x1,o.y1,o.x2,o.y2],{stroke:'#555',strokeWidth:3,selectable:true,evented:true,id:o.id,customType:'straight-line',lineDir:o.lineDir});
   canvas.add(l); return l;
 }
- 
+
 // ═══════════ DUPLICATE ═══════════
 function duplicateCurrentObject(){
   let targets=rightClickedObject?
@@ -729,7 +745,7 @@ function duplicateCurrentObject(){
   document.getElementById("ctx").style.display="none";
   canvas.renderAll(); snapshot();
 }
- 
+
 // ═══════════ CONNECTORS ═══════════
 function setConnectorType(t){
   currentConnectorType=t;
@@ -737,7 +753,7 @@ function setConnectorType(t){
     let el=document.getElementById('ctype-'+x); if(el) el.classList.toggle('act',x===t);
   });
 }
- 
+
 function toggleConnectMode(){
   isConnectMode=!isConnectMode; connectSourceObj=null;
   let btn=document.getElementById("btn-connect-mode");
@@ -770,7 +786,7 @@ function getObjLabel(obj){
   let txt=t&&t.text?t.text.trim().substring(0,20):"bloque";
   return txt||"bloque";
 }
- 
+
 // Resolve the "connectable" object from a click target
 function resolveConnectable(target){
   if(!target) return null;
@@ -780,7 +796,7 @@ function resolveConnectable(target){
   if(target.customType&&target.customType!=='straight-line') return target;
   return null;
 }
- 
+
 function createConn(obj1,obj2,type){
   // Remove any existing connection between these two (allows replacing)
   let existing=connections.findIndex(c=>
@@ -792,20 +808,20 @@ function createConn(obj1,obj2,type){
     else{if(old.lineRef)canvas.remove(old.lineRef);if(old.arrowRef)canvas.remove(old.arrowRef);}
     connections.splice(existing,1);
   }
- 
+
   if(type==='brace'){createBraceConn(obj1,obj2);return;}
   let p1=getCp(obj1),p2=getCp(obj2);
   let opts={stroke:'#666',strokeWidth:2.5,selectable:false,evented:false};
   if(type==='dashed') opts.strokeDashArray=[8,5];
- 
+
   if(type==='orthoH'||type==='orthoV'){
     // Orthogonal (L-shaped) connector
     createOrthoConn(obj1,obj2,type); return;
   }
- 
+
   let lineObj=new fabric.Line([p1.x,p1.y,p2.x,p2.y],opts);
   canvas.add(lineObj); canvas.sendToBack(lineObj);
- 
+
   if(type==='arrow'){
     let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
     let edgeOff=getShapeEdgeOffset(obj2,angle);
@@ -827,7 +843,7 @@ function createConn(obj1,obj2,type){
     connections.push({fromId:obj1.id,toId:obj2.id,lineRef:lineObj,type:type||'line'});
   }
 }
- 
+
 function createOrthoConn(obj1,obj2,type){
   let p1=getCp(obj1),p2=getCp(obj2);
   // H: go horizontal first then vertical; V: vertical first
@@ -835,7 +851,7 @@ function createOrthoConn(obj1,obj2,type){
   let midY=type==='orthoV'?(p1.y+p2.y)/2:p1.y;
   let ex=type==='orthoH'?p2.x:p1.x;
   let ey=type==='orthoV'?p2.y:p1.y;
- 
+
   let ls=[
     new fabric.Line([p1.x,p1.y, type==='orthoH'?midX:p1.x, type==='orthoH'?p1.y:midY],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false}),
     new fabric.Line([type==='orthoH'?midX:p1.x, type==='orthoH'?p1.y:midY, type==='orthoH'?midX:p2.x, type==='orthoH'?p2.y:midY],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false}),
@@ -844,7 +860,7 @@ function createOrthoConn(obj1,obj2,type){
   ls.forEach(l=>{canvas.add(l);canvas.sendToBack(l);});
   connections.push({fromId:obj1.id,toId:obj2.id,type:type,orthoLines:ls,lineRef:ls[0]});
 }
- 
+
 function createBraceConn(obj1,obj2){
   let p1=getCp(obj1),p2=getCp(obj2);
   let midX=Math.max(p1.x,p2.x)+80,midY=(p1.y+p2.y)/2;
@@ -857,7 +873,7 @@ function createBraceConn(obj1,obj2){
   ls.forEach(l=>{canvas.add(l);canvas.sendToBack(l);});
   connections.push({fromId:obj1.id,toId:obj2.id,type:'brace',lineRef:ls[0],braceLines:ls});
 }
- 
+
 function deleteConnector(){
   if(rightClickedConnIdx===null) return;
   let c=connections[rightClickedConnIdx];
@@ -872,7 +888,7 @@ function removeConnVisuals(c){
   else if(c.orthoLines) c.orthoLines.forEach(l=>canvas.remove(l));
   else{if(c.lineRef)canvas.remove(c.lineRef);if(c.arrowRef)canvas.remove(c.arrowRef);}
 }
- 
+
 function getCp(obj){return obj.getCenterPoint?obj.getCenterPoint():{x:obj.left,y:obj.top};}
 // Returns approximate distance from center to edge in direction 'angle' (radians)
 function getShapeEdgeOffset(obj,angle){
@@ -889,13 +905,13 @@ function getShapeEdgeOffset(obj,angle){
   return Math.min(hw/cos, hh/sin);
 }
 function findObj(id){return canvas.getObjects().find(o=>o.id===id&&!o.isLinkedText);}
- 
+
 function updateLines(){
   connections.forEach(c=>{
     let f=findObj(c.fromId), t=findObj(c.toId);
     if(!f||!t) return;
     let p1=getCp(f),p2=getCp(t);
- 
+
     if(c.type==='brace'&&c.braceLines){
       let midX=Math.max(p1.x,p2.x)+80,midY=(p1.y+p2.y)/2;
       let[l1,l2,lV,lT]=c.braceLines;
@@ -941,7 +957,7 @@ function updateLines(){
   });
   canvas.renderAll();
 }
- 
+
 // ═══════════ LASSO (right-click drag on empty space) ═══════════
 function startLasso(x,y){
   isLassoMode=true; lassoStart={x,y};
@@ -979,12 +995,12 @@ function closeLasso(){
   lassoEl.style.display="none";
   document.body.classList.remove("lasso-mode");
 }
- 
+
 // ═══════════ CANVAS EVENTS ═══════════
 function setupCanvasEvents(){
   // Block right-click menu on the canvas element specifically
   canvas.upperCanvasEl.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();},true);
- 
+
   // ZOOM
   canvas.on('mouse:wheel',function(opt){
     let d=opt.e.deltaY,z=canvas.getZoom();
@@ -993,19 +1009,19 @@ function setupCanvasEvents(){
     opt.e.preventDefault(); opt.e.stopPropagation();
     updateLines(); updateZoomUI();
   });
- 
+
   // MOUSE DOWN
   canvas.on('mouse:down',function(opt){
     let evt=opt.e;
     let ctxMenu=document.getElementById("ctx");
     let btn=evt.button;
- 
+
     // ── RIGHT CLICK (button 2) ──
     if(btn===2){
       evt.preventDefault(); evt.stopPropagation();
       let target=opt.target;
       if(target&&target.isLinkedText&&target.shapeRef) target=target.shapeRef;
- 
+
       // Check if a connector line was right-clicked
       let hitIdx=null;
       if(!target){
@@ -1016,7 +1032,7 @@ function setupCanvasEvents(){
           if(d<10) hitIdx=idx;
         });
       }
- 
+
       if(hitIdx!==null){
         // Connector right-click
         rightClickedConnIdx=hitIdx; rightClickedObject=null;
@@ -1046,14 +1062,14 @@ function setupCanvasEvents(){
       }
       return;
     }
- 
+
     ctxMenu.style.display="none";
- 
+
     // ── CONNECT MODE ──
     let target=opt.target;
     if(target&&target.isLinkedText&&target.shapeRef) target=target.shapeRef;
     let connectable=resolveConnectable(target);
- 
+
     if(isConnectMode&&connectable){
       if(!connectSourceObj){
         connectSourceObj=connectable;
@@ -1064,7 +1080,7 @@ function setupCanvasEvents(){
       }
       return;
     }
- 
+
     // ── PAN on empty space or alt ──
     if(!target||evt.altKey||btn===1){
       this.isDragging=true; this.selection=false;
@@ -1072,7 +1088,7 @@ function setupCanvasEvents(){
       document.body.classList.add("panning");
     }
   });
- 
+
   // MOUSE MOVE
   canvas.on('mouse:move',function(opt){
     let evt=opt.e;
@@ -1094,7 +1110,7 @@ function setupCanvasEvents(){
       updateLines(); updateZoomUI();
     }
   });
- 
+
   // MOUSE UP
   canvas.on('mouse:up',function(opt){
     let evt=opt.e;
@@ -1110,7 +1126,7 @@ function setupCanvasEvents(){
       document.body.classList.remove("panning");
     }
   });
- 
+
   // Also listen on document for right-click mouseup (fabric may not fire it)
   document.addEventListener('mouseup',function(evt){
     if(evt.button===2&&rcStart){
@@ -1127,7 +1143,7 @@ function setupCanvasEvents(){
       if(rcDragging) updateLasso(evt.clientX,evt.clientY);
     }
   },true);
- 
+
   // OBJECT EVENTS
   canvas.on('object:moving',function(opt){
     let o=opt.target;
@@ -1140,13 +1156,13 @@ function setupCanvasEvents(){
   canvas.on('selection:created',()=>updateLines());
   canvas.on('selection:updated',()=>updateLines());
   canvas.on('selection:cleared',()=>updateLines());
- 
+
   document.addEventListener('click',e=>{
     if(!document.getElementById("ctx").contains(e.target))
       document.getElementById("ctx").style.display="none";
   },{capture:false});
 }
- 
+
 function showCtx(evt){
   let ctxMenu=document.getElementById("ctx");
   ctxMenu.style.display="flex";
@@ -1160,7 +1176,7 @@ function showCtx(evt){
     ctxMenu.style.left=mx+"px"; ctxMenu.style.top=my+"px";
   });
 }
- 
+
 // ═══════════ GEOMETRY ═══════════
 function distSeg(p,a,b){
   let dx=b.x-a.x,dy=b.y-a.y;
@@ -1168,14 +1184,14 @@ function distSeg(p,a,b){
   let t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));
   return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy));
 }
- 
+
 // ═══════════ SYNC TEXT ═══════════
 function syncText(){
   canvas.getObjects().forEach(o=>{
     if(o.textRef){o.textRef.set({left:o.left,top:o.top});o.textRef.setCoords();}
   });
 }
- 
+
 // ═══════════ CONTEXT MENU ACTIONS ═══════════
 function updateSelectedShapeColor(v){
   let obj=rightClickedObject; if(!obj||Array.isArray(obj)) return;
@@ -1226,14 +1242,14 @@ function deleteCurrentObject(){
   else rm(rightClickedObject);
   document.getElementById("ctx").style.display="none"; canvas.renderAll(); snapshot();
 }
- 
+
 // ═══════════ NOTE FORMATS ═══════════
 function createNoteFormat(fmt){
   let vpt=canvas.viewportTransform,z=canvas.getZoom();
   let ox=(canvas.getWidth()/2-vpt[4])/z, oy=(canvas.getHeight()/2-vpt[5])/z;
   let c=FMT[fmt];
   let bl=(t,x,y,bg,shape)=>addBlock(shape||'square',{left:ox+x,top:oy+y,bg,text:t,noteFormat:fmt,fromLoad:true});
- 
+
   if(fmt==='mindmap'){
     let center=bl('Idea Central',0,0,c.center,'circle');
     [[-200,-120,'Rama 1'],[200,-120,'Rama 2'],[-200,120,'Rama 3'],[200,120,'Rama 4']].forEach(([dx,dy,t])=>{
@@ -1277,7 +1293,7 @@ function createNoteFormat(fmt){
   canvas.renderAll();
   setTimeout(()=>snapshot(),500);
 }
- 
+
 function openFormatModal(){
   if(canvas.getActiveObjects().length<2){alert("Seleccioná al menos 2 bloques primero.");return;}
   document.getElementById("format-modal").classList.add("vis");
@@ -1301,13 +1317,13 @@ function applyFormatToSelection(fmt){
   });
   canvas.renderAll(); snapshot();
 }
- 
- 
+
+
 // ═══════════ BLOQUE MADRE ═══════════
 // madreBlocks = { madreId: { childIds:[], collapsed:false, savedPositions:{id:{left,top}} } }
 let madreBlocks = {};
 let pendingMadreId = null;  // madre block waiting for child selection
- 
+
 function addMadreBlock(opts={}){
   let left=opts.left!==undefined?opts.left:canvas.getWidth()/2;
   let top=opts.top!==undefined?opts.top:canvas.getHeight()/2;
@@ -1319,7 +1335,7 @@ function addMadreBlock(opts={}){
   let isDark=document.body.classList.contains("dark-mode");
   let label=opts.text||"Bloque Madre";
   let isCollapsed=opts.collapsed||false;
- 
+
   // Main container rect
   let rect=new fabric.Rect({
     width:200, height:70, rx:14, ry:14,
@@ -1331,7 +1347,7 @@ function addMadreBlock(opts={}){
     selectable:true, evented:true,
     shadow: new fabric.Shadow({color:'rgba(33,150,243,0.3)',blur:18,offsetX:0,offsetY:4})
   });
- 
+
   // Label text
   let labelText=new fabric.Textbox(label,{
     width:160, fontSize:13, fontFamily:'Segoe UI', fontWeight:'700',
@@ -1341,7 +1357,7 @@ function addMadreBlock(opts={}){
     selectable:false, evented:false, isLinkedText:true
   });
   labelText.shapeRef=rect; rect.textRef=labelText;
- 
+
   // Toggle button (▶ collapsed / ▼ expanded)
   let toggleBtn=new fabric.Text(isCollapsed?'▶ Abrir':'▼ Cerrar',{
     fontSize:11, fontFamily:'Segoe UI', fontWeight:'600',
@@ -1352,7 +1368,7 @@ function addMadreBlock(opts={}){
     hoverCursor:'pointer',
     isMadreToggle:true, madreId:id
   });
- 
+
   // Counter badge
   let childCount=(opts.childIds||[]).length;
   let badge=new fabric.Text(childCount>0?`${childCount} bloques`:'Sin bloques',{
@@ -1363,7 +1379,7 @@ function addMadreBlock(opts={}){
     selectable:false, evented:false, isLinkedText:true, isMadreBadge:true
   });
   badge.shapeRef=rect; rect.badgeRef=badge;
- 
+
   toggleBtn.on('mousedown',()=>toggleMadre(id));
   rect.on('mousedblclick',()=>{
     // Edit label on double click
@@ -1374,10 +1390,10 @@ function addMadreBlock(opts={}){
     labelText.selectable=false; labelText.evented=false;
     canvas.setActiveObject(rect); canvas.renderAll(); snapshot();
   });
- 
+
   canvas.add(rect); canvas.add(labelText); canvas.add(toggleBtn); canvas.add(badge);
   canvas.setActiveObject(rect);
- 
+
   // Register in madreBlocks
   madreBlocks[id]={
     childIds: opts.childIds||[],
@@ -1386,46 +1402,58 @@ function addMadreBlock(opts={}){
     toggleRef: toggleBtn,
     badgeRef: badge
   };
- 
+
   rect.toggleRef=toggleBtn;
- 
-  // Move all parts together when madre moves
-  rect.on('moving',()=>{
-    let dx=rect.left-rect._lastLeft||0, dy=rect.top-rect._lastTop||0;
-    if(rect._lastLeft!==undefined){
-      [labelText,toggleBtn,badge].forEach(o=>{
-        o.set({left:o.left+dx, top:o.top+dy}); o.setCoords();
+
+  // Track start position on mousedown for reliable delta
+  rect.on('mousedown',()=>{
+    rect._dragStartLeft=rect.left; rect._dragStartTop=rect.top;
+    rect._dragLastLeft=rect.left; rect._dragLastTop=rect.top;
+    // Snapshot child positions at drag start
+    rect._childStartPos={};
+    if(madreBlocks[id]){
+      madreBlocks[id].childIds.forEach(cid=>{
+        let child=findObj(cid);
+        if(child) rect._childStartPos[cid]={left:child.left,top:child.top};
       });
-      // Move children always (collapsed or expanded)
-      if(madreBlocks[id]){
-        madreBlocks[id].childIds.forEach(cid=>{
-          let child=findObj(cid);
-          if(child){
-            child.set({left:child.left+dx, top:child.top+dy});
-            if(child.textRef) child.textRef.set({left:child.left, top:child.top});
-            child.setCoords();
-            // Update saved position too
-            if(madreBlocks[id].savedPositions[cid]){
-              madreBlocks[id].savedPositions[cid].left+=dx;
-              madreBlocks[id].savedPositions[cid].top+=dy;
-            }
-          }
-        });
-      }
     }
-    rect._lastLeft=rect.left; rect._lastTop=rect.top;
+  });
+  rect.on('moving',()=>{
+    let dx=rect.left-(rect._dragLastLeft||rect.left);
+    let dy=rect.top-(rect._dragLastTop||rect.top);
+    rect._dragLastLeft=rect.left; rect._dragLastTop=rect.top;
+    if(dx===0&&dy===0) return;
+    // Move label, toggle, badge
+    [labelText,toggleBtn,badge].forEach(o=>{
+      o.set({left:o.left+dx, top:o.top+dy}); o.setCoords();
+    });
+    // Move children
+    if(madreBlocks[id]){
+      madreBlocks[id].childIds.forEach(cid=>{
+        let child=findObj(cid);
+        if(child){
+          child.set({left:child.left+dx, top:child.top+dy});
+          if(child.textRef){ child.textRef.set({left:child.left,top:child.top}); child.textRef.setCoords(); }
+          child.setCoords();
+          if(madreBlocks[id].savedPositions[cid]){
+            madreBlocks[id].savedPositions[cid].left+=dx;
+            madreBlocks[id].savedPositions[cid].top+=dy;
+          }
+        }
+      });
+    }
     updateLines(); canvas.renderAll();
   });
- 
+
   if(opts.fromLoad&&isCollapsed){
     // Hide children on load if collapsed
     setTimeout(()=>hideMadreChildren(id),100);
   }
- 
+
   updateMadreBadge(id);
   return rect;
 }
- 
+
 function updateMadreBadge(madreId){
   let m=madreBlocks[madreId]; if(!m) return;
   let n=m.childIds.length;
@@ -1433,13 +1461,13 @@ function updateMadreBadge(madreId){
   if(m.toggleRef) m.toggleRef.set('text', m.collapsed?'▶ Abrir':'▼ Cerrar');
   canvas.renderAll();
 }
- 
+
 function toggleMadre(madreId){
   let m=madreBlocks[madreId]; if(!m) return;
   if(m.collapsed) expandMadre(madreId);
   else collapseMadre(madreId);
 }
- 
+
 function collapseMadre(madreId){
   let m=madreBlocks[madreId]; if(!m) return;
   // Save positions before hiding
@@ -1452,7 +1480,7 @@ function collapseMadre(madreId){
   updateMadreBadge(madreId);
   snapshot();
 }
- 
+
 function hideMadreChildren(madreId){
   let m=madreBlocks[madreId]; if(!m) return;
   m.childIds.forEach(cid=>{
@@ -1476,7 +1504,7 @@ function hideMadreChildren(madreId){
   });
   canvas.renderAll();
 }
- 
+
 function expandMadre(madreId){
   let m=madreBlocks[madreId]; if(!m) return;
   m.collapsed=false;
@@ -1490,13 +1518,21 @@ function expandMadre(madreId){
       }
       child.set({visible:true, selectable:true, evented:true});
       if(child.textRef) child.textRef.set({visible:true});
-      // Show connectors
+      // Show connectors only if the OTHER end is also visible
       connections.forEach(c=>{
         if(c.fromId===cid||c.toId===cid){
-          if(c.lineRef) c.lineRef.set('visible',true);
-          if(c.arrowRef) c.arrowRef.set('visible',true);
-          if(c.braceLines) c.braceLines.forEach(l=>l.set('visible',true));
-          if(c.orthoLines) c.orthoLines.forEach(l=>l.set('visible',true));
+          let otherId=c.fromId===cid?c.toId:c.fromId;
+          let other=findObj(otherId);
+          // Only show if other end is visible (not hidden inside another collapsed madre)
+          let otherVisible=!other||(other.visible!==false);
+          let show=otherVisible;
+          let setV=v=>{
+            if(c.lineRef) c.lineRef.set('visible',v);
+            if(c.arrowRef) c.arrowRef.set('visible',v);
+            if(c.braceLines) c.braceLines.forEach(l=>l.set('visible',v));
+            if(c.orthoLines) c.orthoLines.forEach(l=>l.set('visible',v));
+          };
+          setV(show);
         }
       });
     }
@@ -1504,7 +1540,7 @@ function expandMadre(madreId){
   updateMadreBadge(madreId);
   updateLines(); canvas.renderAll(); snapshot();
 }
- 
+
 function openMadreModal(madreId){
   pendingMadreId=madreId;
   let m=madreBlocks[madreId];
@@ -1515,19 +1551,19 @@ function openMadreModal(madreId){
     : "Seleccioná los bloques que querés guardar dentro. Podés usar el lasso (click derecho + arrastrar) para seleccionar varios a la vez. Luego hacé click en Confirmar.";
   document.getElementById("madre-overlay").classList.add("vis");
 }
- 
+
 function closeMadreModal(){
   document.getElementById("madre-overlay").classList.remove("vis");
   pendingMadreId=null;
 }
- 
+
 // Convert selection to madre OR assign to existing madre
 function convertirSeleccionEnMadre(){
   let sel=canvas.getActiveObjects().filter(o=>
     !o.isLinkedText && o.id && o.customType!=='madre' && !o.isMadreToggle && !o.isMadreBadge
   );
   if(!sel.length){ showToast('Seleccioná al menos 1 bloque primero'); return; }
- 
+
   // If exactly one selected AND it is already a shape → convert IT into madre
   // Otherwise create a new madre and assign selected as children
   if(sel.length===1 && sel[0].customType && sel[0].customType!=='text-only'){
@@ -1541,7 +1577,7 @@ function convertirSeleccionEnMadre(){
     showToast('📦 Bloque convertido en Madre');
     canvas.discardActiveObject(); snapshot(); return;
   }
- 
+
   // Multiple selected: create madre at center of selection, assign all as children
   let xs=sel.map(o=>o.left), ys=sel.map(o=>o.top);
   let cx=(Math.min(...xs)+Math.max(...xs))/2;
@@ -1556,7 +1592,7 @@ function convertirSeleccionEnMadre(){
   showToast(`📦 ${sel.length} bloques asignados al nuevo Madre`);
   snapshot();
 }
- 
+
 // Context menu: edit children of an existing madre
 function openMadreAssign(){
   if(!rightClickedObject||Array.isArray(rightClickedObject)) return;
@@ -1569,7 +1605,7 @@ function openMadreAssign(){
   // Show a floating confirm bar
   document.getElementById("madre-pick-bar").classList.add("vis");
 }
- 
+
 function confirmMadrePickBar(){
   if(!pendingMadreId) return;
   let m=madreBlocks[pendingMadreId]; if(!m) return;
@@ -1586,13 +1622,13 @@ function confirmMadrePickBar(){
   showToast(`📦 ${sel.length} bloque(s) asignados`);
   pendingMadreId=null; snapshot();
 }
- 
+
 // ═══════════ TOAST ═══════════
 function showToast(msg='💾 ¡Guardado!'){
   let t=document.getElementById("toast"); t.innerText=msg; t.style.display="block";
   clearTimeout(window._tt); window._tt=setTimeout(()=>t.style.display="none",2000);
 }
- 
+
 // ═══════════ SERIALIZE / SAVE / LOAD ═══════════
 function serializeObjects(){
   let arr=[];
@@ -1630,7 +1666,7 @@ function loadProjectData(){
   batchSaving=true; canvas.clear(); connections=[]; history=[]; historyIdx=-1;
   let proj=db.users[currentUser].projects[currentProject]; if(!proj) return;
   if(proj.canvasBg){canvasBgColor=proj.canvasBg;canvas.setBackgroundColor(proj.canvasBg,()=>{});}
-  if(proj.madreBlocks){ Object.keys(proj.madreBlocks).forEach(k=>{ let m=proj.madreBlocks[k]; madreBlocks[k]=m; }); }
+  // madreBlocks are rebuilt by addMadreBlock via serialized opts (childIds, collapsed, savedPositions)
   if(proj.objects) proj.objects.forEach(o=>{
     if(o.type==='straight-line'){addStraightLineObj(o);return;}
     if(o.type==='madre'){addMadreBlock({...o,fromLoad:true});return;}
@@ -1642,7 +1678,12 @@ function loadProjectData(){
       let o1=findObj(c.fromId),o2=findObj(c.toId);
       if(o1&&o2) createConn(o1,o2,c.type||'line');
     });
-    canvas.renderAll(); batchSaving=false; snapshot();
+    canvas.renderAll(); batchSaving=false;
+    // Re-hide connectors for all collapsed madres AFTER connections are loaded
+    Object.keys(madreBlocks).forEach(mid=>{
+      if(madreBlocks[mid].collapsed) hideMadreChildren(mid);
+    });
+    canvas.renderAll(); snapshot();
   },300);
 }
 </script>

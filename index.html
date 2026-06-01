@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Apuntes Pro V18</title>
+<title>Apuntes Pro V19</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
 :root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
@@ -81,6 +81,16 @@ body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Se
 #lasso-rect{position:fixed;border:2px solid #2196F3;background:rgba(33,150,243,.12);pointer-events:none;display:none;z-index:300;border-radius:3px;}
 body.panning{cursor:grabbing!important;}
 body.lasso-mode *{cursor:crosshair!important;}
+body.draw-mode *{cursor:crosshair!important;}
+body.erase-mode *{cursor:cell!important;}
+#draw-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:14px;padding:8px 16px;display:none;gap:10px;align-items:center;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.15);flex-wrap:wrap;max-width:96vw;}
+#draw-bar.vis{display:flex;}
+#draw-bar label{font-size:12px;font-weight:600;opacity:.6;}
+#draw-bar input[type=color]{width:28px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0;}
+#draw-bar input[type=range]{width:80px;cursor:pointer;}
+.draw-mode-btn{padding:7px 13px;border:1px solid var(--border-color);background:transparent;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-main);transition:.2s;}
+.draw-mode-btn:hover,.draw-mode-btn.act{background:#2196F3;color:#fff;border-color:#2196F3;}
+.draw-mode-btn.erase.act{background:#f44336;border-color:#f44336;}
 /* MADRE BLOCK */
 .madre-overlay{position:fixed;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:7000;inset:0;}
 .madre-overlay.vis{display:flex;}
@@ -214,6 +224,7 @@ body.lasso-mode *{cursor:crosshair!important;}
   <div class="sep"></div>
   <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Conectar</button>
   <button class="btn" id="btn-snap" onclick="toggleSnap()" title="Snap a grilla (S)">🧲 Snap</button>
+  <button class="btn" id="btn-draw" onclick="toggleDrawBar()" style="background:rgba(76,175,80,.12);color:#2e7d32;">✏️ Dibujar</button>
   <button class="btn" id="btn-hacer-madre" onclick="convertirSeleccionEnMadre()" style="background:rgba(33,150,243,.12);color:#2196F3;" title="Convertir selección en Bloque Madre">📦 Hacer Madre</button>
   <div class="sep"></div>
   <button class="btn" id="btn-word" onclick="toggleWordPanel()" style="background:rgba(156,39,176,.12);color:#9c27b0;">📝 Hoja Resumen</button>
@@ -260,6 +271,20 @@ body.lasso-mode *{cursor:crosshair!important;}
     <button class="fm-btn" onclick="closeMadreModal()" style="color:red;border-color:red;">✕ Cancelar</button>
   </div>
 </div>
+<!-- DRAW BAR -->
+<div id="draw-bar">
+  <button class="draw-mode-btn act" id="dbtn-pencil" onclick="setDrawMode('pencil')">✏️ Lápiz</button>
+  <button class="draw-mode-btn" id="dbtn-rect" onclick="setDrawMode('rect')">▭ Rectángulo</button>
+  <button class="draw-mode-btn" id="dbtn-ellipse" onclick="setDrawMode('ellipse')">⬭ Elipse</button>
+  <button class="draw-mode-btn erase" id="dbtn-erase" onclick="setDrawMode('erase')">🧹 Borrador</button>
+  <div style="width:1px;height:20px;background:var(--border-color)"></div>
+  <label>Color</label>
+  <input type="color" id="draw-color" value="#2196F3">
+  <label>Grosor</label>
+  <input type="range" id="draw-size" min="1" max="40" value="4">
+  <span id="draw-size-label" style="font-size:12px;font-weight:700;min-width:24px;">4px</span>
+  <button class="draw-mode-btn" onclick="stopDrawing()" style="color:red;border-color:red;">✕ Cerrar</button>
+</div>
 <!-- MADRE PICK BAR -->
 <div id="madre-pick-bar" class="bot-bar" style="background:rgba(33,150,243,.1);border-color:#2196F3;">
   <span style="font-size:12px;font-weight:700;color:#2196F3;">Seleccioná los bloques hijos</span>
@@ -294,6 +319,9 @@ let rightClickedConnIdx=null;
 const MAX_HIST=60;
 let history=[], historyIdx=-1, batchSaving=false;
 let isLassoMode=false, lassoStart=null;
+let drawMode=null; // null | 'pencil' | 'rect' | 'ellipse' | 'erase'
+let drawStartPoint=null, drawPreviewObj=null;
+let isDrawing=false;
 const lassoEl=document.getElementById('lasso-rect');
 // Right-click lasso state
 let rcHoldTimer=null, rcDragging=false, rcStart=null;
@@ -357,6 +385,14 @@ function restoreSnap(s){
   batchSaving=true; canvas.clear(); connections=[];
   if(s.objects) s.objects.forEach(o=>{
     if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    if(o.type==='drawing'){
+      fabric.util.enlivenObjects([JSON.parse(o.fabricJson)],function(objs){
+        let obj=objs[0];
+        obj.set({id:o.id,customType:'drawing',selectable:true,evented:true,
+          left:o.left,top:o.top,scaleX:o.scaleX||1,scaleY:o.scaleY||1,angle:o.angle||0});
+        canvas.add(obj); canvas.renderAll();
+      }); return;
+    }
     if(o.type==='madre'){addMadreBlock({...o,fromLoad:true});return;}
     addBlock(o.type,o);
   });
@@ -1082,6 +1118,38 @@ function setupCanvasEvents(){
       return;
     }
 
+    // ── DRAW SHAPES (rect/ellipse) ──
+    if(drawMode==='rect'||drawMode==='ellipse'){
+      if(!isDrawing){
+        let ptr=canvas.getPointer(evt);
+        drawStartPoint={x:ptr.x,y:ptr.y};
+        isDrawing=true;
+        let isDark=document.body.classList.contains('dark-mode');
+        let color=document.getElementById('draw-color').value;
+        let size=parseInt(document.getElementById('draw-size').value);
+        if(drawMode==='rect'){
+          drawPreviewObj=new fabric.Rect({
+            left:ptr.x,top:ptr.y,width:0,height:0,
+            fill:'transparent',stroke:color,strokeWidth:size,
+            selectable:false,evented:false,
+            id:'draw_'+Date.now(),customType:'drawing'
+          });
+        } else {
+          drawPreviewObj=new fabric.Ellipse({
+            left:ptr.x,top:ptr.y,rx:0,ry:0,
+            fill:'transparent',stroke:color,strokeWidth:size,
+            selectable:false,evented:false,
+            id:'draw_'+Date.now(),customType:'drawing'
+          });
+        }
+        canvas.add(drawPreviewObj); return;
+      }
+    }
+    // ── ERASE ──
+    if(drawMode==='erase'){
+      erasePointerDown=true;
+      let ptr=canvas.getPointer(evt); eraseAt(ptr); return;
+    }
     // ── PAN on empty space or alt ──
     if(!target||evt.altKey||btn===1){
       this.isDragging=true; this.selection=false;
@@ -1094,6 +1162,22 @@ function setupCanvasEvents(){
   canvas.on('mouse:move',function(opt){
     let evt=opt.e;
     // Lasso tracking for right-click drag
+    // Finalize shape drawing
+    if(isDrawing&&drawPreviewObj){
+      isDrawing=false;
+      let ptr=canvas.getPointer(evt.e||evt);
+      // Only keep if large enough
+      let x=Math.min(ptr.x,drawStartPoint.x), y=Math.min(ptr.y,drawStartPoint.y);
+      let w=Math.abs(ptr.x-drawStartPoint.x), h=Math.abs(ptr.y-drawStartPoint.y);
+      if(w>5&&h>5){
+        drawPreviewObj.set({selectable:true,evented:true,hasControls:true});
+        drawPreviewObj.setCoords(); canvas.renderAll(); snapshot();
+      } else {
+        canvas.remove(drawPreviewObj);
+      }
+      drawPreviewObj=null; drawStartPoint=null; return;
+    }
+    erasePointerDown=false;
     if(rcStart){
       let dx=Math.abs(evt.clientX-rcStart.x),dy=Math.abs(evt.clientY-rcStart.y);
       if(!rcDragging&&(dx>6||dy>6)){
@@ -1102,6 +1186,19 @@ function setupCanvasEvents(){
       }
       if(rcDragging) updateLasso(evt.clientX,evt.clientY);
       return;
+    }
+    // Draw shape preview
+    if(isDrawing&&drawPreviewObj&&drawStartPoint){
+      let ptr=canvas.getPointer(evt);
+      let x=Math.min(ptr.x,drawStartPoint.x), y=Math.min(ptr.y,drawStartPoint.y);
+      let w=Math.abs(ptr.x-drawStartPoint.x), h=Math.abs(ptr.y-drawStartPoint.y);
+      if(drawMode==='rect') drawPreviewObj.set({left:x,top:y,width:w,height:h});
+      else if(drawMode==='ellipse') drawPreviewObj.set({left:x,top:y,rx:w/2,ry:h/2});
+      drawPreviewObj.setCoords(); canvas.renderAll(); return;
+    }
+    // Erase on drag
+    if(drawMode==='erase'&&erasePointerDown){
+      let ptr=canvas.getPointer(evt); eraseAt(ptr); return;
     }
     if(isLassoMode){ updateLasso(evt.clientX,evt.clientY); return; }
     if(this.isDragging){
@@ -1115,6 +1212,22 @@ function setupCanvasEvents(){
   // MOUSE UP
   canvas.on('mouse:up',function(opt){
     let evt=opt.e;
+    // Finalize shape drawing
+    if(isDrawing&&drawPreviewObj){
+      isDrawing=false;
+      let ptr=canvas.getPointer(evt.e||evt);
+      // Only keep if large enough
+      let x=Math.min(ptr.x,drawStartPoint.x), y=Math.min(ptr.y,drawStartPoint.y);
+      let w=Math.abs(ptr.x-drawStartPoint.x), h=Math.abs(ptr.y-drawStartPoint.y);
+      if(w>5&&h>5){
+        drawPreviewObj.set({selectable:true,evented:true,hasControls:true});
+        drawPreviewObj.setCoords(); canvas.renderAll(); snapshot();
+      } else {
+        canvas.remove(drawPreviewObj);
+      }
+      drawPreviewObj=null; drawStartPoint=null; return;
+    }
+    erasePointerDown=false;
     if(rcStart){
       if(rcDragging) endLasso(evt.clientX,evt.clientY);
       rcStart=null; rcDragging=false;
@@ -1154,6 +1267,7 @@ function setupCanvasEvents(){
   canvas.on('object:scaling',()=>{syncText();updateLines();});
   canvas.on('object:rotating',()=>{syncText();updateLines();});
   canvas.on('object:modified',()=>snapshot());
+  canvas.on('path:created',onPathCreated);
   canvas.on('selection:created',()=>updateLines());
   canvas.on('selection:updated',()=>updateLines());
   canvas.on('selection:cleared',()=>updateLines());
@@ -1225,6 +1339,7 @@ function toggleStyle(prop,sv2){
 }
 function deleteCurrentObject(){
   if(!rightClickedObject) return;
+  // Allow deleting drawings too
   let rm=target=>{
     connections=connections.filter(c=>{
       if(c.fromId===target.id||c.toId===target.id){removeConnVisuals(c);return false;}
@@ -1651,6 +1766,10 @@ function serializeObjects(){
   canvas.getObjects().forEach(o=>{
     if(!o.id||o.isLinkedText) return;
     if(o.customType==='straight-line'){arr.push({id:o.id,type:'straight-line',lineDir:o.lineDir,x1:o.x1,y1:o.y1,x2:o.x2,y2:o.y2});return;}
+    if(o.customType==='drawing'){
+      arr.push({id:o.id,type:'drawing',fabricJson:JSON.stringify(o.toJSON(['id','customType'])),left:o.left,top:o.top,scaleX:o.scaleX||1,scaleY:o.scaleY||1,angle:o.angle||0});
+      return;
+    }
     if(o.customType==='madre'){let m=madreBlocks[o.id]||{};arr.push({id:o.id,type:'madre',left:o.left,top:o.top,text:o.textRef?o.textRef.text:'Bloque Madre',childIds:m.childIds||[],collapsed:m.collapsed||false,savedPositions:m.savedPositions||{},fromLoad:true});return;}
     let isTO=o.customType==='text-only', t=isTO?o:o.textRef;
     arr.push({
@@ -1685,6 +1804,14 @@ function loadProjectData(){
   // madreBlocks are rebuilt by addMadreBlock via serialized opts (childIds, collapsed, savedPositions)
   if(proj.objects) proj.objects.forEach(o=>{
     if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    if(o.type==='drawing'){
+      fabric.util.enlivenObjects([JSON.parse(o.fabricJson)],function(objs){
+        let obj=objs[0];
+        obj.set({id:o.id,customType:'drawing',selectable:true,evented:true,
+          left:o.left,top:o.top,scaleX:o.scaleX||1,scaleY:o.scaleY||1,angle:o.angle||0});
+        canvas.add(obj); canvas.renderAll();
+      }); return;
+    }
     if(o.type==='madre'){addMadreBlock({...o,fromLoad:true});return;}
     addBlock(o.type,o);
   });

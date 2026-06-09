@@ -79,6 +79,7 @@ body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Se
 #bg-color-btn{position:fixed;top:15px;right:60px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.1);font-size:15px;}
 #toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#2196F3;color:#fff;padding:12px 28px;border-radius:30px;font-weight:700;box-shadow:0 8px 20px rgba(33,150,243,.3);z-index:10000;display:none;font-size:14px;}
 #snap-hint{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(33,150,243,.85);color:#fff;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;pointer-events:none;z-index:50;display:none;}
+#hover-connect-indicator{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(255,152,0,.9);color:#fff;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;pointer-events:none;z-index:51;display:none;}
 /* LASSO */
 #lasso-rect{position:fixed;border:2px solid #2196F3;background:rgba(33,150,243,.12);pointer-events:none;display:none;z-index:300;border-radius:3px;}
 body.panning{cursor:grabbing!important;}
@@ -143,6 +144,8 @@ body.erase-mode *{cursor:cell!important;}
 <button id="btn-preview" onclick="enterPresentation()" title="Modo Presentación">👁️</button>
 <div id="zoom-indicator">100%</div>
 <div id="snap-hint">🧲 Snap ON</div>
+<div id="hover-connect-indicator" style="display:none;">🔗 Hover-Conectar: pasá por el ORIGEN</div>
+<div id="quick-block-indicator" style="position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,.88);color:#fff;padding:5px 14px;border-radius:8px;font-size:12px;font-weight:700;pointer-events:none;z-index:51;display:none;"></div>
 <div id="toast">💾 ¡Guardado!</div>
 <div id="lasso-rect"></div>
 <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importDatabase(event)">
@@ -230,12 +233,16 @@ body.erase-mode *{cursor:cell!important;}
   <div class="dropdown">
     <button class="btn" style="background:rgba(33,150,243,.12);color:#2196F3;">➕ Insertar ▼</button>
     <div class="dropdown-content">
-      <div class="ddl">Bloques</div>
+      <div class="ddl">Bloques (tecla Q en tablero)</div>
       <button onclick="addBlock('square')">🟦 Cuadrado</button>
       <button onclick="addBlock('circle')">⚪ Círculo</button>
       <button onclick="addBlock('diamond')">🔷 Rombo</button>
       <button onclick="addBlock('post-it')">📝 Post-it</button>
       <button onclick="addBlock('text-only')">🔤 Texto Libre</button>
+      <div class="ddd"></div>
+      <div class="ddl">Atajos de teclado</div>
+      <button onclick="cycleQuickBlockType()" style="font-size:11px;opacity:.8;">⇧Q — cambiar tipo de bloque rápido (actual: <span id="quick-type-label">🟦 Cuadrado</span>)</button>
+      <button onclick="toggleHoverConnect()" style="font-size:11px;opacity:.8;">E — hover-conectar on/off</button>
       <div class="ddd"></div>
       <div class="ddl">Especial</div>
       <button onclick="addBlock('madre')">📦 Bloque Madre</button>
@@ -261,6 +268,7 @@ body.erase-mode *{cursor:cell!important;}
   <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Conectar</button>
   <button class="btn" id="btn-snap" onclick="toggleSnap()" title="Snap a grilla (S)">🧲 Snap</button>
   <button class="btn" id="btn-draw" onclick="toggleDrawBar()" style="background:rgba(76,175,80,.12);color:#2e7d32;">✏️ Dibujar</button>
+  <button class="btn" id="btn-hover-connect" onclick="toggleHoverConnect()" title="[E] Hover-Conectar: pasás el cursor por dos bloques y se conectan solos. Shift+Q = cambiar tipo de bloque rápido" style="background:rgba(255,152,0,.12);color:#e65100;">🖱️ [E] Hover-Con.</button>
   <button class="btn" id="btn-hacer-madre" onclick="convertirSeleccionEnMadre()" style="background:rgba(33,150,243,.12);color:#2196F3;" title="Convertir selección en Bloque Madre">📦 Hacer Madre</button>
   <div class="sep"></div>
   <button class="btn" id="btn-pres-config" onclick="openPresConfig()" style="background:rgba(156,39,176,.12);color:#9c27b0;">📽️ Presentación</button>
@@ -526,11 +534,13 @@ function setupKeyboard(){
       let act=canvas.getActiveObjects();
       if(act.length){rightClickedObject=act.length>1?act:act[0];deleteCurrentObject();}
     }
-    else if(e.key==='Escape'){cancelConnect();closeLasso();closeFormatModal();document.getElementById('madre-pick-bar').classList.remove('vis');pendingMadreId=null;isPickingPresChain=false;}
+    else if(e.key==='Escape'){cancelConnect();closeLasso();closeFormatModal();document.getElementById('madre-pick-bar').classList.remove('vis');pendingMadreId=null;isPickingPresChain=false;if(hoverConnectMode)toggleHoverConnect();}
     else if(e.key==='Enter'&&pendingMadreId){confirmMadrePickBar();}
-    else if((e.key==='q'||e.key==='Q')&&!e.ctrlKey){addBlock('square');}
-    else if((e.key==='c'||e.key==='C')&&!e.ctrlKey){addBlock('circle');}
+    else if(e.key==='Q'&&e.shiftKey&&!e.ctrlKey){e.preventDefault();cycleQuickBlockType();}
+    else if((e.key==='q'||e.key==='Q')&&!e.ctrlKey&&!e.shiftKey){addQuickBlockAtMouse();}
+    else if((e.key==='e'||e.key==='E')&&!e.ctrlKey){toggleHoverConnect();}
     else if((e.key==='t'||e.key==='T')&&!e.ctrlKey){addBlock('text-only');}
+    else if((e.key==='c'||e.key==='C')&&!e.ctrlKey){addBlock('circle');}
     else if((e.key==='s'||e.key==='S')&&!e.ctrlKey) toggleSnap();
     // Presentation mode keyboard
     if(presMode){
@@ -1396,6 +1406,62 @@ function setupCanvasEvents(){
   canvas.on('selection:updated',()=>updateLines());
   canvas.on('selection:cleared',()=>updateLines());
 
+  // ── DOUBLE CLICK on empty canvas → create text node at that position ──
+  canvas.on('mouse:dblclick',function(opt){
+    let target=opt.target;
+    if(target) return; // only on empty space
+    if(drawMode||isConnectMode||hoverConnectMode) return;
+    let ptr=canvas.getPointer(opt.e);
+    let isDark=document.body.classList.contains("dark-mode");
+    let id="b_"+Date.now()+Math.floor(Math.random()*9999);
+    let t=new fabric.Textbox("",{
+      width:180,fontSize:14,fontFamily:'Segoe UI',
+      fill:isDark?'#ffffff':'#333333',textAlign:'left',
+      originX:'center',originY:'center',
+      left:ptr.x,top:ptr.y,
+      selectable:true,evented:true,isLinkedText:false,id,customType:'text-only',
+      splitByGrapheme:false
+    });
+    t.on('editing:exited',()=>{if(!t.text.trim())canvas.remove(t);snapshot();});
+    canvas.add(t);canvas.setActiveObject(t);
+    setTimeout(()=>t.enterEditing(),30);
+    canvas.renderAll();
+  });
+
+  // ── HOVER-CONNECT: highlight + auto-connect when E-mode is on ──
+  canvas.on('mouse:over',function(opt){
+    if(!hoverConnectMode) return;
+    let target=opt.target;
+    if(!target||target.isLinkedText||target.isMadreToggle||target.isMadreBadge) return;
+    if(target.isLinkedText&&target.shapeRef) target=target.shapeRef;
+    let connectable=resolveConnectable(target);
+    if(!connectable) return;
+
+    if(!hoverConnectSource){
+      // Step 1: mark origin
+      hoverConnectSource=connectable;
+      hoverConnectSource._hadOrigShadow=hoverConnectSource.shadow||null;
+      hoverConnectSource.set('shadow',new fabric.Shadow({color:'#ff9800',blur:24,offsetX:0,offsetY:0}));
+      canvas.renderAll();
+      updateHoverConnectIndicator();
+      // Show toast only first time to avoid spam
+    } else if(hoverConnectSource.id!==connectable.id){
+      // Step 2: connect and reset source — mode STAYS ON for next pair
+      hoverConnectSource.set('shadow',hoverConnectSource._hadOrigShadow||null);
+      // Brief glow on destination to confirm connection
+      let origDestShadow=connectable.shadow||null;
+      connectable.set('shadow',new fabric.Shadow({color:'#22c55e',blur:24,offsetX:0,offsetY:0}));
+      canvas.renderAll();
+      setTimeout(()=>{connectable.set('shadow',origDestShadow);canvas.renderAll();},600);
+
+      createConn(hoverConnectSource,connectable,currentConnectorType);
+      snapshot();
+      // Reset source but keep mode ON → ready for next pair
+      hoverConnectSource=null;
+      updateHoverConnectIndicator();
+    }
+  });
+
   document.addEventListener('click',e=>{
     if(!document.getElementById("ctx").contains(e.target))
       document.getElementById("ctx").style.display="none";
@@ -2124,6 +2190,91 @@ function saveToDatabase(silent=false){
     presChain:presChain
   };
   saveDB();if(!silent) showToast('💾 ¡Guardado!');
+}
+
+// ═══════════ HOVER-CONNECT MODE (tecla F) ═══════════
+let hoverConnectMode=false;
+let hoverConnectSource=null;
+
+function toggleHoverConnect(){
+  hoverConnectMode=!hoverConnectMode;
+  // Reset any pending source
+  if(hoverConnectSource){
+    hoverConnectSource.set('shadow',hoverConnectSource._hadOrigShadow||null);
+    hoverConnectSource=null;
+    canvas.renderAll();
+  }
+  let btn=document.getElementById('btn-hover-connect');
+  if(btn){btn.classList.toggle('btn-active',hoverConnectMode);}
+  if(hoverConnectMode){
+    if(isConnectMode) cancelConnect();
+    if(drawMode) stopDrawing();
+    canvas.defaultCursor='crosshair';
+    showToast('🔗 [E] Hover-Conectar ON — pasá cursor por ORIGEN, luego por DESTINO. Se repite automáticamente. [E] para apagar.');
+  } else {
+    canvas.defaultCursor='default';
+    showToast('🔗 [E] Hover-Conectar OFF');
+  }
+  updateHoverConnectIndicator();
+}
+
+function updateHoverConnectIndicator(){
+  let ind=document.getElementById('hover-connect-indicator');
+  if(!ind) return;
+  ind.style.display=hoverConnectMode?'block':'none';
+  ind.innerText=hoverConnectSource
+    ? '🔗 DESTINO: pasá por el siguiente bloque'
+    : '🔗 [E] Hover-Conectar activo — pasá por ORIGEN';
+}
+
+// ═══════════ QUICK BLOCK AT MOUSE (tecla Q) ═══════════
+let _lastMousePos={x:0,y:0};
+const QUICK_BLOCK_TYPES=['square','circle','diamond','post-it','text-only'];
+let _quickBlockTypeIdx=0;
+let _quickBlockTimer=null;
+
+// Track mouse position globally
+document.addEventListener('mousemove',function(e){
+  _lastMousePos={x:e.clientX,y:e.clientY};
+});
+
+function addQuickBlockAtMouse(){
+  if(!currentProject) return;
+  if(drawMode||isConnectMode) return;
+
+  let zoom=canvas.getZoom(),vpt=canvas.viewportTransform;
+  let canvasEl=document.getElementById('mainCanvas');
+  let rect=canvasEl.getBoundingClientRect();
+  let screenX=_lastMousePos.x-rect.left;
+  let screenY=_lastMousePos.y-rect.top;
+  let canvasX=(screenX-vpt[4])/zoom;
+  let canvasY=(screenY-vpt[5])/zoom;
+  canvasX=sv(canvasX);canvasY=sv(canvasY);
+
+  let type=QUICK_BLOCK_TYPES[_quickBlockTypeIdx];
+  addBlock(type,{left:canvasX,top:canvasY,fromLoad:false});
+
+  // Show type indicator
+  let typeNames={square:'🟦 Cuadrado',circle:'⚪ Círculo',diamond:'🔷 Rombo','post-it':'📝 Post-it','text-only':'🔤 Texto'};
+  showQuickBlockIndicator(typeNames[type]);
+}
+
+function cycleQuickBlockType(){
+  _quickBlockTypeIdx=(_quickBlockTypeIdx+1)%QUICK_BLOCK_TYPES.length;
+  let typeNames={square:'🟦 Cuadrado',circle:'⚪ Círculo',diamond:'🔷 Rombo','post-it':'📝 Post-it','text-only':'🔤 Texto'};
+  let type=QUICK_BLOCK_TYPES[_quickBlockTypeIdx];
+  let label=typeNames[type];
+  // Update label in dropdown if visible
+  let el=document.getElementById('quick-type-label');if(el)el.innerText=label;
+  showToast('Q crea: '+label+' — Shift+Q para cambiar tipo');
+}
+
+function showQuickBlockIndicator(typeName){
+  let ind=document.getElementById('quick-block-indicator');
+  if(!ind) return;
+  ind.innerText='[Q] '+typeName;ind.style.display='block';
+  clearTimeout(_quickBlockTimer);
+  _quickBlockTimer=setTimeout(()=>{ind.style.display='none';},1500);
 }
 
 function loadProjectData(){

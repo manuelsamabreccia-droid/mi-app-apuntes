@@ -5,8 +5,8 @@
 <title>Apuntes - Flow Notes</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
-:root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
-body.dark-mode{--bg-app:#121216;--bg-box:#1e1f29;--text-main:#f5f7fa;--border-color:rgba(255,255,255,0.1);--bg-word-bar:#2a2b36;}
+:root{--bg-app:#faf8f3;--bg-box:#ffffff;--text-main:#2c2c2c;--border-color:rgba(0,0,0,0.08);--accent:#2196F3;}
+body.dark-mode{--bg-app:#1a1a1a;--bg-box:#252525;--text-main:#f0f0f0;--border-color:rgba(255,255,255,0.1);}
 body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Segoe UI',sans-serif;user-select:none;transition:background .3s;color:var(--text-main);}
 .hidden{display:none!important;}
 .screen{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(15px);display:flex;align-items:center;justify-content:center;z-index:9000;}
@@ -17,24 +17,24 @@ body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Se
 .auth-box button:hover{opacity:.9;}
 .project-list{max-height:160px;overflow-y:auto;margin:15px 0;padding:0;list-style:none;}
 .project-item{padding:11px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);}
-.project-item:hover{border-color:#2196F3;}
+.project-item:hover{border-color:var(--accent);}
 .pi-actions{display:flex;gap:6px;}
 .pi-btn{padding:4px 9px;border:1px solid var(--border-color);background:var(--bg-box);color:var(--text-main);border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;}
-.pi-btn:hover{background:#2196F3;color:#fff;border-color:#2196F3;}
+.pi-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 .pi-btn.del:hover{background:#f44336;border-color:#f44336;}
 #saved-accounts-list{max-height:120px;overflow-y:auto;margin:10px 0;padding:0;list-style:none;}
 .saved-account-item{padding:10px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);}
-.saved-account-item:hover{border-color:#2196F3;}
-.acc-badge{font-size:10px;background:#2196F3;color:#fff;padding:2px 7px;border-radius:20px;}
+.saved-account-item:hover{border-color:var(--accent);}
+.acc-badge{font-size:10px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:20px;}
 
-#toolbar{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--bg-box);padding:8px 16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:100;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+#toolbar{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--bg-box);padding:10px 16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:100;display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:1px solid var(--border-color);}
 .btn{padding:8px 14px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--text-main);display:flex;align-items:center;gap:6px;transition:.2s;}
-.btn:hover{background:rgba(128,128,128,.15);}
-.btn-active{background:#2196F3!important;color:#fff!important;}
+.btn:hover{background:rgba(33,150,243,.1);}
+.btn-active{background:var(--accent)!important;color:#fff!important;}
 .sep{width:1px;height:20px;background:var(--border-color);margin:0 2px;}
 
 #ctx{position:fixed;background:var(--bg-box);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.2);border:1px solid var(--border-color);display:none;flex-direction:column;padding:6px 0;z-index:9999;}
-#ctx .mi{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+#ctx .mi{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 #ctx .mi:hover{background:rgba(128,128,128,.15);}
 #ctx select,#ctx input[type=color]{padding:3px;font-size:12px;max-width:95px;background:var(--bg-app);color:var(--text-main);border:1px solid var(--border-color);border-radius:4px;}
 .dv{height:1px;background:var(--border-color);margin:6px 0;}
@@ -42,29 +42,35 @@ body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Se
 #main-canvas-wrap{position:fixed;inset:0;top:60px;background:var(--bg-app);}
 #flowCanvas{display:block;}
 
-.bot-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:100;}
+.bot-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.15);}
 .bot-bar.vis{display:flex;}
 .cob{padding:7px 13px;border:1px solid var(--border-color);background:transparent;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-main);transition:.2s;}
-.cob:hover,.cob.act{background:#2196F3;color:#fff;border-color:#2196F3;}
+.cob:hover,.cob.act{background:var(--accent);color:#fff;border-color:var(--accent);}
 .cob.cancel{color:red;border-color:red;}
 .cob.cancel:hover{background:#f44336;color:#fff;}
 
-#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#2196F3;color:#fff;padding:12px 28px;border-radius:30px;font-weight:700;box-shadow:0 8px 20px rgba(33,150,243,.3);z-index:8000;pointer-events:none;}
+#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:12px 28px;border-radius:30px;font-weight:700;box-shadow:0 8px 20px rgba(33,150,243,.3);z-index:8000;pointer-events:none;}
 
 #dark-toggle-btn{position:fixed;top:15px;right:15px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:11px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:.2s;}
-#dark-toggle-btn:hover{background:#2196F3;color:#fff;}
+#dark-toggle-btn:hover{background:var(--accent);color:#fff;}
 
 #zoom-indicator{position:fixed;bottom:15px;right:110px;background:rgba(0,0,0,.55);color:#fff;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;pointer-events:none;z-index:50;}
 
 #btn-center{position:fixed;bottom:15px;right:60px;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:.2s;}
-#btn-center:hover{background:#2196F3;color:#fff;}
+#btn-center:hover{background:var(--accent);color:#fff;}
 
-#connect-mode-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:100;}
+#connect-mode-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--accent);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:100;box-shadow:0 4px 12px rgba(33,150,243,.2);}
 #connect-mode-bar.vis{display:flex;}
-#connect-status{font-size:12px;font-weight:700;color:#ff9800;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#connect-status{font-size:12px;font-weight:700;color:var(--accent);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+#hover-indicator{position:fixed;font-size:11px;background:var(--accent);color:#fff;padding:4px 8px;border-radius:4px;pointer-events:none;z-index:50;display:none;white-space:nowrap;}
 
 body.connecting *{cursor:crosshair!important;}
 body.panning{cursor:grabbing!important;}
+body.hover-connect *{cursor:pointer!important;}
+
+.block-hint{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(33,150,243,.9);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;pointer-events:none;z-index:50;display:none;}
+.block-hint.vis{display:block;}
 </style>
 </head>
 <body>
@@ -73,6 +79,8 @@ body.panning{cursor:grabbing!important;}
 <button id="btn-center" onclick="centerCanvas()" title="Volver al centro">⌖</button>
 <div id="zoom-indicator">100%</div>
 <div id="toast">💾 ¡Guardado!</div>
+<div id="hover-indicator"></div>
+<div class="block-hint" id="block-hint">Presioná Q para crear bloque</div>
 
 <!-- AUTH SCREEN -->
 <div id="auth-screen" class="screen">
@@ -86,7 +94,7 @@ body.panning{cursor:grabbing!important;}
     <input type="text" id="username" placeholder="Nombre de usuario">
     <input type="password" id="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')handleAuthAction()">
     <button id="auth-submit-btn" onclick="handleAuthAction()">Ingresar</button>
-    <p id="auth-toggle-text" style="font-size:13px;margin:15px 0 0;cursor:pointer;color:#2196F3;font-weight:600;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+    <p id="auth-toggle-text" style="font-size:13px;margin:15px 0 0;cursor:pointer;color:var(--accent);font-weight:600;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
   </div>
   <div class="auth-box hidden" id="project-step">
     <h2 style="margin-bottom:4px;">Tus Cuadernos</h2>
@@ -99,12 +107,12 @@ body.panning{cursor:grabbing!important;}
 
 <!-- TOOLBAR -->
 <div id="toolbar" class="hidden">
-  <button class="btn" onclick="addNode()">➕ Agregar Nota</button>
+  <button class="btn" onclick="addNode()">➕ Nota (Q)</button>
   <button class="btn" id="btn-connect" onclick="toggleConnectMode()">🔗 Conectar</button>
-  <button class="btn" id="btn-arrow" onclick="addArrow()">→ Flecha</button>
+  <button class="btn" id="btn-hover" onclick="toggleHoverConnect()">🖱️ Hover-Conectar</button>
   <div class="sep"></div>
-  <button class="btn" onclick="saveToDatabase()" style="background:#4CAF50;color:#fff;">💾 Guardar</button>
-  <button class="btn" onclick="exitToWorkspace()" style="background:#f44336;color:#fff;">🏠 Salir</button>
+  <button class="btn" onclick="saveToDatabase()" style="background:rgba(76,175,80,.15);color:#2e7d32;">💾 Guardar</button>
+  <button class="btn" onclick="exitToWorkspace()" style="background:rgba(244,67,54,.15);color:#c62828;">🏠 Salir</button>
 </div>
 
 <!-- CONNECT MODE BAR -->
@@ -116,13 +124,14 @@ body.panning{cursor:grabbing!important;}
 <!-- CONTEXT MENU -->
 <div id="ctx">
   <div class="mi" onclick="deleteNode()" style="color:red;font-weight:700;">🗑️ Eliminar</div>
-  <div class="mi" onclick="indentNode()" style="color:#2196F3;font-weight:600;">→ Indentar</div>
-  <div class="mi" onclick="unindentNode()" style="color:#2196F3;font-weight:600;">← Desaindentar</div>
+  <div class="mi" onclick="duplicateNode()" style="color:var(--accent);font-weight:600;">⧉ Duplicar</div>
   <div class="dv"></div>
   <div class="mi"><span>Color</span><input type="color" id="node-color" onchange="updateNodeColor(this.value)"></div>
-  <div class="mi"><span>Tamaño texto</span>
+  <div class="mi"><span>Tamaño</span>
     <select onchange="updateNodeFontSize(parseInt(this.value))">
+      <option value="11">11px</option>
       <option value="12">12px</option>
+      <option value="13">13px</option>
       <option value="14" selected>14px</option>
       <option value="16">16px</option>
       <option value="18">18px</option>
@@ -146,12 +155,20 @@ let connectMode = false;
 let connectSource = null;
 let selectedNode = null;
 let isDragging = false;
+let isResizing = false;
 let lastPos = null;
-const INDENT_WIDTH = 40;
+let hoverConnectMode = false;
+let hoverConnectSource = null;
+let hoveredNode = null;
 
 // ═══════════ INIT ═══════════
 window.onload = function(){
   document.addEventListener('contextmenu', e => e.preventDefault(), true);
+  document.addEventListener('click', e => {
+    if(!document.getElementById('ctx').contains(e.target))
+      document.getElementById('ctx').style.display = 'none';
+  });
+  setupKeyboard();
   if(localStorage.getItem("dark_mode_enabled") === "true") toggleDarkMode(true);
   checkAutoLogin();
   setInterval(() => {if(currentProject) saveToDatabase(true);}, 30000);
@@ -166,6 +183,24 @@ window.addEventListener('resize', () => {
   }
 });
 
+// ═══════════ KEYBOARD ═══════════
+function setupKeyboard(){
+  document.addEventListener('keydown', e => {
+    let ae = document.activeElement;
+    let inInput = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
+    if(inInput) return;
+    
+    if((e.key === 'q' || e.key === 'Q') && !e.ctrlKey && !e.shiftKey && !connectMode && !hoverConnectMode){
+      e.preventDefault();
+      addNode();
+    }
+    if(e.key === 'Escape'){
+      cancelConnect();
+      document.getElementById('ctx').style.display = 'none';
+    }
+  });
+}
+
 // ═══════════ CANVAS INIT ═══════════
 function initFlowCanvas(){
   let wrap = document.getElementById('main-canvas-wrap');
@@ -174,28 +209,25 @@ function initFlowCanvas(){
   flowCanvas = new fabric.Canvas('flowCanvas', {
     width: wrap.offsetWidth,
     height: wrap.offsetHeight,
-    backgroundColor: isDark ? '#121216' : '#f5f7fa',
+    backgroundColor: isDark ? '#1a1a1a' : '#faf8f3',
     fireRightClick: true,
     stopContextMenu: true,
     selection: false
   });
 
-  // Double click para agregar nodo
   flowCanvas.on('mouse:dblclick', function(opt){
-    if(connectMode) return;
+    if(connectMode || hoverConnectMode) return;
     let ptr = flowCanvas.getPointer(opt.e);
     addNodeAt(ptr.x, ptr.y);
   });
 
-  // Mouse down
   flowCanvas.on('mouse:down', function(opt){
     let evt = opt.e;
     let btn = evt.button;
+    let target = opt.target;
 
-    // Right click - context menu
     if(btn === 2){
       evt.preventDefault();
-      let target = opt.target;
       if(target && target._isFlowNode){
         selectedNode = target;
         showCtx(evt);
@@ -203,18 +235,16 @@ function initFlowCanvas(){
       return;
     }
 
-    // Connect mode
     if(connectMode){
-      let target = opt.target;
       if(target && target._isFlowNode){
         if(!connectSource){
           connectSource = target;
           connectSource.set('shadow', new fabric.Shadow({color:'#ff9800', blur:16, offsetX:0, offsetY:0}));
-          document.getElementById('connect-status').innerText = `Origen: "${target.text.substring(0,15)}" → click destino`;
+          document.getElementById('connect-status').innerText = `Origen: "${target.text.substring(0,15)}" → destino`;
           flowCanvas.renderAll();
         } else if(connectSource !== target){
-          connectSource.set('shadow', null);
           createConnection(connectSource, target);
+          connectSource.set('shadow', null);
           connectSource = null;
           document.getElementById('connect-status').innerText = 'Seleccioná origen...';
           flowCanvas.renderAll();
@@ -223,10 +253,14 @@ function initFlowCanvas(){
       return;
     }
 
-    // Drag mode
-    let target = opt.target;
     if(target && target._isFlowNode){
       selectedNode = target;
+      isDragging = true;
+      lastPos = {x: evt.clientX, y: evt.clientY};
+      
+      if(evt.offsetX > target.left + target.width/2 - 5 && evt.offsetY > target.top + target.height/2 - 5){
+        isResizing = true;
+      }
     } else if(!target){
       isDragging = true;
       lastPos = {x: evt.clientX, y: evt.clientY};
@@ -234,27 +268,58 @@ function initFlowCanvas(){
     }
   });
 
-  // Mouse move
   flowCanvas.on('mouse:move', function(opt){
     let evt = opt.e;
+    let target = opt.target;
+
+    if(hoverConnectMode && target && target._isFlowNode){
+      hoveredNode = target;
+      if(!hoverConnectSource){
+        hoverConnectSource = target;
+        target.set('shadow', new fabric.Shadow({color:'#22c55e', blur:20, offsetX:0, offsetY:0}));
+        flowCanvas.renderAll();
+      }
+    } else if(hoverConnectMode && hoveredNode){
+      if(hoverConnectSource !== target){
+        hoverConnectSource.set('shadow', null);
+        hoverConnectSource = null;
+        hoveredNode = null;
+        flowCanvas.renderAll();
+      }
+    }
+
     if(isDragging && lastPos){
-      let vpt = flowCanvas.viewportTransform;
-      vpt[4] += (evt.clientX - lastPos.x);
-      vpt[5] += (evt.clientY - lastPos.y);
-      flowCanvas.requestRenderAll();
+      if(isResizing && selectedNode){
+        let dx = evt.clientX - lastPos.x;
+        selectedNode.set({width: Math.max(80, (selectedNode.width || 150) + dx)});
+        selectedNode._bgRect.set({width: selectedNode.width});
+      } else if(selectedNode){
+        let dx = evt.clientX - lastPos.x;
+        let dy = evt.clientY - lastPos.y;
+        selectedNode.set({left: selectedNode.left + dx, top: selectedNode.top + dy});
+        selectedNode._bgRect.set({left: selectedNode.left, top: selectedNode.top});
+        selectedNode._bgRect.setCoords();
+        selectedNode.setCoords();
+        updateConnections();
+      } else {
+        let vpt = flowCanvas.viewportTransform;
+        vpt[4] += (evt.clientX - lastPos.x);
+        vpt[5] += (evt.clientY - lastPos.y);
+        flowCanvas.requestRenderAll();
+        updateConnections();
+      }
       lastPos = {x: evt.clientX, y: evt.clientY};
-      updateConnections();
     }
   });
 
-  // Mouse up
   flowCanvas.on('mouse:up', function(){
+    if(isResizing && selectedNode) saveFlowNotes();
     isDragging = false;
+    isResizing = false;
     lastPos = null;
     document.body.classList.remove('panning');
   });
 
-  // Wheel zoom
   flowCanvas.on('mouse:wheel', function(opt){
     let d = opt.e.deltaY;
     let z = flowCanvas.getZoom();
@@ -268,8 +333,6 @@ function initFlowCanvas(){
     updateConnections();
   });
 
-  // Object events
-  flowCanvas.on('object:moving', () => updateConnections());
   flowCanvas.on('object:modified', () => saveFlowNotes());
 
   loadFlowNotes();
@@ -283,36 +346,32 @@ function addNode(){
   addNodeAt(x, y);
 }
 
-function addNodeAt(x, y, text = '', indent = 0){
+function addNodeAt(x, y, text = ''){
   let isDark = document.body.classList.contains('dark-mode');
   
-  // Background
   let bgRect = new fabric.Rect({
     left: x, top: y,
-    width: 200 + (indent * INDENT_WIDTH),
-    height: 50,
-    fill: isDark ? '#2a2b3e' : '#ffffff',
-    stroke: isDark ? 'rgba(33,150,243,0.5)' : 'rgba(33,150,243,0.4)',
-    strokeWidth: 1.5,
+    width: 150, height: 50,
+    fill: isDark ? '#333333' : '#ffffff',
+    stroke: isDark ? 'rgba(33,150,243,0.5)' : 'rgba(33,150,243,0.3)',
+    strokeWidth: 2,
     rx: 8, ry: 8,
     originX: 'center', originY: 'center',
     selectable: false, evented: false,
     _isBg: true
   });
 
-  // Text
   let textObj = new fabric.Textbox(text || 'Escribí aquí...', {
     left: x, top: y,
-    width: 180 + (indent * INDENT_WIDTH),
-    fontSize: 14,
+    width: 130,
+    fontSize: 13,
     fontFamily: 'Segoe UI',
-    fill: isDark ? '#f0f0f0' : '#222',
+    fill: isDark ? '#f0f0f0' : '#2c2c2c',
     textAlign: 'left',
     originX: 'center', originY: 'center',
     selectable: true, evented: true,
     _isFlowNode: true,
     _nodeId: 'n_' + Date.now() + Math.random(),
-    _indent: indent,
     _bgRect: bgRect
   });
 
@@ -320,7 +379,6 @@ function addNodeAt(x, y, text = '', indent = 0){
   flowCanvas.add(textObj);
   flowNodes.push(textObj);
 
-  // Events
   textObj.on('editing:exited', () => {
     if(!textObj.text.trim()){
       flowCanvas.remove(bgRect);
@@ -344,7 +402,7 @@ function addNodeAt(x, y, text = '', indent = 0){
   function adjustBg(){
     let tH = textObj.calcTextHeight ? textObj.calcTextHeight() : textObj.height;
     bgRect.set({
-      width: Math.max(200 + (indent * INDENT_WIDTH), textObj.width + 20),
+      width: Math.max(150, textObj.width + 20),
       height: Math.max(50, tH + 20),
       left: textObj.left,
       top: textObj.top
@@ -363,6 +421,9 @@ function addNodeAt(x, y, text = '', indent = 0){
 
 // ═══════════ CONNECTIONS ═══════════
 function createConnection(from, to){
+  let existing = flowConnections.find(c => (c.from === from._nodeId && c.to === to._nodeId) || (c.from === to._nodeId && c.to === from._nodeId));
+  if(existing) return; // No duplicar
+
   let conn = {
     from: from._nodeId,
     to: to._nodeId,
@@ -374,7 +435,6 @@ function createConnection(from, to){
   let p1 = {x: from.left, y: from.top};
   let p2 = {x: to.left, y: to.top};
 
-  // Main line
   let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
     stroke: '#2196F3',
     strokeWidth: 2.5,
@@ -383,14 +443,11 @@ function createConnection(from, to){
     _isConn: true
   });
 
-  // Arrow
   let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
   let arrow = new fabric.Triangle({
-    width: 12,
-    height: 14,
+    width: 12, height: 14,
     fill: '#2196F3',
-    left: p2.x,
-    top: p2.y,
+    left: p2.x, top: p2.y,
     angle: angle * 180 / Math.PI + 90,
     originX: 'center', originY: 'center',
     selectable: false, evented: false,
@@ -433,32 +490,22 @@ function deleteNode(){
   flowCanvas.remove(selectedNode);
   flowNodes = flowNodes.filter(n => n !== selectedNode);
   flowConnections = flowConnections.filter(c => c.from !== selectedNode._nodeId && c.to !== selectedNode._nodeId);
+  
+  // Eliminar líneas de conexiones
+  flowConnections.forEach(conn => {
+    if(conn.lines) conn.lines.forEach(l => flowCanvas.remove(l));
+  });
+  
   selectedNode = null;
   document.getElementById('ctx').style.display = 'none';
   flowCanvas.renderAll();
   saveFlowNotes();
 }
 
-function indentNode(){
+function duplicateNode(){
   if(!selectedNode) return;
-  selectedNode._indent = (selectedNode._indent || 0) + 1;
-  let newW = 200 + (selectedNode._indent * INDENT_WIDTH);
-  selectedNode._bgRect.set({width: newW});
-  selectedNode.set({width: newW - 20});
-  flowCanvas.renderAll();
-  saveFlowNotes();
-}
-
-function unindentNode(){
-  if(!selectedNode) return;
-  if(selectedNode._indent > 0){
-    selectedNode._indent--;
-    let newW = 200 + (selectedNode._indent * INDENT_WIDTH);
-    selectedNode._bgRect.set({width: newW});
-    selectedNode.set({width: newW - 20});
-    flowCanvas.renderAll();
-    saveFlowNotes();
-  }
+  addNodeAt(selectedNode.left + 30, selectedNode.top + 30, selectedNode.text);
+  document.getElementById('ctx').style.display = 'none';
 }
 
 function updateNodeColor(color){
@@ -482,6 +529,8 @@ function toggleConnectMode(){
   document.getElementById('connect-mode-bar').classList.toggle('vis', connectMode);
   document.body.classList.toggle('connecting', connectMode);
   if(connectMode){
+    hoverConnectMode = false;
+    document.getElementById('btn-hover').classList.remove('btn-active');
     document.getElementById('connect-status').innerText = 'Seleccioná origen...';
   }
 }
@@ -498,9 +547,20 @@ function cancelConnect(){
   flowCanvas.renderAll();
 }
 
-// ═══════════ ARROW TOOL ═══════════
-function addArrow(){
-  alert('Pendiente: Herramienta de flecha libre. Por ahora usa "Conectar" para flechas entre notas.');
+function toggleHoverConnect(){
+  hoverConnectMode = !hoverConnectMode;
+  document.getElementById('btn-hover').classList.toggle('btn-active', hoverConnectMode);
+  document.body.classList.toggle('hover-connect', hoverConnectMode);
+  if(hoverConnectMode){
+    connectMode = false;
+    if(connectSource){
+      connectSource.set('shadow', null);
+      connectSource = null;
+    }
+    document.getElementById('btn-connect').classList.remove('btn-active');
+    document.getElementById('connect-mode-bar').classList.remove('vis');
+    document.body.classList.remove('connecting');
+  }
 }
 
 // ═══════════ SAVE/LOAD ═══════════
@@ -513,7 +573,7 @@ function saveFlowNotes(){
       text: n.text,
       x: n.left,
       y: n.top,
-      indent: n._indent || 0,
+      width: n.width,
       fontSize: n.fontSize,
       bgFill: n._bgRect.fill
     })),
@@ -538,9 +598,10 @@ function loadFlowNotes(){
   let nodeMap = {};
 
   (data.nodes || []).forEach(n => {
-    let node = addNodeAt(n.x, n.y, n.text, n.indent);
+    let node = addNodeAt(n.x, n.y, n.text);
     node._nodeId = n.id;
     if(n.fontSize) node.set({fontSize: n.fontSize});
+    if(n.width) node.set({width: n.width});
     if(n.bgFill) node._bgRect.set({fill: n.bgFill});
     nodeMap[n.id] = node;
   });
@@ -594,21 +655,21 @@ function toggleDarkMode(force = false){
   document.getElementById('dark-toggle-btn').innerText = isDark ? '☀️' : '🌙';
 
   if(flowCanvas){
-    let bgColor = isDark ? '#121216' : '#f5f7fa';
+    let bgColor = isDark ? '#1a1a1a' : '#faf8f3';
     flowCanvas.setBackgroundColor(bgColor, () => {
       flowNodes.forEach(n => {
         if(n._bgRect){
           let oldFill = n._bgRect.fill;
           if(isDark && oldFill === '#ffffff'){
-            n._bgRect.set({fill: '#2a2b3e'});
-          } else if(!isDark && oldFill === '#2a2b3e'){
+            n._bgRect.set({fill: '#333333'});
+          } else if(!isDark && oldFill === '#333333'){
             n._bgRect.set({fill: '#ffffff'});
           }
         }
-        if(isDark && n.fill === '#222'){
+        if(isDark && n.fill === '#2c2c2c'){
           n.set({fill: '#f0f0f0'});
         } else if(!isDark && n.fill === '#f0f0f0'){
-          n.set({fill: '#222'});
+          n.set({fill: '#2c2c2c'});
         }
       });
       flowCanvas.renderAll();
@@ -645,7 +706,7 @@ function renderSavedAccountsUI(){
     let li = document.createElement('li');
     li.className = 'saved-account-item';
     let hasToken = localStorage.getItem('apuntes_autologin') === u;
-    li.innerHTML = `<span>👤 ${u}</span><span class="acc-badge" style="${hasToken?'background:#4CAF50':''}">${hasToken?'Este dispositivo':'Guardado'}</span>`;
+    li.innerHTML = `<span>👤 ${u}</span><span class="acc-badge" style="${hasToken?'background:var(--accent)':''}">${hasToken?'Este dispositivo':'Guardado'}</span>`;
     li.onclick = () => {
       if(hasToken){
         currentUser = u;
@@ -799,12 +860,6 @@ function showToast(msg){
   toast.style.display = 'block';
   setTimeout(() => {toast.style.display = 'none';}, 2000);
 }
-
-// Prevent context menu
-document.addEventListener('click', e => {
-  if(!document.getElementById('ctx').contains(e.target))
-    document.getElementById('ctx').style.display = 'none';
-});
 </script>
 </body>
 </html>

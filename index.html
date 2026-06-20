@@ -2,90 +2,152 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Apuntes - Flow Notes</title>
+<title>Apuntes</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
-:root{--bg-app:#faf8f3;--bg-box:#ffffff;--text-main:#2c2c2c;--border-color:rgba(0,0,0,0.08);--accent:#2196F3;}
-body.dark-mode{--bg-app:#1a1a1a;--bg-box:#252525;--text-main:#f0f0f0;--border-color:rgba(255,255,255,0.1);}
+:root{--bg-app:#f5f7fa;--bg-box:#ffffff;--text-main:#333333;--border-color:rgba(0,0,0,0.08);--bg-word-bar:#eaeaea;}
+body.dark-mode{--bg-app:#121216;--bg-box:#1e1f29;--text-main:#f5f7fa;--border-color:rgba(255,255,255,0.1);--bg-word-bar:#2a2b36;}
 body{margin:0;padding:0;background:var(--bg-app);overflow:hidden;font-family:'Segoe UI',sans-serif;user-select:none;transition:background .3s;color:var(--text-main);}
 .hidden{display:none!important;}
 .screen{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(15px);display:flex;align-items:center;justify-content:center;z-index:9000;}
 .auth-box{background:var(--bg-box);padding:40px;border-radius:24px;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center;width:340px;color:var(--text-main);border:1px solid var(--border-color);}
 .auth-box h2{margin-top:0;font-size:26px;font-weight:700;}
-.auth-box input{width:100%;padding:12px 16px;margin:10px 0;border:1px solid var(--border-color);background:var(--bg-app);color:var(--text-main);border-radius:10px;box-sizing:border-box;outline:none;font-size:13px;}
+.auth-box input{width:100%;padding:12px 16px;margin:10px 0;border:1px solid var(--border-color);background:var(--bg-app);color:var(--text-main);border-radius:10px;box-sizing:border-box;outline:none;font-size:14px;}
 .auth-box button{width:100%;padding:14px;border:none;background:#2196F3;color:#fff;font-weight:700;border-radius:10px;cursor:pointer;font-size:14px;transition:.2s;}
 .auth-box button:hover{opacity:.9;}
 .project-list{max-height:160px;overflow-y:auto;margin:15px 0;padding:0;list-style:none;}
-.project-item{padding:11px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);}
-.project-item:hover{border-color:var(--accent);}
+.project-item{padding:11px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;}
+.project-item:hover{border-color:#2196F3;}
 .pi-actions{display:flex;gap:6px;}
 .pi-btn{padding:4px 9px;border:1px solid var(--border-color);background:var(--bg-box);color:var(--text-main);border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;}
-.pi-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pi-btn:hover{background:#2196F3;color:#fff;border-color:#2196F3;}
 .pi-btn.del:hover{background:#f44336;border-color:#f44336;}
 #saved-accounts-list{max-height:120px;overflow-y:auto;margin:10px 0;padding:0;list-style:none;}
-.saved-account-item{padding:10px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);}
-.saved-account-item:hover{border-color:var(--accent);}
-.acc-badge{font-size:10px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:20px;}
-
-#toolbar{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--bg-box);padding:10px 16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:100;display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:1px solid var(--border-color);}
+.saved-account-item{padding:10px 14px;background:var(--bg-app);margin-bottom:5px;border-radius:8px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:var(--text-main);border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;}
+.saved-account-item:hover{border-color:#2196F3;}
+.acc-badge{font-size:10px;background:#2196F3;color:#fff;padding:2px 7px;border-radius:20px;}
+#toolbar{position:fixed;top:15px;left:50%;transform:translateX(-50%);background:var(--bg-box);padding:8px 16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);z-index:100;display:flex;gap:8px;align-items:center;border:1px solid var(--border-color);flex-wrap:wrap;max-width:96vw;}
 .btn{padding:8px 14px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--text-main);display:flex;align-items:center;gap:6px;transition:.2s;}
-.btn:hover{background:rgba(33,150,243,.1);}
-.btn-active{background:var(--accent)!important;color:#fff!important;}
+.btn:hover{background:rgba(128,128,128,.15);}
+.btn-active{background:#2196F3!important;color:#fff!important;}
 .sep{width:1px;height:20px;background:var(--border-color);margin:0 2px;}
-
-#ctx{position:fixed;background:var(--bg-box);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.2);border:1px solid var(--border-color);display:none;flex-direction:column;padding:6px 0;z-index:9999;}
-#ctx .mi{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.dropdown{position:relative;display:inline-block;}
+.dropdown-content{display:none;position:absolute;background:var(--bg-box);min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:10px;z-index:1000;top:100%;left:0;overflow:hidden;border:1px solid var(--border-color);}
+.dropdown-content button{width:100%;padding:11px 16px;background:transparent;border:none;text-align:left;color:var(--text-main);cursor:pointer;font-size:13px;font-weight:500;}
+.dropdown-content button:hover{background:rgba(128,128,128,.11);}
+.dropdown:hover .dropdown-content{display:block;}
+.ddl{padding:6px 16px 4px;font-size:10px;font-weight:700;opacity:.45;text-transform:uppercase;letter-spacing:.5px;}
+.ddd{height:1px;background:var(--border-color);margin:4px 0;}
+#ctx{position:fixed;background:var(--bg-box);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.2);border:1px solid var(--border-color);display:none;flex-direction:column;padding:6px 0;z-index:9999;min-width:215px;max-width:240px;color:var(--text-main);max-height:90vh;overflow-y:auto;}
+#ctx .mi{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
 #ctx .mi:hover{background:rgba(128,128,128,.15);}
 #ctx select,#ctx input[type=color]{padding:3px;font-size:12px;max-width:95px;background:var(--bg-app);color:var(--text-main);border:1px solid var(--border-color);border-radius:4px;}
 .dv{height:1px;background:var(--border-color);margin:6px 0;}
 
-#main-canvas-wrap{position:fixed;inset:0;top:60px;background:var(--bg-app);}
-#flowCanvas{display:block;}
+/* ═══ FLOW NOTES PANEL ═══ */
+#flow-wrapper{position:fixed;top:80px;right:-520px;width:490px;height:calc(100vh - 100px);background:var(--bg-box);box-shadow:-8px 0 30px rgba(0,0,0,.15);z-index:90;transition:right .4s cubic-bezier(.1,.9,.2,1);display:flex;flex-direction:column;border-radius:16px 0 0 16px;border-left:1px solid var(--border-color);overflow:hidden;}
+#flow-wrapper.open{right:0;}
+#flow-panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-color);background:var(--bg-box);flex-shrink:0;}
+#flow-panel-header h3{margin:0;font-size:15px;font-weight:700;}
+#flow-panel-tools{display:flex;gap:6px;align-items:center;}
+.fp-btn{padding:5px 10px;border:1px solid var(--border-color);background:var(--bg-app);color:var(--text-main);border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:.2s;}
+.fp-btn:hover,.fp-btn.act{background:#2196F3;color:#fff;border-color:#2196F3;}
+.fp-btn.erase.act{background:#f44336;border-color:#f44336;}
+#flow-hint{padding:5px 16px;font-size:11px;opacity:.5;background:var(--bg-app);border-bottom:1px solid var(--border-color);flex-shrink:0;line-height:1.6;}
+#flow-canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg-app);}
+#flow-canvas{display:block;}
 
-.bot-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.bot-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.15);}
 .bot-bar.vis{display:flex;}
 .cob{padding:7px 13px;border:1px solid var(--border-color);background:transparent;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-main);transition:.2s;}
-.cob:hover,.cob.act{background:var(--accent);color:#fff;border-color:var(--accent);}
+.cob:hover,.cob.act{background:#2196F3;color:#fff;border-color:#2196F3;}
 .cob.cancel{color:red;border-color:red;}
 .cob.cancel:hover{background:#f44336;color:#fff;}
-
-#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:12px 28px;border-radius:30px;font-weight:700;box-shadow:0 8px 20px rgba(33,150,243,.3);z-index:8000;pointer-events:none;}
-
-#dark-toggle-btn{position:fixed;top:15px;right:15px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:11px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:.2s;}
-#dark-toggle-btn:hover{background:var(--accent);color:#fff;}
-
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:8000;}
+.modal-bg.vis{display:flex;}
+.modal-box{background:var(--bg-box);padding:32px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.3);min-width:320px;max-width:480px;color:var(--text-main);border:1px solid var(--border-color);max-height:80vh;overflow-y:auto;}
+.modal-box h3{margin:0 0 16px;font-size:18px;}
+.modal-box p{margin:0 0 12px;font-size:13px;opacity:.7;}
+.fm-btn{padding:12px 18px;border:1px solid var(--border-color);background:var(--bg-app);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-main);width:100%;margin-bottom:8px;text-align:left;transition:.2s;box-sizing:border-box;}
+.fm-btn:hover{border-color:#2196F3;color:#2196F3;}
 #zoom-indicator{position:fixed;bottom:15px;right:110px;background:rgba(0,0,0,.55);color:#fff;padding:5px 11px;border-radius:6px;font-size:12px;font-weight:700;pointer-events:none;z-index:50;}
-
-#btn-center{position:fixed;bottom:15px;right:60px;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:.2s;}
-#btn-center:hover{background:var(--accent);color:#fff;}
-
-#connect-mode-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--accent);border-radius:12px;padding:8px 14px;display:none;gap:10px;align-items:center;z-index:100;box-shadow:0 4px 12px rgba(33,150,243,.2);}
-#connect-mode-bar.vis{display:flex;}
-#connect-status{font-size:12px;font-weight:700;color:var(--accent);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-#hover-indicator{position:fixed;font-size:11px;background:var(--accent);color:#fff;padding:4px 8px;border-radius:4px;pointer-events:none;z-index:50;display:none;white-space:nowrap;}
-
-body.connecting *{cursor:crosshair!important;}
+#btn-center{position:fixed;bottom:15px;right:60px;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:50;}
+#btn-center:hover{background:#2196F3;color:#fff;}
+#btn-preview{position:fixed;bottom:15px;right:15px;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:50;}
+#btn-preview:hover{background:#9c27b0;color:#fff;border-color:#9c27b0;}
+#dark-toggle-btn{position:fixed;top:15px;right:15px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:11px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.1);font-size:16px;}
+#bg-color-btn{position:fixed;top:15px;right:60px;z-index:9999;background:var(--bg-box);border:1px solid var(--border-color);padding:10px;border-radius:50%;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.1);font-size:15px;}
+#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#2196F3;color:#fff;padding:12px 28px;border-radius:30px;font-weight:700;box-shadow:0 8px 20px rgba(33,150,243,.3);z-index:10000;display:none;font-size:14px;}
+#snap-hint{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(33,150,243,.85);color:#fff;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;pointer-events:none;z-index:50;display:none;}
+#lasso-rect{position:fixed;border:2px solid #2196F3;background:rgba(33,150,243,.12);pointer-events:none;display:none;z-index:300;border-radius:3px;}
 body.panning{cursor:grabbing!important;}
-body.hover-connect *{cursor:pointer!important;}
-
-.block-hint{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(33,150,243,.9);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;pointer-events:none;z-index:50;display:none;}
-.block-hint.vis{display:block;}
+body.lasso-mode *{cursor:crosshair!important;}
+body.draw-mode *{cursor:crosshair!important;}
+body.erase-mode *{cursor:cell!important;}
+#draw-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg-box);border:1px solid var(--border-color);border-radius:14px;padding:8px 16px;display:none;gap:10px;align-items:center;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.15);flex-wrap:wrap;max-width:96vw;}
+#draw-bar.vis{display:flex;}
+#draw-bar label{font-size:12px;font-weight:600;opacity:.6;}
+#draw-bar input[type=color]{width:28px;height:28px;border:none;border-radius:6px;cursor:pointer;padding:0;}
+#draw-bar input[type=range]{width:80px;cursor:pointer;}
+.draw-mode-btn{padding:7px 13px;border:1px solid var(--border-color);background:transparent;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-main);transition:.2s;}
+.draw-mode-btn:hover,.draw-mode-btn.act{background:#2196F3;color:#fff;border-color:#2196F3;}
+.draw-mode-btn.erase.act{background:#f44336;border-color:#f44336;}
+.madre-overlay{position:fixed;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:7000;inset:0;}
+.madre-overlay.vis{display:flex;}
+.madre-panel{background:var(--bg-box);border-radius:18px;padding:28px;box-shadow:0 20px 50px rgba(0,0,0,.3);min-width:300px;max-width:420px;color:var(--text-main);border:1px solid var(--border-color);}
+.madre-panel h3{margin:0 0 12px;font-size:17px;}
+.madre-panel p{margin:0 0 14px;font-size:13px;opacity:.65;}
+#presentation-overlay{position:fixed;inset:0;background:#000;z-index:5000;display:none;flex-direction:column;}
+#presentation-overlay.vis{display:flex;}
+#pres-canvas-wrap{flex:1;position:relative;overflow:hidden;}
+#pres-controls{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.1);padding:12px 24px;display:flex;align-items:center;gap:12px;z-index:5100;}
+#pres-controls button{padding:8px 16px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:.2s;}
+#pres-controls button:hover{background:rgba(255,255,255,.15);}
+#pres-controls button.exit-pres{background:#f44336;border-color:#f44336;}
+#pres-progress{flex:1;height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden;}
+#pres-progress-fill{height:100%;background:linear-gradient(90deg,#2196F3,#9c27b0);border-radius:2px;transition:width .4s;}
+#pres-step-info{color:rgba(255,255,255,.6);font-size:12px;font-weight:600;white-space:nowrap;}
+#pres-canvas{display:block;}
+#pres-config-modal .modal-box{max-width:520px;}
+.pres-chain-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-app);border-radius:8px;margin-bottom:6px;border:1px solid var(--border-color);font-size:13px;}
+.pres-chain-item span{flex:1;}
+.pres-chain-item button{padding:3px 8px;border:1px solid var(--border-color);background:transparent;color:var(--text-main);border-radius:5px;cursor:pointer;font-size:11px;}
+.pres-chain-item button:hover{background:#f44336;color:#fff;border-color:#f44336;}
+#ai-modal .modal-box{max-width:560px;}
+#ai-chat-history{max-height:260px;overflow-y:auto;background:var(--bg-app);border-radius:10px;padding:12px;margin-bottom:12px;border:1px solid var(--border-color);font-size:13px;line-height:1.6;}
+.ai-msg-user{text-align:right;margin-bottom:8px;}
+.ai-msg-user span{background:#2196F3;color:#fff;padding:6px 12px;border-radius:12px 12px 2px 12px;display:inline-block;max-width:85%;}
+.ai-msg-ai{text-align:left;margin-bottom:8px;}
+.ai-msg-ai span{background:var(--bg-box);color:var(--text-main);padding:6px 12px;border-radius:12px 12px 12px 2px;display:inline-block;max-width:85%;border:1px solid var(--border-color);}
+#ai-input-row{display:flex;gap:8px;}
+#ai-input{flex:1;padding:10px 14px;border:1px solid var(--border-color);background:var(--bg-app);color:var(--text-main);border-radius:10px;outline:none;font-size:13px;}
+#ai-send-btn{padding:10px 18px;background:#2196F3;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;}
+#ai-send-btn:disabled{opacity:.5;cursor:default;}
+#ai-apply-btn{width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#2196F3,#9c27b0);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;display:none;}
+#quick-block-indicator{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,.88);color:#fff;padding:5px 14px;border-radius:8px;font-size:12px;font-weight:700;pointer-events:none;z-index:51;display:none;}
+#e-mode-indicator{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(255,152,0,.95);color:#fff;padding:7px 18px;border-radius:8px;font-size:12px;font-weight:700;pointer-events:none;z-index:52;display:none;gap:8px;align-items:center;}
+#e-mode-indicator.vis{display:flex;}
 </style>
 </head>
 <body>
 
 <button id="dark-toggle-btn" onclick="toggleDarkMode()">🌙</button>
+<button id="bg-color-btn" title="Color de fondo" onclick="document.getElementById('cbgi').click()">🎨</button>
+<input type="color" id="cbgi" style="display:none" onchange="setCanvasBg(this.value)">
 <button id="btn-center" onclick="centerCanvas()" title="Volver al centro">⌖</button>
+<button id="btn-preview" onclick="enterPresentation()" title="Modo Presentación">👁️</button>
 <div id="zoom-indicator">100%</div>
+<div id="snap-hint">🧲 Snap ON</div>
+<div id="e-mode-indicator"><span id="e-mode-text">🔗 [E] Hover-Conectar — pasá por ORIGEN</span><span style="opacity:.7;font-size:11px;">· [E] apagar</span></div>
+<div id="quick-block-indicator"></div>
 <div id="toast">💾 ¡Guardado!</div>
-<div id="hover-indicator"></div>
-<div class="block-hint" id="block-hint">Presioná Q para crear bloque</div>
+<div id="lasso-rect"></div>
+<input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importDatabase(event)">
 
-<!-- AUTH SCREEN -->
+<!-- AUTH -->
 <div id="auth-screen" class="screen">
   <div class="auth-box" id="login-step">
-    <h2 id="auth-title">Flow Notes</h2>
+    <h2 id="auth-title">Apuntes</h2>
     <div id="saved-accounts-section" class="hidden">
       <p style="font-size:12px;opacity:.6;margin:0 0 6px;">Cuentas guardadas:</p>
       <ul id="saved-accounts-list"></ul>
@@ -93,8 +155,10 @@ body.hover-connect *{cursor:pointer!important;}
     </div>
     <input type="text" id="username" placeholder="Nombre de usuario">
     <input type="password" id="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')handleAuthAction()">
-    <button id="auth-submit-btn" onclick="handleAuthAction()">Ingresar</button>
-    <p id="auth-toggle-text" style="font-size:13px;margin:15px 0 0;cursor:pointer;color:var(--accent);font-weight:600;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+    <button id="auth-submit-btn" onclick="handleAuthAction()">Ingresar al Tablero</button>
+    <p id="auth-toggle-text" style="font-size:13px;margin:15px 0 0;cursor:pointer;color:#2196F3;font-weight:600;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+    <div class="dv" style="margin:20px 0;"></div>
+    <button onclick="triggerImportBackup()" style="background:#673ab7;font-size:12px;padding:10px;">📤 Cargar Copia Externa</button>
   </div>
   <div class="auth-box hidden" id="project-step">
     <h2 style="margin-bottom:4px;">Tus Cuadernos</h2>
@@ -102,763 +166,1055 @@ body.hover-connect *{cursor:pointer!important;}
     <ul class="project-list" id="project-list-container"></ul>
     <input type="text" id="new-project-name" placeholder="Nombre del cuaderno..." onkeydown="if(event.key==='Enter')handleCreateProject()">
     <button onclick="handleCreateProject()">+ Crear Nuevo Cuaderno</button>
+    <div class="dv" style="margin:15px 0;"></div>
+    <button onclick="exportDatabaseBackup()" style="background:#9c27b0;font-size:12px;padding:10px;">📥 Guardar Backup</button>
   </div>
-</div>
-
-<!-- TOOLBAR -->
-<div id="toolbar" class="hidden">
-  <button class="btn" onclick="addNode()">➕ Nota (Q)</button>
-  <button class="btn" id="btn-connect" onclick="toggleConnectMode()">🔗 Conectar</button>
-  <button class="btn" id="btn-hover" onclick="toggleHoverConnect()">🖱️ Hover-Conectar</button>
-  <div class="sep"></div>
-  <button class="btn" onclick="saveToDatabase()" style="background:rgba(76,175,80,.15);color:#2e7d32;">💾 Guardar</button>
-  <button class="btn" onclick="exitToWorkspace()" style="background:rgba(244,67,54,.15);color:#c62828;">🏠 Salir</button>
-</div>
-
-<!-- CONNECT MODE BAR -->
-<div id="connect-mode-bar">
-  <span id="connect-status">Seleccioná origen...</span>
-  <button class="cob" onclick="cancelConnect()">✕ Cancelar</button>
 </div>
 
 <!-- CONTEXT MENU -->
 <div id="ctx">
-  <div class="mi" onclick="deleteNode()" style="color:red;font-weight:700;">🗑️ Eliminar</div>
-  <div class="mi" onclick="duplicateNode()" style="color:var(--accent);font-weight:600;">⧉ Duplicar</div>
+  <div class="mi" onclick="deleteCurrentObject()" style="color:red;font-weight:700;">🗑️ Eliminar</div>
+  <div class="mi" onclick="duplicateCurrentObject()" style="color:#2196F3;font-weight:600;">⧉ Duplicar</div>
   <div class="dv"></div>
-  <div class="mi"><span>Color</span><input type="color" id="node-color" onchange="updateNodeColor(this.value)"></div>
-  <div class="mi"><span>Tamaño</span>
-    <select onchange="updateNodeFontSize(parseInt(this.value))">
-      <option value="11">11px</option>
-      <option value="12">12px</option>
-      <option value="13">13px</option>
-      <option value="14" selected>14px</option>
-      <option value="16">16px</option>
-      <option value="18">18px</option>
-    </select>
+  <div id="ctx-conn-sec" style="display:none;">
+    <div class="mi" onclick="deleteConnector()" style="color:#f44336;font-weight:600;">✂️ Borrar este Conector</div>
+    <div class="dv"></div>
+  </div>
+  <div id="ctx-shape-sec">
+    <div class="mi"><span>Color Fondo</span><input type="color" id="menu-shape-color" onchange="updateSelectedShapeColor(this.value)"></div>
+    <div class="mi"><span>Color Borde</span><input type="color" id="menu-stroke-color" onchange="updateSelectedStroke(this.value)"></div>
+    <div class="mi"><span>Grosor Borde</span>
+      <select id="menu-stroke-width" onchange="updateSelectedStrokeWidth(parseInt(this.value))">
+        <option value="0">Sin borde</option><option value="1">1px</option><option value="2">2px</option><option value="3">3px</option><option value="5">5px</option>
+      </select>
+    </div>
+    <div class="dv"></div>
+  </div>
+  <div id="ctx-text-sec">
+    <div class="mi"><span>Letra</span>
+      <select id="menu-font" onchange="updateSelectedTextProp('fontFamily',this.value)">
+        <option value="Segoe UI">Segoe UI</option><option value="Times New Roman">Times New</option><option value="Courier New">Courier</option><option value="Georgia">Georgia</option>
+      </select>
+    </div>
+    <div class="mi"><span>Tamaño</span>
+      <select id="menu-size" onchange="updateSelectedTextProp('fontSize',parseInt(this.value))">
+        <option value="11">11</option><option value="12">12</option><option value="14">14</option><option value="16">16</option><option value="18">18</option><option value="22">22</option><option value="28">28</option>
+      </select>
+    </div>
+    <div class="mi"><span>Alineación</span>
+      <select id="menu-align" onchange="updateSelectedTextProp('textAlign',this.value)">
+        <option value="center">Centro</option><option value="left">Izquierda</option><option value="right">Derecha</option>
+      </select>
+    </div>
+    <div class="mi"><span>Color Texto</span><input type="color" id="menu-tcolor" onchange="updateSelectedTextProp('fill',this.value)"></div>
+    <div class="mi" onclick="toggleStyle('fontWeight','bold')"><b>N</b> Negrita</div>
+    <div class="mi" onclick="toggleStyle('fontStyle','italic')"><i>K</i> Cursiva</div>
+    <div class="dv"></div>
+  </div>
+  <div class="mi" onclick="toggleGlowEffect()" style="font-weight:700;color:#ff007f;">✨ Alternar Brillo</div>
+  <div id="ctx-conn-mi" class="mi" onclick="startConnectingFromMenu()" style="color:#ff9800;font-weight:700;">🔗 Conectar Objeto</div>
+  <div id="ctx-madre-mi" class="mi" onclick="openMadreAssign()" style="color:#2196F3;font-weight:700;display:none;">📦 Asignar bloques hijos</div>
+  <div id="ctx-pres-chain-mi" class="mi" onclick="addToPresChainFromMenu()" style="color:#9c27b0;font-weight:700;">📽️ Agregar a cadena</div>
+</div>
+
+<!-- TOOLBAR -->
+<div id="toolbar" class="hidden">
+  <div class="dropdown">
+    <button class="btn" style="background:rgba(33,150,243,.12);color:#2196F3;">➕ Insertar ▼</button>
+    <div class="dropdown-content">
+      <div class="ddl">Bloques</div>
+      <button onclick="addBlock('square')">🟦 Cuadrado</button>
+      <button onclick="addBlock('circle')">⚪ Círculo</button>
+      <button onclick="addBlock('diamond')">🔷 Rombo</button>
+      <button onclick="addBlock('post-it')">📝 Post-it</button>
+      <button onclick="addBlock('text-only')">🔤 Texto Libre</button>
+      <div class="ddd"></div>
+      <div class="ddl">Especial</div>
+      <button onclick="addBlock('madre')">📦 Bloque Madre</button>
+    </div>
+  </div>
+  <div class="dropdown">
+    <button class="btn" style="background:rgba(156,39,176,.12);color:#9c27b0;">📚 Tipo de Apunte ▼</button>
+    <div class="dropdown-content" style="min-width:220px;">
+      <div class="ddl">Crear nuevo</div>
+      <button onclick="createNoteFormat('mindmap')">🧠 Mapa Mental</button>
+      <button onclick="createNoteFormat('esquema')">📋 Esquema (llaves)</button>
+      <button onclick="createNoteFormat('linea-tiempo')">📅 Línea de Tiempo</button>
+      <button onclick="createNoteFormat('cornell')">🗒️ Método Cornell</button>
+      <button onclick="createNoteFormat('cuadro-comp')">📊 Cuadro Comparativo</button>
+      <button onclick="createNoteFormat('flujo')">🔄 Diagrama de Flujo</button>
+      <button onclick="createNoteFormat('concept-map')">🗺️ Mapa Conceptual</button>
+      <div class="ddd"></div>
+      <div class="ddl">Formar con selección</div>
+      <button onclick="openFormatModal()">🎯 Asignar formato a selección</button>
+    </div>
+  </div>
+  <div class="sep"></div>
+  <button class="btn" id="btn-connect-mode" onclick="toggleConnectMode()">⚡ Conectar</button>
+  <button class="btn" id="btn-snap" onclick="toggleSnap()">🧲 Snap</button>
+  <button class="btn" id="btn-draw" onclick="toggleDrawBar()" style="background:rgba(76,175,80,.12);color:#2e7d32;">✏️ Dibujar</button>
+  <button class="btn" id="btn-hover-connect" onclick="toggleHoverConnect()" title="[E] Hover-Conectar" style="background:rgba(255,152,0,.12);color:#e65100;">🖱️ [E] Hover-Con.</button>
+  <button class="btn" id="btn-hacer-madre" onclick="convertirSeleccionEnMadre()" style="background:rgba(33,150,243,.12);color:#2196F3;">📦 Hacer Madre</button>
+  <div class="sep"></div>
+  <button class="btn" id="btn-pres-config" onclick="openPresConfig()" style="background:rgba(156,39,176,.12);color:#9c27b0;">📽️ Presentación</button>
+  <button class="btn" id="btn-ai" onclick="openAIModal()" style="background:rgba(255,152,0,.12);color:#e65100;">🤖 IA Creativa</button>
+  <button class="btn" id="btn-flow" onclick="toggleFlowPanel()" style="background:rgba(156,39,176,.12);color:#9c27b0;">📋 Flow Notes</button>
+  <div class="sep"></div>
+  <button class="btn" onclick="saveToDatabase()" style="background:#4CAF50;color:#fff;">💾 Guardar</button>
+  <button class="btn" onclick="exitToWorkspace()" style="background:#f44336;color:#fff;">🏠 Salir</button>
+</div>
+
+<!-- CONNECTOR BAR -->
+<div id="conn-type-bar" class="bot-bar">
+  <span id="connect-status-text" style="font-size:12px;font-weight:700;color:#ff9800;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+  <div style="width:1px;height:18px;background:var(--border-color);"></div>
+  <button class="cob act" id="ctype-line" onclick="setConnectorType('line')">── Línea</button>
+  <button class="cob" id="ctype-arrow" onclick="setConnectorType('arrow')">→ Flecha</button>
+  <button class="cob" id="ctype-dashed" onclick="setConnectorType('dashed')">╌╌ Punt.</button>
+  <button class="cob" id="ctype-brace" onclick="setConnectorType('brace')">} Llave</button>
+  <button class="cob" id="ctype-orthoH" onclick="setConnectorType('orthoH')">⊢ L-H</button>
+  <button class="cob" id="ctype-orthoV" onclick="setConnectorType('orthoV')">⊤ L-V</button>
+  <button class="cob cancel" onclick="cancelConnect()">✕</button>
+</div>
+
+<!-- FORMAT MODAL -->
+<div id="format-modal" class="modal-bg">
+  <div class="modal-box">
+    <h3>Asignar formato a selección</h3>
+    <p>Elegí el tipo de apunte.</p>
+    <button class="fm-btn" onclick="applyFormatToSelection('mindmap')">🧠 Mapa Mental</button>
+    <button class="fm-btn" onclick="applyFormatToSelection('esquema')">📋 Esquema</button>
+    <button class="fm-btn" onclick="applyFormatToSelection('linea-tiempo')">📅 Línea de Tiempo</button>
+    <button class="fm-btn" onclick="applyFormatToSelection('cornell')">🗒️ Cornell</button>
+    <button class="fm-btn" onclick="applyFormatToSelection('flujo')">🔄 Diagrama de Flujo</button>
+    <button class="fm-btn" onclick="applyFormatToSelection('concept-map')">🗺️ Mapa Conceptual</button>
+    <button class="fm-btn" onclick="closeFormatModal()" style="color:red;border-color:red;margin-top:4px;">✕ Cancelar</button>
   </div>
 </div>
 
-<!-- CANVAS CONTAINER -->
-<div id="main-canvas-wrap">
-  <canvas id="flowCanvas"></canvas>
+<!-- MADRE MODAL -->
+<div id="madre-overlay" class="madre-overlay">
+  <div class="madre-panel">
+    <h3>📦 Configurar Bloque Madre</h3>
+    <p id="madre-modal-msg">Seleccioná los bloques hijos.</p>
+    <button class="fm-btn" onclick="confirmMadrePickBar()" style="background:#2196F3;color:#fff;border-color:#2196F3;">✅ Confirmar selección</button>
+    <button class="fm-btn" onclick="document.getElementById('madre-overlay').classList.remove('vis');pendingMadreId=null;" style="color:red;border-color:red;">✕ Cancelar</button>
+  </div>
+</div>
+
+<!-- DRAW BAR -->
+<div id="draw-bar">
+  <button class="draw-mode-btn act" id="dbtn-pencil" onclick="setDrawMode('pencil')">✏️ Lápiz</button>
+  <button class="draw-mode-btn" id="dbtn-rect" onclick="setDrawMode('rect')">▭ Rectángulo</button>
+  <button class="draw-mode-btn" id="dbtn-ellipse" onclick="setDrawMode('ellipse')">⬭ Elipse</button>
+  <button class="draw-mode-btn erase" id="dbtn-erase" onclick="setDrawMode('erase')">🧹 Borrador</button>
+  <div style="width:1px;height:20px;background:var(--border-color)"></div>
+  <label>Color</label><input type="color" id="draw-color" value="#2196F3">
+  <label>Grosor</label><input type="range" id="draw-size" min="1" max="40" value="4">
+  <span id="draw-size-label" style="font-size:12px;font-weight:700;min-width:24px;">4px</span>
+  <button class="draw-mode-btn" onclick="stopDrawing()" style="color:red;border-color:red;">✕ Cerrar</button>
+</div>
+
+<!-- MADRE PICK BAR -->
+<div id="madre-pick-bar" class="bot-bar" style="background:rgba(33,150,243,.1);border-color:#2196F3;">
+  <span style="font-size:12px;font-weight:700;color:#2196F3;">Seleccioná los bloques hijos</span>
+  <button class="cob act" onclick="confirmMadrePickBar()">✅ Confirmar</button>
+  <button class="cob cancel" onclick="document.getElementById('madre-pick-bar').classList.remove('vis');pendingMadreId=null;">✕</button>
+</div>
+
+<!-- PRESENTATION CONFIG MODAL -->
+<div id="pres-config-modal" class="modal-bg">
+  <div class="modal-box">
+    <h3>📽️ Configurar Presentación</h3>
+    <p>Armá la cadena de presentación eligiendo bloques en orden.</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button class="fm-btn" style="width:auto;padding:8px 14px;" onclick="startPickingPresChain()">➕ Agregar bloque</button>
+      <button class="fm-btn" style="width:auto;padding:8px 14px;" onclick="clearPresChain()">🗑️ Limpiar</button>
+    </div>
+    <div id="pres-chain-list" style="min-height:60px;max-height:200px;overflow-y:auto;"></div>
+    <div class="dv" style="margin:14px 0;"></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+      <label style="font-size:13px;font-weight:600;">Tamaño de tanda:</label>
+      <input type="number" id="pres-batch-size" value="1" min="1" max="20" style="width:60px;padding:6px 10px;border:1px solid var(--border-color);background:var(--bg-app);color:var(--text-main);border-radius:8px;font-size:13px;">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="fm-btn" style="width:auto;background:#9c27b0;color:#fff;border-color:#9c27b0;" onclick="enterPresentation()">▶ Iniciar</button>
+      <button class="fm-btn" style="width:auto;color:red;border-color:red;" onclick="closePresConfig()">✕ Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI MODAL -->
+<div id="ai-modal" class="modal-bg">
+  <div class="modal-box">
+    <h3>🤖 IA Creativa — Asistente de Apuntes</h3>
+    <p>Pedile a la IA que cree diagramas, mapas, líneas de tiempo...</p>
+    <div id="ai-chat-history"></div>
+    <div id="ai-input-row">
+      <input type="text" id="ai-input" placeholder="Ej: Crea un mapa mental sobre la fotosíntesis..." onkeydown="if(event.key==='Enter')sendAIMessage()">
+      <button id="ai-send-btn" onclick="sendAIMessage()">Enviar</button>
+    </div>
+    <button id="ai-apply-btn" onclick="applyAIPlan()">✨ Crear en el tablero</button>
+    <div class="dv" style="margin:12px 0;"></div>
+    <button class="fm-btn" onclick="closeAIModal()" style="color:red;border-color:red;margin:0;">✕ Cerrar</button>
+  </div>
+</div>
+
+<!-- PRESENTATION OVERLAY -->
+<div id="presentation-overlay">
+  <div id="pres-canvas-wrap"><canvas id="pres-canvas"></canvas></div>
+  <div id="pres-controls">
+    <button onclick="presBack()">◀ Anterior</button>
+    <button onclick="presNext()">Siguiente ▶</button>
+    <div id="pres-progress"><div id="pres-progress-fill" style="width:0%"></div></div>
+    <span id="pres-step-info">0 / 0</span>
+    <button class="exit-pres" onclick="exitPresentation()">✕ Salir</button>
+  </div>
+</div>
+
+<canvas id="mainCanvas"></canvas>
+
+<!-- FLOW NOTES PANEL -->
+<div id="flow-wrapper">
+  <div id="flow-panel-header">
+    <h3>📋 Flow Notes</h3>
+    <div id="flow-panel-tools">
+      <button class="fp-btn act" id="fp-text-btn" onclick="setFlowTool('text')">✏️ Nodo</button>
+      <button class="fp-btn" id="fp-connect-btn" onclick="setFlowTool('connect')">🔗 Conectar</button>
+      <button class="fp-btn erase" id="fp-erase-btn" onclick="setFlowTool('erase')">🗑️ Borrar</button>
+      <div style="width:1px;height:18px;background:var(--border-color);margin:0 2px;"></div>
+      <button class="fp-btn" onclick="clearFlowNotes()" style="color:#f44336;">✕ Limpiar</button>
+    </div>
+  </div>
+  <div id="flow-hint">Doble clic = nuevo nodo · Conectar: clic origen → destino · Scroll = zoom · Arrastrá vacío = mover</div>
+  <div id="flow-canvas-wrap"><canvas id="flow-canvas"></canvas></div>
 </div>
 
 <script>
 // ═══════════ STATE ═══════════
-let db = JSON.parse(localStorage.getItem("apuntes_v12_db")||localStorage.getItem("apuntes_v11_db")||localStorage.getItem("apuntes_v10_db")) || {users:{}};
-let currentUser = null, currentProject = null;
-let flowCanvas = null;
-let flowNodes = [];
-let flowConnections = [];
-let connectMode = false;
-let connectSource = null;
-let selectedNode = null;
-let isDragging = false;
-let isResizing = false;
-let lastPos = null;
-let hoverConnectMode = false;
-let hoverConnectSource = null;
-let hoveredNode = null;
+let db=JSON.parse(localStorage.getItem("apuntes_v12_db")||localStorage.getItem("apuntes_v11_db")||localStorage.getItem("apuntes_v10_db"))||{users:{}};
+let currentUser=null,currentProject=null;
+let canvas,isConnectMode=false,connectSourceObj=null,rightClickedObject=null;
+let connections=[];
+let isLoginMode=true;
+let currentConnectorType='line';
+let snapEnabled=false;
+const SNAP=20;
+let canvasBgColor='#f5f7fa';
+let rightClickedConnIdx=null;
+const MAX_HIST=60;
+let history=[],historyIdx=-1,batchSaving=false;
+let isLassoMode=false,lassoStart=null;
+let presChain=[],presStep=0,presBatchSize=1,presMode=false,isPickingPresChain=false;
+let aiPendingPlan=null;
+const lassoEl=document.getElementById('lasso-rect');
+let rcDragging=false,rcStart=null;
+const THEME={light:{square:'#e3fafc',circle:'#ffebf0',diamond:'#fff0e0','post-it':'#fff740'},dark:{square:'#1a3a4a',circle:'#4a1d2e',diamond:'#3a2a10','post-it':'#524e10'}};
+const FMT={mindmap:{center:'#ffd6e7',branch:'#c8f0ff',leaf:'#d4ffd4'},esquema:{title:'#ffe0b2',item:'#fff8e1'},'linea-tiempo':{node:'#e8eaf6'},cornell:{cue:'#e8f5e9',notes:'#e3f2fd',summary:'#fff3e0'},'cuadro-comp':{header:'#e1f5fe',cell:'#f9fbe7'},flujo:{start:'#c8e6c9',process:'#e3f2fd',decision:'#fff3e0',end:'#ffcdd2'},'concept-map':{main:'#ede7f6',secondary:'#fce4ec',detail:'#e0f2f1'}};
 
-// ═══════════ INIT ═══════════
-window.onload = function(){
-  document.addEventListener('contextmenu', e => e.preventDefault(), true);
-  document.addEventListener('click', e => {
-    if(!document.getElementById('ctx').contains(e.target))
-      document.getElementById('ctx').style.display = 'none';
-  });
-  setupKeyboard();
-  if(localStorage.getItem("dark_mode_enabled") === "true") toggleDarkMode(true);
-  checkAutoLogin();
-  setInterval(() => {if(currentProject) saveToDatabase(true);}, 30000);
-};
+// ═══════════ FLOW NOTES CANVAS ═══════════
+let flowCanvas=null,flowConnections=[],flowTool='text',flowConnectSource=null,flowIsDragging=false,flowLastPos=null;
 
-window.addEventListener('resize', () => {
-  if(flowCanvas) {
-    let wrap = document.getElementById('main-canvas-wrap');
-    flowCanvas.setWidth(wrap.offsetWidth);
-    flowCanvas.setHeight(wrap.offsetHeight);
-    flowCanvas.renderAll();
-  }
-});
-
-// ═══════════ KEYBOARD ═══════════
-function setupKeyboard(){
-  document.addEventListener('keydown', e => {
-    let ae = document.activeElement;
-    let inInput = ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable);
-    if(inInput) return;
-    
-    if((e.key === 'q' || e.key === 'Q') && !e.ctrlKey && !e.shiftKey && !connectMode && !hoverConnectMode){
-      e.preventDefault();
-      addNode();
-    }
-    if(e.key === 'Escape'){
-      cancelConnect();
-      document.getElementById('ctx').style.display = 'none';
-    }
-  });
-}
-
-// ═══════════ CANVAS INIT ═══════════
 function initFlowCanvas(){
-  let wrap = document.getElementById('main-canvas-wrap');
-  let isDark = document.body.classList.contains('dark-mode');
-  
-  flowCanvas = new fabric.Canvas('flowCanvas', {
-    width: wrap.offsetWidth,
-    height: wrap.offsetHeight,
-    backgroundColor: isDark ? '#1a1a1a' : '#faf8f3',
-    fireRightClick: true,
-    stopContextMenu: true,
-    selection: false
+  let wrap=document.getElementById('flow-canvas-wrap');
+  flowCanvas=new fabric.Canvas('flow-canvas',{width:wrap.offsetWidth||460,height:wrap.offsetHeight||500,backgroundColor:'transparent',selection:true,fireRightClick:false,stopContextMenu:true});
+  flowCanvas.on('mouse:dblclick',function(opt){
+    if(flowTool!=='text') return;
+    let target=opt.target;
+    if(target&&target._isFlowNode) return;
+    let ptr=flowCanvas.getPointer(opt.e);
+    createFlowNode(ptr.x,ptr.y,'');
   });
-
-  flowCanvas.on('mouse:dblclick', function(opt){
-    if(connectMode || hoverConnectMode) return;
-    let ptr = flowCanvas.getPointer(opt.e);
-    addNodeAt(ptr.x, ptr.y);
-  });
-
-  flowCanvas.on('mouse:down', function(opt){
-    let evt = opt.e;
-    let btn = evt.button;
-    let target = opt.target;
-
-    if(btn === 2){
-      evt.preventDefault();
-      if(target && target._isFlowNode){
-        selectedNode = target;
-        showCtx(evt);
+  flowCanvas.on('mouse:down',function(opt){
+    let evt=opt.e,target=opt.target;
+    if(flowTool==='connect'){
+      if(!target||target._isFlowLine||target._isFlowBg) return;
+      if(!flowConnectSource){
+        flowConnectSource=target;
+        target.set('shadow',new fabric.Shadow({color:'#ff9800',blur:16,offsetX:0,offsetY:0}));
+        flowCanvas.renderAll();
+        document.getElementById('fp-connect-btn').innerText='🔗 → destino';
+      } else if(flowConnectSource!==target&&!target._isFlowBg){
+        flowConnectSource.set('shadow',null);
+        createFlowConnection(flowConnectSource,target);
+        flowConnectSource=null;
+        document.getElementById('fp-connect-btn').innerText='🔗 Conectar';
+        flowCanvas.renderAll();
       }
       return;
     }
-
-    if(connectMode){
-      if(target && target._isFlowNode){
-        if(!connectSource){
-          connectSource = target;
-          connectSource.set('shadow', new fabric.Shadow({color:'#ff9800', blur:16, offsetX:0, offsetY:0}));
-          document.getElementById('connect-status').innerText = `Origen: "${target.text.substring(0,15)}" → destino`;
-          flowCanvas.renderAll();
-        } else if(connectSource !== target){
-          createConnection(connectSource, target);
-          connectSource.set('shadow', null);
-          connectSource = null;
-          document.getElementById('connect-status').innerText = 'Seleccioná origen...';
-          flowCanvas.renderAll();
-        }
+    if(flowTool==='erase'&&target){
+      if(target._isFlowLine){
+        flowConnections=flowConnections.filter(c=>{
+          if(c.lineRef===target||(c.arrowRef&&c.arrowRef===target)){flowCanvas.remove(c.lineRef);if(c.arrowRef)flowCanvas.remove(c.arrowRef);return false;}
+          return true;
+        });
+      } else if(target._isFlowNode){
+        flowConnections=flowConnections.filter(c=>{
+          if(c.fromRef===target||c.toRef===target){flowCanvas.remove(c.lineRef);if(c.arrowRef)flowCanvas.remove(c.arrowRef);return false;}
+          return true;
+        });
+        // remove bg too
+        flowCanvas.getObjects().forEach(o=>{if(o._isFlowBg&&Math.abs(o.left-target.left)<5&&Math.abs(o.top-target.top)<5)flowCanvas.remove(o);});
+        flowCanvas.remove(target);
       }
-      return;
-    }
-
-    if(target && target._isFlowNode){
-      selectedNode = target;
-      isDragging = true;
-      lastPos = {x: evt.clientX, y: evt.clientY};
-      
-      if(evt.offsetX > target.left + target.width/2 - 5 && evt.offsetY > target.top + target.height/2 - 5){
-        isResizing = true;
-      }
-    } else if(!target){
-      isDragging = true;
-      lastPos = {x: evt.clientX, y: evt.clientY};
-      document.body.classList.add('panning');
-    }
-  });
-
-  flowCanvas.on('mouse:move', function(opt){
-    let evt = opt.e;
-    let target = opt.target;
-
-    if(hoverConnectMode && target && target._isFlowNode){
-      hoveredNode = target;
-      if(!hoverConnectSource){
-        hoverConnectSource = target;
-        target.set('shadow', new fabric.Shadow({color:'#22c55e', blur:20, offsetX:0, offsetY:0}));
-        flowCanvas.renderAll();
-      }
-    } else if(hoverConnectMode && hoveredNode){
-      if(hoverConnectSource !== target){
-        hoverConnectSource.set('shadow', null);
-        hoverConnectSource = null;
-        hoveredNode = null;
-        flowCanvas.renderAll();
-      }
-    }
-
-    if(isDragging && lastPos){
-      if(isResizing && selectedNode){
-        let dx = evt.clientX - lastPos.x;
-        selectedNode.set({width: Math.max(80, (selectedNode.width || 150) + dx)});
-        selectedNode._bgRect.set({width: selectedNode.width});
-      } else if(selectedNode){
-        let dx = evt.clientX - lastPos.x;
-        let dy = evt.clientY - lastPos.y;
-        selectedNode.set({left: selectedNode.left + dx, top: selectedNode.top + dy});
-        selectedNode._bgRect.set({left: selectedNode.left, top: selectedNode.top});
-        selectedNode._bgRect.setCoords();
-        selectedNode.setCoords();
-        updateConnections();
-      } else {
-        let vpt = flowCanvas.viewportTransform;
-        vpt[4] += (evt.clientX - lastPos.x);
-        vpt[5] += (evt.clientY - lastPos.y);
-        flowCanvas.requestRenderAll();
-        updateConnections();
-      }
-      lastPos = {x: evt.clientX, y: evt.clientY};
-    }
-  });
-
-  flowCanvas.on('mouse:up', function(){
-    if(isResizing && selectedNode) saveFlowNotes();
-    isDragging = false;
-    isResizing = false;
-    lastPos = null;
-    document.body.classList.remove('panning');
-  });
-
-  flowCanvas.on('mouse:wheel', function(opt){
-    let d = opt.e.deltaY;
-    let z = flowCanvas.getZoom();
-    z *= 0.999**d;
-    if(z > 4) z = 4;
-    if(z < 0.2) z = 0.2;
-    flowCanvas.zoomToPoint({x: opt.e.offsetX, y: opt.e.offsetY}, z);
-    opt.e.preventDefault();
-    opt.e.stopPropagation();
-    updateZoomUI();
-    updateConnections();
-  });
-
-  flowCanvas.on('object:modified', () => saveFlowNotes());
-
-  loadFlowNotes();
-}
-
-// ═══════════ NODES ═══════════
-function addNode(){
-  let vpt = flowCanvas.viewportTransform;
-  let x = (flowCanvas.getWidth()/2 - vpt[4]) / vpt[0];
-  let y = (flowCanvas.getHeight()/2 - vpt[5]) / vpt[3];
-  addNodeAt(x, y);
-}
-
-function addNodeAt(x, y, text = ''){
-  let isDark = document.body.classList.contains('dark-mode');
-  
-  let bgRect = new fabric.Rect({
-    left: x, top: y,
-    width: 150, height: 50,
-    fill: isDark ? '#333333' : '#ffffff',
-    stroke: isDark ? 'rgba(33,150,243,0.5)' : 'rgba(33,150,243,0.3)',
-    strokeWidth: 2,
-    rx: 8, ry: 8,
-    originX: 'center', originY: 'center',
-    selectable: false, evented: false,
-    _isBg: true
-  });
-
-  let textObj = new fabric.Textbox(text || 'Escribí aquí...', {
-    left: x, top: y,
-    width: 130,
-    fontSize: 13,
-    fontFamily: 'Segoe UI',
-    fill: isDark ? '#f0f0f0' : '#2c2c2c',
-    textAlign: 'left',
-    originX: 'center', originY: 'center',
-    selectable: true, evented: true,
-    _isFlowNode: true,
-    _nodeId: 'n_' + Date.now() + Math.random(),
-    _bgRect: bgRect
-  });
-
-  flowCanvas.add(bgRect);
-  flowCanvas.add(textObj);
-  flowNodes.push(textObj);
-
-  textObj.on('editing:exited', () => {
-    if(!textObj.text.trim()){
-      flowCanvas.remove(bgRect);
-      flowCanvas.remove(textObj);
-      flowNodes = flowNodes.filter(n => n !== textObj);
-      flowConnections = flowConnections.filter(c => c.from !== textObj._nodeId && c.to !== textObj._nodeId);
       flowCanvas.renderAll();
+      saveFlowNotes();
       return;
     }
-    adjustBg();
-    saveFlowNotes();
-  });
-
-  textObj.on('changed', () => adjustBg());
-  textObj.on('moving', () => {
-    bgRect.set({left: textObj.left, top: textObj.top});
-    bgRect.setCoords();
-    updateConnections();
-  });
-
-  function adjustBg(){
-    let tH = textObj.calcTextHeight ? textObj.calcTextHeight() : textObj.height;
-    bgRect.set({
-      width: Math.max(150, textObj.width + 20),
-      height: Math.max(50, tH + 20),
-      left: textObj.left,
-      top: textObj.top
-    });
-    bgRect.setCoords();
-    flowCanvas.renderAll();
-  }
-
-  flowCanvas.setActiveObject(textObj);
-  if(!text || text === ''){
-    setTimeout(() => {textObj.enterEditing(); textObj.selectAll();}, 50);
-  }
-  flowCanvas.renderAll();
-  return textObj;
-}
-
-// ═══════════ CONNECTIONS ═══════════
-function createConnection(from, to){
-  let existing = flowConnections.find(c => (c.from === from._nodeId && c.to === to._nodeId) || (c.from === to._nodeId && c.to === from._nodeId));
-  if(existing) return; // No duplicar
-
-  let conn = {
-    from: from._nodeId,
-    to: to._nodeId,
-    fromObj: from,
-    toObj: to,
-    lines: []
-  };
-
-  let p1 = {x: from.left, y: from.top};
-  let p2 = {x: to.left, y: to.top};
-
-  let line = new fabric.Line([p1.x, p1.y, p2.x, p2.y], {
-    stroke: '#2196F3',
-    strokeWidth: 2.5,
-    selectable: false,
-    evented: false,
-    _isConn: true
-  });
-
-  let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-  let arrow = new fabric.Triangle({
-    width: 12, height: 14,
-    fill: '#2196F3',
-    left: p2.x, top: p2.y,
-    angle: angle * 180 / Math.PI + 90,
-    originX: 'center', originY: 'center',
-    selectable: false, evented: false,
-    _isConn: true
-  });
-
-  flowCanvas.add(line);
-  flowCanvas.add(arrow);
-  flowCanvas.sendToBack(line);
-
-  conn.lines = [line, arrow];
-  flowConnections.push(conn);
-  flowCanvas.renderAll();
-  saveFlowNotes();
-}
-
-function updateConnections(){
-  flowConnections.forEach(conn => {
-    if(!conn.fromObj || !conn.toObj) return;
-
-    let p1 = {x: conn.fromObj.left, y: conn.fromObj.top};
-    let p2 = {x: conn.toObj.left, y: conn.toObj.top};
-
-    conn.lines[0].set({x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y});
-
-    let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-    conn.lines[1].set({left: p2.x, top: p2.y, angle: angle * 180 / Math.PI + 90});
-
-    conn.lines[0].setCoords();
-    conn.lines[1].setCoords();
-  });
-  flowCanvas.renderAll();
-}
-
-// ═══════════ EDIT NODES ═══════════
-function deleteNode(){
-  if(!selectedNode) return;
-  let bgRect = selectedNode._bgRect;
-  if(bgRect) flowCanvas.remove(bgRect);
-  flowCanvas.remove(selectedNode);
-  flowNodes = flowNodes.filter(n => n !== selectedNode);
-  flowConnections = flowConnections.filter(c => c.from !== selectedNode._nodeId && c.to !== selectedNode._nodeId);
-  
-  // Eliminar líneas de conexiones
-  flowConnections.forEach(conn => {
-    if(conn.lines) conn.lines.forEach(l => flowCanvas.remove(l));
-  });
-  
-  selectedNode = null;
-  document.getElementById('ctx').style.display = 'none';
-  flowCanvas.renderAll();
-  saveFlowNotes();
-}
-
-function duplicateNode(){
-  if(!selectedNode) return;
-  addNodeAt(selectedNode.left + 30, selectedNode.top + 30, selectedNode.text);
-  document.getElementById('ctx').style.display = 'none';
-}
-
-function updateNodeColor(color){
-  if(!selectedNode) return;
-  selectedNode._bgRect.set({fill: color});
-  flowCanvas.renderAll();
-  saveFlowNotes();
-}
-
-function updateNodeFontSize(size){
-  if(!selectedNode) return;
-  selectedNode.set({fontSize: size});
-  flowCanvas.renderAll();
-  saveFlowNotes();
-}
-
-// ═══════════ CONNECT MODE ═══════════
-function toggleConnectMode(){
-  connectMode = !connectMode;
-  document.getElementById('btn-connect').classList.toggle('btn-active', connectMode);
-  document.getElementById('connect-mode-bar').classList.toggle('vis', connectMode);
-  document.body.classList.toggle('connecting', connectMode);
-  if(connectMode){
-    hoverConnectMode = false;
-    document.getElementById('btn-hover').classList.remove('btn-active');
-    document.getElementById('connect-status').innerText = 'Seleccioná origen...';
-  }
-}
-
-function cancelConnect(){
-  connectMode = false;
-  if(connectSource){
-    connectSource.set('shadow', null);
-    connectSource = null;
-  }
-  document.getElementById('btn-connect').classList.remove('btn-active');
-  document.getElementById('connect-mode-bar').classList.remove('vis');
-  document.body.classList.remove('connecting');
-  flowCanvas.renderAll();
-}
-
-function toggleHoverConnect(){
-  hoverConnectMode = !hoverConnectMode;
-  document.getElementById('btn-hover').classList.toggle('btn-active', hoverConnectMode);
-  document.body.classList.toggle('hover-connect', hoverConnectMode);
-  if(hoverConnectMode){
-    connectMode = false;
-    if(connectSource){
-      connectSource.set('shadow', null);
-      connectSource = null;
+    if(!target||target._isFlowBg){
+      flowIsDragging=true;flowLastPos={x:evt.clientX,y:evt.clientY};flowCanvas.selection=false;
     }
-    document.getElementById('btn-connect').classList.remove('btn-active');
-    document.getElementById('connect-mode-bar').classList.remove('vis');
-    document.body.classList.remove('connecting');
-  }
+  });
+  flowCanvas.on('mouse:move',function(opt){
+    let evt=opt.e;
+    if(flowIsDragging&&flowLastPos){
+      let vpt=flowCanvas.viewportTransform;
+      vpt[4]+=(evt.clientX-flowLastPos.x);vpt[5]+=(evt.clientY-flowLastPos.y);
+      flowCanvas.requestRenderAll();flowLastPos={x:evt.clientX,y:evt.clientY};
+      updateFlowLines();
+    }
+  });
+  flowCanvas.on('mouse:up',function(){
+    flowIsDragging=false;flowLastPos=null;
+    flowCanvas.selection=(flowTool==='text');
+    flowCanvas.setViewportTransform(flowCanvas.viewportTransform);
+  });
+  flowCanvas.on('mouse:wheel',function(opt){
+    let d=opt.e.deltaY,z=flowCanvas.getZoom();
+    z*=0.999**d;if(z>4)z=4;if(z<0.2)z=0.2;
+    flowCanvas.zoomToPoint({x:opt.e.offsetX,y:opt.e.offsetY},z);
+    opt.e.preventDefault();opt.e.stopPropagation();
+    updateFlowLines();
+  });
+  flowCanvas.on('object:moving',()=>updateFlowLines());
+  flowCanvas.on('object:modified',()=>saveFlowNotes());
 }
 
-// ═══════════ SAVE/LOAD ═══════════
+function createFlowNode(x,y,text){
+  let isDark=document.body.classList.contains('dark-mode');
+  let bgRect=new fabric.Rect({
+    left:x,top:y,width:150,height:38,
+    fill:isDark?'#2a2b3e':'#ffffff',
+    stroke:isDark?'rgba(156,39,176,0.5)':'rgba(33,150,243,0.45)',
+    strokeWidth:1.5,rx:7,ry:7,
+    originX:'center',originY:'center',
+    selectable:false,evented:false,_isFlowBg:true
+  });
+  let node=new fabric.Textbox(text||'Escribí acá...',{
+    left:x,top:y,width:136,fontSize:13,
+    fontFamily:'Segoe UI',
+    fill:isDark?'#f0f0f0':'#222',
+    textAlign:'left',
+    originX:'center',originY:'center',
+    selectable:true,evented:true,
+    _isFlowNode:true,
+    _flowId:'fn_'+Date.now()+Math.floor(Math.random()*9999)
+  });
+  flowCanvas.add(bgRect);
+  flowCanvas.add(node);
+  flowCanvas.setActiveObject(node);
+  if(!text||text===''){setTimeout(()=>{node.enterEditing();node.selectAll();},50);}
+  node.on('editing:exited',()=>{
+    if(!node.text||!node.text.trim()){
+      flowCanvas.getObjects().forEach(o=>{if(o._isFlowBg&&Math.abs(o.left-node.left)<5&&Math.abs(o.top-node.top)<5)flowCanvas.remove(o);});
+      flowCanvas.remove(node);flowCanvas.renderAll();return;
+    }
+    let tH=node.calcTextHeight?node.calcTextHeight():node.height;
+    bgRect.set({width:Math.max(150,node.width+14),height:Math.max(38,tH+14),left:node.left,top:node.top});
+    bgRect.setCoords();flowCanvas.renderAll();saveFlowNotes();
+  });
+  node.on('moving',()=>{
+    bgRect.set({left:node.left,top:node.top});bgRect.setCoords();
+    updateFlowLines();
+  });
+  node.on('changed',()=>{
+    let tH=node.calcTextHeight?node.calcTextHeight():node.height;
+    bgRect.set({width:Math.max(150,node.width+14),height:Math.max(38,tH+14)});
+    flowCanvas.renderAll();
+  });
+  flowCanvas.renderAll();
+  return node;
+}
+
+function createFlowConnection(from,to){
+  let p1=from.getCenterPoint(),p2=to.getCenterPoint();
+  let line=new fabric.Line([p1.x,p1.y,p2.x,p2.y],{stroke:'#888',strokeWidth:1.8,selectable:true,evented:true,_isFlowLine:true});
+  let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
+  let arrow=new fabric.Triangle({width:9,height:11,fill:'#888',left:p2.x,top:p2.y,angle:angle*180/Math.PI+90,originX:'center',originY:'center',selectable:false,evented:false,_isFlowLine:true});
+  flowCanvas.add(line);flowCanvas.add(arrow);flowCanvas.sendToBack(line);
+  flowConnections.push({fromRef:from,toRef:to,lineRef:line,arrowRef:arrow});
+  flowCanvas.renderAll();saveFlowNotes();
+}
+
+function updateFlowLines(){
+  flowConnections.forEach(c=>{
+    if(!c.fromRef||!c.toRef) return;
+    let p1=c.fromRef.getCenterPoint(),p2=c.toRef.getCenterPoint();
+    c.lineRef.set({x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y});
+    let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);
+    c.arrowRef.set({left:p2.x,top:p2.y,angle:angle*180/Math.PI+90});
+    c.lineRef.setCoords();c.arrowRef.setCoords();
+  });
+  flowCanvas.renderAll();
+}
+
+function setFlowTool(tool){
+  flowTool=tool;
+  if(flowConnectSource){flowConnectSource.set('shadow',null);flowConnectSource=null;document.getElementById('fp-connect-btn').innerText='🔗 Conectar';flowCanvas.renderAll();}
+  ['text','connect','erase'].forEach(t=>{let b=document.getElementById('fp-'+t+'-btn');if(b)b.classList.toggle('act',t===tool);});
+  flowCanvas.selection=(tool==='text');
+  flowCanvas.defaultCursor=tool==='erase'?'cell':tool==='connect'?'crosshair':'default';
+}
+
+function clearFlowNotes(){
+  if(!confirm('¿Limpiar todos los Flow Notes?')) return;
+  flowCanvas.clear();flowCanvas.setBackgroundColor('transparent',()=>flowCanvas.renderAll());
+  flowConnections=[];saveFlowNotes();
+}
+
+function toggleFlowPanel(){
+  let p=document.getElementById('flow-wrapper'),b=document.getElementById('btn-flow');
+  let isOpen=p.classList.toggle('open');
+  b.classList.toggle('btn-active',isOpen);
+  if(isOpen&&!flowCanvas){setTimeout(()=>{initFlowCanvas();loadFlowNotes();resizeFlowCanvas();},120);}
+}
+
+function resizeFlowCanvas(){
+  if(!flowCanvas) return;
+  let wrap=document.getElementById('flow-canvas-wrap');
+  flowCanvas.setWidth(wrap.offsetWidth||460);flowCanvas.setHeight(wrap.offsetHeight||500);
+  flowCanvas.renderAll();
+}
+
 function saveFlowNotes(){
-  if(!currentProject || !flowCanvas) return;
-
-  let data = {
-    nodes: flowNodes.map(n => ({
-      id: n._nodeId,
-      text: n.text,
-      x: n.left,
-      y: n.top,
-      width: n.width,
-      fontSize: n.fontSize,
-      bgFill: n._bgRect.fill
-    })),
-    connections: flowConnections.map(c => ({
-      from: c.from,
-      to: c.to
-    }))
-  };
-
-  if(db.users[currentUser] && db.users[currentUser].projects[currentProject]){
-    db.users[currentUser].projects[currentProject].flowNotes = data;
-    saveDB();
+  if(!currentProject||!flowCanvas) return;
+  let nodes=[];
+  flowCanvas.getObjects().forEach(o=>{
+    if(o._isFlowNode){let cp=o.getCenterPoint();nodes.push({id:o._flowId,text:o.text,x:cp.x,y:cp.y,width:o.width,fontSize:o.fontSize});}
+  });
+  let conns=flowConnections.map(c=>({from:c.fromRef._flowId,to:c.toRef._flowId})).filter(c=>c.from&&c.to);
+  if(db.users[currentUser]&&db.users[currentUser].projects[currentProject]){
+    db.users[currentUser].projects[currentProject].flowNotes={nodes,connections:conns};saveDB();
   }
 }
 
 function loadFlowNotes(){
-  if(!currentProject) return;
-  let proj = db.users[currentUser].projects[currentProject];
-  if(!proj || !proj.flowNotes) return;
+  if(!flowCanvas||!currentProject) return;
+  let proj=db.users[currentUser].projects[currentProject];
+  if(!proj||!proj.flowNotes) return;
+  let {nodes,connections:conns}=proj.flowNotes;
+  let nodeMap={};
+  (nodes||[]).forEach(n=>{let obj=createFlowNode(n.x,n.y,n.text);obj._flowId=n.id;if(n.width)obj.set('width',n.width);if(n.fontSize)obj.set('fontSize',n.fontSize);nodeMap[n.id]=obj;});
+  setTimeout(()=>{(conns||[]).forEach(c=>{let f=nodeMap[c.from],t=nodeMap[c.to];if(f&&t)createFlowConnection(f,t);});flowCanvas.renderAll();},100);
+}
 
-  let data = proj.flowNotes;
-  let nodeMap = {};
+// ═══════════ INIT ═══════════
+window.onload=function(){
+  document.addEventListener('contextmenu',e=>e.preventDefault(),true);
+  canvas=new fabric.Canvas('mainCanvas',{width:window.innerWidth,height:window.innerHeight,backgroundColor:'#f5f7fa',fireRightClick:true,stopContextMenu:true,selection:true});
+  fabric.Object.prototype.set({transparentCorners:false,cornerColor:'#fff',cornerStrokeColor:'#2196F3',borderColor:'#2196F3',cornerStyle:'circle',cornerSize:9,borderDashArray:[4,4],borderScaleFactor:1.5,padding:6});
+  setupCanvasEvents();initDrawListeners();setupKeyboard();
+  if(localStorage.getItem("dark_mode_enabled")==="true") toggleDarkMode(true);
+  checkAutoLogin();
+  setInterval(()=>{if(currentProject)saveToDatabase(true);},30000);
+};
+window.addEventListener('resize',()=>{
+  if(canvas){canvas.setWidth(window.innerWidth);canvas.setHeight(window.innerHeight);canvas.renderAll();}
+  resizeFlowCanvas();
+});
 
-  (data.nodes || []).forEach(n => {
-    let node = addNodeAt(n.x, n.y, n.text);
-    node._nodeId = n.id;
-    if(n.fontSize) node.set({fontSize: n.fontSize});
-    if(n.width) node.set({width: n.width});
-    if(n.bgFill) node._bgRect.set({fill: n.bgFill});
-    nodeMap[n.id] = node;
+// ═══════════ UNDO/REDO ═══════════
+function snapshot(){
+  if(batchSaving) return;
+  let snap=JSON.stringify({objects:serializeObjects(),connections:connections.map(c=>({fromId:c.fromId,toId:c.toId,type:c.type||'line'}))});
+  history=history.slice(0,historyIdx+1);history.push(snap);if(history.length>MAX_HIST)history.shift();historyIdx=history.length-1;
+}
+function undoAction(){if(historyIdx<=0){showToast('Sin más pasos');return;}historyIdx--;restoreSnap(JSON.parse(history[historyIdx]));showToast('↩ Deshacer');}
+function redoAction(){if(historyIdx>=history.length-1){showToast('Sin pasos adelante');return;}historyIdx++;restoreSnap(JSON.parse(history[historyIdx]));showToast('↪ Rehacer');}
+function restoreSnap(s){
+  batchSaving=true;canvas.clear();connections=[];
+  if(s.objects) s.objects.forEach(o=>{
+    if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    if(o.type==='drawing'){fabric.util.enlivenObjects([JSON.parse(o.fabricJson)],function(objs){let obj=objs[0];obj.set({id:o.id,customType:'drawing',selectable:true,evented:true,left:o.left,top:o.top,scaleX:o.scaleX||1,scaleY:o.scaleY||1,angle:o.angle||0});canvas.add(obj);canvas.renderAll();});return;}
+    if(o.type==='madre'){addMadreBlock({...o,fromLoad:true});return;}
+    addBlock(o.type,o);
   });
-
-  setTimeout(() => {
-    (data.connections || []).forEach(c => {
-      let from = nodeMap[c.from];
-      let to = nodeMap[c.to];
-      if(from && to){
-        createConnection(from, to);
-      }
-    });
-    flowCanvas.renderAll();
-  }, 100);
+  setTimeout(()=>{
+    if(s.connections) s.connections.forEach(c=>{let o1=findObj(c.fromId),o2=findObj(c.toId);if(o1&&o2)createConn(o1,o2,c.type||'line');});
+    canvas.renderAll();batchSaving=false;
+    Object.keys(madreBlocks).forEach(mid=>{if(madreBlocks[mid].collapsed)hideMadreChildren(mid);});
+    reapplyConnectorVisibility();canvas.renderAll();
+  },200);
 }
 
-// ═══════════ ZOOM & PAN ═══════════
-function centerCanvas(){
-  flowCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-  updateConnections();
-  updateZoomUI();
-}
-
-function updateZoomUI(){
-  document.getElementById('zoom-indicator').innerText = Math.round(flowCanvas.getZoom() * 100) + '%';
-}
-
-function showCtx(evt){
-  let ctx = document.getElementById('ctx');
-  ctx.style.display = 'flex';
-  ctx.style.left = '-9999px';
-  ctx.style.top = '-9999px';
-  requestAnimationFrame(() => {
-    let mw = ctx.offsetWidth || 225;
-    let mh = ctx.offsetHeight || 300;
-    let mx = evt.clientX + mw > window.innerWidth ? evt.clientX - mw : evt.clientX;
-    let my = evt.clientY + mh > window.innerHeight ? window.innerHeight - mh : evt.clientY;
-    ctx.style.left = mx + 'px';
-    ctx.style.top = my + 'px';
+// ═══════════ KEYBOARD ═══════════
+function setupKeyboard(){
+  document.addEventListener('keydown',e=>{
+    let ae=document.activeElement;
+    let inInput=ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable||ae.getAttribute('contenteditable'));
+    if(inInput) return;
+    if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key==='z'){e.preventDefault();undoAction();}
+    else if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&e.key==='z'))){e.preventDefault();redoAction();}
+    else if((e.ctrlKey||e.metaKey)&&e.key==='a'){e.preventDefault();selectAll();}
+    else if((e.ctrlKey||e.metaKey)&&e.key==='d'){e.preventDefault();duplicateCurrentObject();}
+    else if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveToDatabase();}
+    else if(e.key==='Delete'||e.key==='Backspace'){let act=canvas.getActiveObjects();if(act.length){rightClickedObject=act.length>1?act:act[0];deleteCurrentObject();}}
+    else if(e.key==='Escape'){cancelConnect();closeLasso();closeFormatModal();document.getElementById('madre-pick-bar').classList.remove('vis');pendingMadreId=null;isPickingPresChain=false;if(hoverConnectMode)turnOffHoverConnect();}
+    else if(e.key==='Enter'&&pendingMadreId){confirmMadrePickBar();}
+    // Q = bloque rápido en posición del cursor
+    else if((e.key==='q'||e.key==='Q')&&!e.ctrlKey&&!e.shiftKey){addQuickBlockAtMouse();}
+    // Shift+Q = ciclar tipo de bloque para Q
+    else if(e.key==='Q'&&e.shiftKey&&!e.ctrlKey){e.preventDefault();cycleQuickBlockType();}
+    // E = toggle hover-connect ON/OFF
+    else if((e.key==='e'||e.key==='E')&&!e.ctrlKey){toggleHoverConnect();}
+    else if((e.key==='t'||e.key==='T')&&!e.ctrlKey){addBlock('text-only');}
+    else if((e.key==='c'||e.key==='C')&&!e.ctrlKey){addBlock('circle');}
+    else if((e.key==='s'||e.key==='S')&&!e.ctrlKey){toggleSnap();}
+    if(presMode){
+      if(e.key==='ArrowRight'||e.key==='ArrowDown') presNext();
+      else if(e.key==='ArrowLeft'||e.key==='ArrowUp') presBack();
+      else if(e.key==='Escape') exitPresentation();
+    }
   });
 }
+function selectAll(){let objs=canvas.getObjects().filter(o=>!o.isLinkedText&&o.selectable);if(!objs.length)return;canvas.discardActiveObject();canvas.setActiveObject(new fabric.ActiveSelection(objs,{canvas}));canvas.renderAll();}
 
-// ═══════════ DARK MODE ═══════════
-function toggleDarkMode(force = false){
-  let body = document.body;
-  if(!force) body.classList.toggle('dark-mode');
-  else body.classList.add('dark-mode');
-  
-  let isDark = body.classList.contains('dark-mode');
-  localStorage.setItem('dark_mode_enabled', isDark);
-  document.getElementById('dark-toggle-btn').innerText = isDark ? '☀️' : '🌙';
+// ═══════════ SNAP ═══════════
+function toggleSnap(){snapEnabled=!snapEnabled;document.getElementById('btn-snap').classList.toggle('btn-active',snapEnabled);document.getElementById('snap-hint').style.display=snapEnabled?'block':'none';}
+function sv(v){return snapEnabled?Math.round(v/SNAP)*SNAP:v;}
 
-  if(flowCanvas){
-    let bgColor = isDark ? '#1a1a1a' : '#faf8f3';
-    flowCanvas.setBackgroundColor(bgColor, () => {
-      flowNodes.forEach(n => {
-        if(n._bgRect){
-          let oldFill = n._bgRect.fill;
-          if(isDark && oldFill === '#ffffff'){
-            n._bgRect.set({fill: '#333333'});
-          } else if(!isDark && oldFill === '#333333'){
-            n._bgRect.set({fill: '#ffffff'});
-          }
-        }
-        if(isDark && n.fill === '#2c2c2c'){
-          n.set({fill: '#f0f0f0'});
-        } else if(!isDark && n.fill === '#f0f0f0'){
-          n.set({fill: '#2c2c2c'});
-        }
-      });
-      flowCanvas.renderAll();
-    });
-  }
-}
+// ═══════════ CANVAS BG / CENTER ═══════════
+function setCanvasBg(c){canvasBgColor=c;canvas.setBackgroundColor(c,()=>canvas.renderAll());}
+function centerCanvas(){canvas.setViewportTransform([1,0,0,1,0,0]);updateLines();updateZoomUI();}
+function updateZoomUI(){document.getElementById('zoom-indicator').innerText=Math.round(canvas.getZoom()*100)+'%';}
 
 // ═══════════ AUTH ═══════════
 function checkAutoLogin(){
-  let savedLogin = localStorage.getItem('apuntes_autologin');
-  let savedProject = localStorage.getItem('apuntes_last_project');
-  
-  if(savedLogin && db.users[savedLogin]){
-    currentUser = savedLogin;
-    if(savedProject && db.users[savedLogin].projects && db.users[savedLogin].projects[savedProject]){
-      currentProject = savedProject;
-      openProjectCanvas();
-      return;
-    }
-    showProjectWorkspace();
+  let savedLogin=localStorage.getItem("apuntes_autologin"),savedProject=localStorage.getItem("apuntes_last_project");
+  if(savedLogin&&db.users[savedLogin]){
+    currentUser=savedLogin;
+    if(savedProject&&db.users[savedLogin].projects&&db.users[savedLogin].projects[savedProject]){currentProject=savedProject;document.getElementById("auth-screen").classList.add("hidden");document.getElementById("toolbar").classList.remove("hidden");loadProjectData();return;}
+    document.getElementById("login-step").classList.add("hidden");document.getElementById("project-step").classList.remove("hidden");document.getElementById("welcome-text").innerText=`Conectado como: ${currentUser}`;renderProjectList();return;
   }
+  let users=Object.keys(db.users);
+  if(users.length===1){document.getElementById("username").value=users[0];document.getElementById("username").readOnly=true;document.getElementById("password").focus();}
   renderSavedAccountsUI();
 }
-
 function renderSavedAccountsUI(){
-  let users = Object.keys(db.users);
-  let sec = document.getElementById('saved-accounts-section');
-  let list = document.getElementById('saved-accounts-list');
-  list.innerHTML = '';
-  if(!users.length){sec.classList.add('hidden'); return;}
-  sec.classList.remove('hidden');
-  
-  users.forEach(u => {
-    let li = document.createElement('li');
-    li.className = 'saved-account-item';
-    let hasToken = localStorage.getItem('apuntes_autologin') === u;
-    li.innerHTML = `<span>👤 ${u}</span><span class="acc-badge" style="${hasToken?'background:var(--accent)':''}">${hasToken?'Este dispositivo':'Guardado'}</span>`;
-    li.onclick = () => {
-      if(hasToken){
-        currentUser = u;
-        showProjectWorkspace();
-      }
-    };
+  let users=Object.keys(db.users);
+  let sec=document.getElementById("saved-accounts-section"),list=document.getElementById("saved-accounts-list");
+  list.innerHTML="";if(!users.length){sec.classList.add("hidden");return;}sec.classList.remove("hidden");
+  users.forEach(u=>{
+    let li=document.createElement("li");li.className="saved-account-item";
+    let hasToken=localStorage.getItem("apuntes_autologin")===u;
+    li.innerHTML=`<span>👤 ${u}</span><span class="acc-badge" style="${hasToken?'background:#4CAF50':''}">${hasToken?'Este dispositivo':'Guardado'}</span>`;
+    li.onclick=()=>{if(hasToken){currentUser=u;document.getElementById("login-step").classList.add("hidden");document.getElementById("project-step").classList.remove("hidden");document.getElementById("welcome-text").innerText=`Conectado como: ${u}`;renderProjectList();return;}document.getElementById("username").value=u;document.getElementById("username").readOnly=false;document.getElementById("password").focus();};
     list.appendChild(li);
   });
 }
-
-function toggleAuthMode(){
-  let isLogin = document.getElementById('auth-title').innerText === 'Flow Notes';
-  document.getElementById('auth-title').innerText = isLogin ? 'Crear Cuenta Nueva' : 'Flow Notes';
-  document.getElementById('auth-submit-btn').innerText = isLogin ? 'Registrarse' : 'Ingresar';
-  document.getElementById('auth-toggle-text').innerText = isLogin ? '¿Ya tienes cuenta? Ingresa aquí' : '¿No tienes cuenta? Regístrate aquí';
-}
-
+function toggleAuthMode(){isLoginMode=!isLoginMode;document.getElementById("auth-title").innerText=isLoginMode?"Apuntes":"Crear Cuenta Nueva";document.getElementById("auth-submit-btn").innerText=isLoginMode?"Ingresar al Tablero":"Registrarse y Entrar";document.getElementById("auth-toggle-text").innerText=isLoginMode?"¿No tienes cuenta? Regístrate aquí":"¿Ya tienes cuenta? Inicia sesión";}
 function handleAuthAction(){
-  let u = document.getElementById('username').value.trim();
-  let p = document.getElementById('password').value.trim();
-  if(!u || !p) return alert('Completá todos los campos.');
-  
-  let isLogin = document.getElementById('auth-title').innerText === 'Flow Notes';
-  
-  if(isLogin){
-    if(!db.users[u]) return alert('El usuario no existe.');
-    if(db.users[u].password !== p) return alert('Contraseña incorrecta.');
-    currentUser = u;
-    localStorage.setItem('apuntes_autologin', u);
-    showProjectWorkspace();
-  } else {
-    if(db.users[u]) return alert('Usuario ya registrado.');
-    db.users[u] = {password: p, projects: {}, lastOpen: null};
-    saveDB();
-    currentUser = u;
-    localStorage.setItem('apuntes_autologin', u);
-    showProjectWorkspace();
-  }
+  let u=document.getElementById("username").value.trim(),p=document.getElementById("password").value.trim();
+  if(!u||!p)return alert("Completá todos los campos.");
+  if(isLoginMode){if(!db.users[u])return alert("El usuario no existe.");if(db.users[u].password!==p)return alert("Contraseña incorrecta.");currentUser=u;localStorage.setItem("apuntes_autologin",u);showProjectWorkspace();}
+  else{if(db.users[u])return alert("Usuario ya registrado.");db.users[u]={password:p,projects:{},lastOpen:null};saveDB();currentUser=u;localStorage.setItem("apuntes_autologin",u);showProjectWorkspace();}
 }
-
-function showProjectWorkspace(){
-  document.getElementById('login-step').classList.add('hidden');
-  document.getElementById('project-step').classList.remove('hidden');
-  document.getElementById('welcome-text').innerText = `Conectado como: ${currentUser}`;
-  renderProjectList();
-}
-
+function showProjectWorkspace(){document.getElementById("login-step").classList.add("hidden");document.getElementById("project-step").classList.remove("hidden");document.getElementById("welcome-text").innerText=`Conectado como: ${currentUser}`;renderProjectList();}
 function renderProjectList(){
-  let c = document.getElementById('project-list-container');
-  c.innerHTML = '';
-  let projects = db.users[currentUser].projects;
+  let c=document.getElementById("project-list-container");c.innerHTML="";
+  let projects=db.users[currentUser].projects;
   for(let n in projects){
-    let li = document.createElement('li');
-    li.className = 'project-item';
-    let ns = document.createElement('span');
-    ns.innerText = n;
-    ns.style.cssText = 'flex:1;cursor:pointer;';
-    li.onclick = (e) => {if(!e.target.classList.contains('pi-btn')) openProject(n);};
-    
-    let acts = document.createElement('div');
-    acts.className = 'pi-actions';
-    let rb = document.createElement('button');
-    rb.className = 'pi-btn';
-    rb.innerText = '✏️';
-    rb.onclick = e => {e.stopPropagation(); renameProject(n);};
-    let db2 = document.createElement('button');
-    db2.className = 'pi-btn del';
-    db2.innerText = '🗑️';
-    db2.onclick = e => {e.stopPropagation(); deleteProject(n);};
-    acts.appendChild(rb);
-    acts.appendChild(db2);
-    li.appendChild(ns);
-    li.appendChild(acts);
-    c.appendChild(li);
+    let li=document.createElement("li");li.className="project-item";
+    let ns=document.createElement("span");ns.innerText=n;ns.style.cssText="flex:1;cursor:pointer;text-align:left;font-weight:600;";li.onclick=(e)=>{if(!e.target.classList.contains('pi-btn'))openProject(n);};
+    let acts=document.createElement("div");acts.className="pi-actions";
+    let rb=document.createElement("button");rb.className="pi-btn";rb.innerText="✏️";rb.onclick=e=>{e.stopPropagation();renameProject(n);};
+    let db2=document.createElement("button");db2.className="pi-btn del";db2.innerText="🗑️";db2.onclick=e=>{e.stopPropagation();deleteProject(n);};
+    acts.appendChild(rb);acts.appendChild(db2);li.appendChild(ns);li.appendChild(acts);c.appendChild(li);
   }
 }
-
-function renameProject(old){
-  let nw = prompt('Nuevo nombre:', old);
-  if(!nw || nw === old) return;
-  if(db.users[currentUser].projects[nw]) return alert('Ya existe ese nombre.');
-  db.users[currentUser].projects[nw] = db.users[currentUser].projects[old];
-  delete db.users[currentUser].projects[old];
-  saveDB();
-  renderProjectList();
-}
-
-function deleteProject(name){
-  if(!confirm(`¿Borrar "${name}"?`)) return;
-  delete db.users[currentUser].projects[name];
-  saveDB();
-  renderProjectList();
-}
-
-function handleCreateProject(){
-  let name = document.getElementById('new-project-name').value.trim();
-  if(!name) return;
-  if(db.users[currentUser].projects[name]) return alert('Este cuaderno ya existe.');
-  db.users[currentUser].projects[name] = {flowNotes: {nodes: [], connections: []}};
-  saveDB();
-  document.getElementById('new-project-name').value = '';
-  renderProjectList();
-}
-
-function openProject(name){
-  currentProject = name;
-  db.users[currentUser].lastOpen = name;
-  localStorage.setItem('apuntes_last_project', name);
-  saveDB();
-  openProjectCanvas();
-}
-
-function openProjectCanvas(){
-  document.getElementById('auth-screen').classList.add('hidden');
-  document.getElementById('toolbar').classList.remove('hidden');
-  if(!flowCanvas) initFlowCanvas();
-  loadFlowNotes();
-}
-
+function renameProject(old){let nw=prompt("Nuevo nombre:",old);if(!nw||nw===old)return;if(db.users[currentUser].projects[nw])return alert("Ya existe ese nombre.");db.users[currentUser].projects[nw]=db.users[currentUser].projects[old];delete db.users[currentUser].projects[old];saveDB();renderProjectList();}
+function deleteProject(name){if(!confirm(`¿Borrar "${name}"?`))return;delete db.users[currentUser].projects[name];saveDB();renderProjectList();}
+function handleCreateProject(){let name=document.getElementById("new-project-name").value.trim();if(!name)return;if(db.users[currentUser].projects[name])return alert("Este cuaderno ya existe.");db.users[currentUser].projects[name]={objects:[],connections:[],flowNotes:{nodes:[],connections:[]}};saveDB();renderProjectList();openProject(name);}
+function openProject(name){currentProject=name;db.users[currentUser].lastOpen=name;localStorage.setItem("apuntes_last_project",name);saveDB();document.getElementById("auth-screen").classList.add("hidden");document.getElementById("toolbar").classList.remove("hidden");loadProjectData();}
 function exitToWorkspace(){
-  saveToDatabase();
-  currentProject = null;
-  localStorage.removeItem('apuntes_last_project');
-  document.getElementById('toolbar').classList.add('hidden');
-  cancelConnect();
-  
-  if(flowCanvas){
-    flowCanvas.dispose();
-    flowCanvas = null;
-    flowNodes = [];
-    flowConnections = [];
+  saveToDatabase();currentProject=null;localStorage.removeItem("apuntes_last_project");
+  document.getElementById("toolbar").classList.add("hidden");document.getElementById("flow-wrapper").classList.remove("open");document.getElementById("btn-flow").classList.remove("btn-active");
+  cancelConnect();closeLasso();canvas.clear();connections=[];history=[];historyIdx=-1;
+  if(flowCanvas){flowCanvas.clear();flowCanvas.dispose();flowCanvas=null;flowConnections=[];}
+  document.getElementById("auth-screen").classList.remove("hidden");document.getElementById("login-step").classList.remove("hidden");document.getElementById("project-step").classList.add("hidden");document.getElementById("username").readOnly=false;renderSavedAccountsUI();
+}
+function saveDB(){localStorage.setItem("apuntes_v12_db",JSON.stringify(db));}
+function exportDatabaseBackup(){let d="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(db));let a=document.createElement('a');a.href=d;a.download=`backup_${Date.now()}.json`;document.body.appendChild(a);a.click();a.remove();}
+function triggerImportBackup(){document.getElementById("import-file-input").click();}
+window.importDatabase=function(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=e=>{try{let d=JSON.parse(e.target.result);if(d.users){db=d;saveDB();alert("¡Backup cargado!");location.reload();}else alert("Archivo inválido.");}catch(e){alert("Error al procesar.");}};r.readAsText(f);};
+
+// ═══════════ DARK MODE ═══════════
+function toggleDarkMode(force=false){
+  let body=document.body;if(!force)body.classList.toggle("dark-mode");else body.classList.add("dark-mode");
+  let isDark=body.classList.contains("dark-mode");localStorage.setItem("dark_mode_enabled",isDark);
+  document.getElementById("dark-toggle-btn").innerText=isDark?"☀️":"🌙";
+  canvasBgColor=isDark?'#121216':'#f5f7fa';
+  if(canvas){canvas.setBackgroundColor(canvasBgColor,()=>{canvas.getObjects().forEach(o=>{if(o.customType==='text-only'||o.isLinkedText){if(isDark&&o.fill==='#333333')o.set('fill','#ffffff');if(!isDark&&o.fill==='#ffffff')o.set('fill','#333333');}if(o.customType&&!['text-only','straight-line'].includes(o.customType)){let from=isDark?THEME.light:THEME.dark,to=isDark?THEME.dark:THEME.light;if(from[o.customType]&&o.fill===from[o.customType])o.set('fill',to[o.customType]);}});canvas.renderAll();});}
+}
+
+// ═══════════ ADD BLOCK ═══════════
+function addBlock(type,opts={}){
+  let left,top;
+  if(opts.left!==undefined){left=opts.left;top=opts.top;}
+  else{let vpt=canvas.viewportTransform;left=(canvas.getWidth()/2-vpt[4])/vpt[0];top=(canvas.getHeight()/2-vpt[5])/vpt[3];left=sv(left);top=sv(top);}
+  let id=opts.id||"b_"+Date.now()+Math.floor(Math.random()*9999);
+  let savedText=opts.text!==undefined?opts.text:"";
+  let isDark=document.body.classList.contains("dark-mode");
+  let defColor=isDark?'#ffffff':'#333333';
+  let defBg=opts.bg||(isDark?THEME.dark[type]:THEME.light[type])||'#e3fafc';
+  if(type==='madre') return addMadreBlock(opts);
+  if(type==='text-only'){
+    let t=new fabric.Textbox(savedText||"Doble clic para editar...",{width:opts.width||200,fontSize:opts.fontSize||14,fontFamily:opts.fontFamily||'Segoe UI',fill:opts.textColor||defColor,textAlign:opts.textAlign||'left',originX:'center',originY:'top',left,top,fontWeight:opts.fontWeight||'normal',fontStyle:opts.fontStyle||'normal',selectable:true,evented:true,isLinkedText:false,id,customType:'text-only',splitByGrapheme:false});
+    t.on('editing:entered',()=>{if(t.text==="Doble clic para editar..."){t.text="";canvas.renderAll();}});
+    t.on('editing:exited',()=>snapshot());
+    canvas.add(t);canvas.setActiveObject(t);canvas.renderAll();return t;
   }
-  
-  document.getElementById('auth-screen').classList.remove('hidden');
-  document.getElementById('login-step').classList.remove('hidden');
-  document.getElementById('project-step').classList.add('hidden');
+  let baseW=140,baseH=95;
+  if(type==='circle'){baseW=110;baseH=110;}else if(type==='post-it'){baseW=120;baseH=120;}else if(type==='diamond'){baseW=150;baseH=110;}
+  let scaleX=opts.scaleX||1,scaleY=opts.scaleY||1;
+  let shape;
+  if(type==='square')shape=new fabric.Rect({width:baseW,height:baseH,fill:defBg,rx:10,ry:10});
+  else if(type==='circle')shape=new fabric.Circle({radius:55,fill:defBg});
+  else if(type==='post-it')shape=new fabric.Rect({width:baseW,height:baseH,fill:defBg});
+  else if(type==='diamond')shape=new fabric.Polygon([{x:75,y:0},{x:150,y:55},{x:75,y:110},{x:0,y:55}],{fill:defBg});
+  else return null;
+  shape.set({left,top,originX:'center',originY:'center',id,customType:type,scaleX,scaleY,noteFormat:opts.noteFormat||null,stroke:opts.stroke||null,strokeWidth:opts.strokeWidth||0});
+  let textPadding=16;
+  let textW=Math.max(40,baseW*scaleX-textPadding);
+  if(type==='circle')textW=Math.max(40,(110*scaleX)*0.75);
+  if(type==='diamond')textW=Math.max(40,(baseW*scaleX)*0.55);
+  let textObj=new fabric.Textbox(savedText,{width:textW,fontSize:opts.fontSize||14,fontFamily:opts.fontFamily||'Segoe UI',fill:opts.textColor||defColor,textAlign:opts.textAlign||'center',originX:'center',originY:'center',left,top,fontWeight:opts.fontWeight||'normal',fontStyle:opts.fontStyle||'normal',selectable:false,evented:false,isLinkedText:true,splitByGrapheme:false});
+  shape.textRef=textObj;textObj.shapeRef=shape;
+  function fitShapeToText(){let tH=textObj.calcTextHeight?textObj.calcTextHeight():textObj.height;let needed=Math.max(baseH,tH+textPadding);if(type==='square'||type==='post-it'){let newH=needed/scaleY;shape.set('height',newH);}else if(type==='circle'){let r=Math.max(55,needed/2/scaleX);shape.set('radius',r);}textObj.set('top',shape.top);shape.setCoords();textObj.setCoords();canvas.renderAll();}
+  function updateTextWidthFromShape(){let sX=shape.scaleX;let newW;if(type==='circle')newW=Math.max(40,(shape.radius*2*sX)*0.75);else if(type==='diamond')newW=Math.max(40,(150*sX)*0.55);else newW=Math.max(40,(shape.width||baseW)*sX-textPadding);textObj.set('width',newW);fitShapeToText();}
+  shape.on('mousedblclick',()=>{textObj.selectable=true;textObj.evented=true;canvas.setActiveObject(textObj);textObj.enterEditing();});
+  textObj.on('editing:exited',()=>{textObj.selectable=false;textObj.evented=false;fitShapeToText();canvas.setActiveObject(shape);canvas.renderAll();snapshot();});
+  textObj.on('changed',()=>fitShapeToText());
+  shape.on('scaling',()=>updateTextWidthFromShape());
+  shape.on('scaled',()=>{updateTextWidthFromShape();snapshot();});
+  if(opts.hasGlow)shape.set('shadow',new fabric.Shadow({color:'#2196F3',blur:25,offsetX:0,offsetY:0}));
+  canvas.add(shape);canvas.add(textObj);canvas.setActiveObject(shape);
+  fitShapeToText();syncText();updateLines();
+  return shape;
 }
 
-function saveToDatabase(silent = false){
-  saveFlowNotes();
-  if(!silent) showToast('💾 ¡Guardado!');
+function addStraightLineObj(o){let l=new fabric.Line([o.x1,o.y1,o.x2,o.y2],{stroke:'#555',strokeWidth:3,selectable:true,evented:true,id:o.id,customType:'straight-line',lineDir:o.lineDir});canvas.add(l);return l;}
+
+// ═══════════ DUPLICATE ═══════════
+function duplicateCurrentObject(){
+  let targets=rightClickedObject?(Array.isArray(rightClickedObject)?rightClickedObject:[rightClickedObject]):canvas.getActiveObjects().filter(o=>!o.isLinkedText);
+  if(!targets.length)return;
+  targets.forEach(obj=>{
+    if(obj.customType==='straight-line'){addStraightLineObj({...obj,x1:obj.x1+30,y1:obj.y1+30,x2:obj.x2+30,y2:obj.y2+30,id:'b_'+Date.now()+Math.random()});return;}
+    let isTO=obj.customType==='text-only';let t=isTO?obj:obj.textRef;
+    addBlock(obj.customType,{left:obj.left+40,top:obj.top+40,bg:obj.fill,text:t?t.text:"",fontSize:t?t.fontSize:14,fontFamily:t?t.fontFamily:'Segoe UI',textColor:t?t.fill:'#333',fontWeight:t?t.fontWeight:'normal',fontStyle:t?t.fontStyle:'normal',hasGlow:!!obj.shadow,stroke:obj.stroke,strokeWidth:obj.strokeWidth,fromLoad:true});
+  });
+  document.getElementById("ctx").style.display="none";canvas.renderAll();snapshot();
 }
 
-function saveDB(){
-  localStorage.setItem('apuntes_v12_db', JSON.stringify(db));
+// ═══════════ CONNECTORS ═══════════
+function setConnectorType(t){currentConnectorType=t;['line','arrow','dashed','brace','orthoH','orthoV'].forEach(x=>{let el=document.getElementById('ctype-'+x);if(el)el.classList.toggle('act',x===t);});}
+function toggleConnectMode(){isConnectMode=!isConnectMode;connectSourceObj=null;let btn=document.getElementById("btn-connect-mode");if(isConnectMode){btn.innerText="⚡ Seleccioná origen...";btn.classList.add("btn-active");document.getElementById("conn-type-bar").classList.add("vis");showConnectStatus("Hacé click en el ORIGEN");}else cancelConnect();}
+function cancelConnect(){isConnectMode=false;connectSourceObj=null;document.getElementById("btn-connect-mode").innerText="⚡ Conectar";document.getElementById("btn-connect-mode").classList.remove("btn-active");document.getElementById("conn-type-bar").classList.remove("vis");}
+function showConnectStatus(msg){document.getElementById("connect-status-text").innerText=msg;}
+function startConnectingFromMenu(){if(!rightClickedObject||Array.isArray(rightClickedObject))return;isConnectMode=true;connectSourceObj=rightClickedObject;document.getElementById("btn-connect-mode").innerText="⚡ Seleccioná destino...";document.getElementById("btn-connect-mode").classList.add("btn-active");document.getElementById("conn-type-bar").classList.add("vis");showConnectStatus(`Origen: "${getObjLabel(rightClickedObject)}" — click en DESTINO`);document.getElementById("ctx").style.display="none";}
+function getObjLabel(obj){let t=obj.customType==='text-only'?obj:obj.textRef;return(t&&t.text?t.text.trim().substring(0,20):"")||"bloque";}
+function resolveConnectable(target){if(!target)return null;if(target.isLinkedText&&target.shapeRef)return target.shapeRef;if(target.customType==='text-only')return target;if(target.customType&&target.customType!=='straight-line')return target;return null;}
+
+function createConn(obj1,obj2,type){
+  let existing=connections.findIndex(c=>(c.fromId===obj1.id&&c.toId===obj2.id)||(c.fromId===obj2.id&&c.toId===obj1.id));
+  if(existing!==-1){let old=connections[existing];removeConnVisuals(old);connections.splice(existing,1);}
+  if(type==='brace'){createBraceConn(obj1,obj2);return;}
+  let p1=getCp(obj1),p2=getCp(obj2);
+  let opts={stroke:'#666',strokeWidth:2.5,selectable:false,evented:false};
+  if(type==='dashed')opts.strokeDashArray=[8,5];
+  if(type==='orthoH'||type==='orthoV'){createOrthoConn(obj1,obj2,type);return;}
+  let lineObj=new fabric.Line([p1.x,p1.y,p2.x,p2.y],opts);
+  canvas.add(lineObj);canvas.sendToBack(lineObj);
+  if(type==='arrow'){
+    let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);let edgeOff=getShapeEdgeOffset(obj2,angle);let tipX=p2.x-Math.cos(angle)*edgeOff,tipY=p2.y-Math.sin(angle)*edgeOff;let headLen=16;
+    lineObj.set({x1:p1.x,y1:p1.y,x2:tipX-Math.cos(angle)*headLen*0.5,y2:tipY-Math.sin(angle)*headLen*0.5});
+    let ah=new fabric.Triangle({width:14,height:18,fill:'#666',left:tipX,top:tipY,angle:Math.atan2(p2.y-p1.y,p2.x-p1.x)*180/Math.PI+90,originX:'center',originY:'center',selectable:false,evented:false});
+    canvas.add(ah);canvas.bringToFront(ah);connections.push({fromId:obj1.id,toId:obj2.id,lineRef:lineObj,arrowRef:ah,type:'arrow'});
+  }else{connections.push({fromId:obj1.id,toId:obj2.id,lineRef:lineObj,type:type||'line'});}
+}
+function createOrthoConn(obj1,obj2,type){
+  let p1=getCp(obj1),p2=getCp(obj2);
+  let ls=[new fabric.Line([p1.x,p1.y,type==='orthoH'?(p1.x+p2.x)/2:p1.x,type==='orthoH'?p1.y:(p1.y+p2.y)/2],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false}),new fabric.Line([type==='orthoH'?(p1.x+p2.x)/2:p1.x,type==='orthoH'?p1.y:(p1.y+p2.y)/2,type==='orthoH'?(p1.x+p2.x)/2:p2.x,type==='orthoH'?p2.y:(p1.y+p2.y)/2],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false}),new fabric.Line([type==='orthoH'?(p1.x+p2.x)/2:p2.x,type==='orthoH'?p2.y:(p1.y+p2.y)/2,p2.x,p2.y],{stroke:'#666',strokeWidth:2.5,selectable:false,evented:false})];
+  ls.forEach(l=>{canvas.add(l);canvas.sendToBack(l);});connections.push({fromId:obj1.id,toId:obj2.id,type,orthoLines:ls,lineRef:ls[0]});
+}
+function createBraceConn(obj1,obj2){
+  let p1=getCp(obj1),p2=getCp(obj2);let midX=Math.max(p1.x,p2.x)+80,midY=(p1.y+p2.y)/2;
+  let ls=[new fabric.Line([p1.x,p1.y,midX,p1.y],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false}),new fabric.Line([p2.x,p2.y,midX,p2.y],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false}),new fabric.Line([midX,p1.y,midX,p2.y],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false}),new fabric.Line([midX,midY,midX+30,midY],{stroke:'#555',strokeWidth:2.5,selectable:false,evented:false})];
+  ls.forEach(l=>{canvas.add(l);canvas.sendToBack(l);});connections.push({fromId:obj1.id,toId:obj2.id,type:'brace',lineRef:ls[0],braceLines:ls});
+}
+function deleteConnector(){if(rightClickedConnIdx===null)return;let c=connections[rightClickedConnIdx];removeConnVisuals(c);connections.splice(rightClickedConnIdx,1);rightClickedConnIdx=null;document.getElementById("ctx").style.display="none";canvas.renderAll();snapshot();}
+function removeConnVisuals(c){if(c.braceLines)c.braceLines.forEach(l=>canvas.remove(l));else if(c.orthoLines)c.orthoLines.forEach(l=>canvas.remove(l));else{if(c.lineRef)canvas.remove(c.lineRef);if(c.arrowRef)canvas.remove(c.arrowRef);}}
+function getCp(obj){return obj.getCenterPoint?obj.getCenterPoint():{x:obj.left,y:obj.top};}
+function getShapeEdgeOffset(obj,angle){if(!obj)return 0;let type=obj.customType;if(type==='circle')return(obj.radius||55)*Math.max(obj.scaleX||1,obj.scaleY||1)+4;if(type==='diamond')return 55*(obj.scaleX||1)+4;let hw=(obj.width||140)*(obj.scaleX||1)/2+4,hh=(obj.height||95)*(obj.scaleY||1)/2+4;let cos=Math.abs(Math.cos(angle)),sin=Math.abs(Math.sin(angle));if(cos<0.001)return hh;if(sin<0.001)return hw;return Math.min(hw/cos,hh/sin);}
+function findObj(id){return canvas.getObjects().find(o=>o.id===id&&!o.isLinkedText);}
+
+function updateLines(){
+  connections.forEach(c=>{
+    let f=findObj(c.fromId),t=findObj(c.toId);if(!f||!t)return;
+    let p1=getCp(f),p2=getCp(t);
+    if(c.type==='brace'&&c.braceLines){let midX=Math.max(p1.x,p2.x)+80,midY=(p1.y+p2.y)/2;let[l1,l2,lV,lT]=c.braceLines;l1.set({x1:p1.x,y1:p1.y,x2:midX,y2:p1.y});l2.set({x1:p2.x,y1:p2.y,x2:midX,y2:p2.y});lV.set({x1:midX,y1:p1.y,x2:midX,y2:p2.y});lT.set({x1:midX,y1:midY,x2:midX+30,y2:midY});return;}
+    if((c.type==='orthoH'||c.type==='orthoV')&&c.orthoLines){let[l1,l2,l3]=c.orthoLines;if(c.type==='orthoH'){let midX=(p1.x+p2.x)/2;l1.set({x1:p1.x,y1:p1.y,x2:midX,y2:p1.y});l2.set({x1:midX,y1:p1.y,x2:midX,y2:p2.y});l3.set({x1:midX,y1:p2.y,x2:p2.x,y2:p2.y});}else{let midY=(p1.y+p2.y)/2;l1.set({x1:p1.x,y1:p1.y,x2:p1.x,y2:midY});l2.set({x1:p1.x,y1:midY,x2:p2.x,y2:midY});l3.set({x1:p2.x,y1:midY,x2:p2.x,y2:p2.y});}return;}
+    if(c.lineRef){if(c.type==='arrow'){let angle=Math.atan2(p2.y-p1.y,p2.x-p1.x);let edgeOff=getShapeEdgeOffset(t,angle);let tipX=p2.x-Math.cos(angle)*edgeOff,tipY=p2.y-Math.sin(angle)*edgeOff;let headLen=16;c.lineRef.set({x1:p1.x,y1:p1.y,x2:tipX-Math.cos(angle)*headLen*0.5,y2:tipY-Math.sin(angle)*headLen*0.5});if(c.arrowRef){let deg=Math.atan2(p2.y-p1.y,p2.x-p1.x)*180/Math.PI;c.arrowRef.set({left:tipX,top:tipY,angle:deg+90});canvas.bringToFront(c.arrowRef);}}else{c.lineRef.set({x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y});}}
+  });
+  canvas.renderAll();
 }
 
-function showToast(msg){
-  let toast = document.getElementById('toast');
-  toast.innerText = msg;
-  toast.style.display = 'block';
-  setTimeout(() => {toast.style.display = 'none';}, 2000);
+// ═══════════ DRAWING TOOLS ═══════════
+let drawMode=null,drawStartPoint=null,drawPreviewObj=null,isDrawing=false,erasePointerDown=false;
+function toggleDrawBar(){let bar=document.getElementById('draw-bar'),btn=document.getElementById('btn-draw');if(bar.classList.contains('vis')){stopDrawing();}else{bar.classList.add('vis');btn.classList.add('btn-active');setDrawMode('pencil');}}
+function setDrawMode(mode){
+  drawMode=mode;['pencil','rect','ellipse','erase'].forEach(m=>{let el=document.getElementById('dbtn-'+m);if(el)el.classList.toggle('act',m===mode);});
+  isDrawing=false;if(drawPreviewObj){canvas.remove(drawPreviewObj);drawPreviewObj=null;}drawStartPoint=null;erasePointerDown=false;
+  if(mode==='pencil'){canvas.isDrawingMode=true;canvas.freeDrawingBrush.color=document.getElementById('draw-color').value;canvas.freeDrawingBrush.width=parseInt(document.getElementById('draw-size').value);document.body.classList.remove('erase-mode');document.body.classList.add('draw-mode');canvas.selection=false;}
+  else if(mode==='erase'){canvas.isDrawingMode=false;document.body.classList.remove('draw-mode');document.body.classList.add('erase-mode');canvas.selection=false;}
+  else{canvas.isDrawingMode=false;document.body.classList.remove('erase-mode');document.body.classList.add('draw-mode');canvas.selection=false;}
+}
+function stopDrawing(){drawMode=null;isDrawing=false;drawStartPoint=null;erasePointerDown=false;if(drawPreviewObj){canvas.remove(drawPreviewObj);drawPreviewObj=null;canvas.renderAll();}canvas.isDrawingMode=false;canvas.selection=true;document.body.classList.remove('draw-mode','erase-mode');document.getElementById('draw-bar').classList.remove('vis');document.getElementById('btn-draw').classList.remove('btn-active');}
+function onPathCreated(e){let path=e.path;if(!path)return;path.set({id:'draw_'+Date.now()+Math.floor(Math.random()*9999),customType:'drawing',selectable:true,evented:true,hasControls:true});canvas.renderAll();snapshot();}
+function initDrawListeners(){document.getElementById('draw-color').addEventListener('input',function(){if(drawMode==='pencil'&&canvas.freeDrawingBrush)canvas.freeDrawingBrush.color=this.value;});document.getElementById('draw-size').addEventListener('input',function(){let v=parseInt(this.value);document.getElementById('draw-size-label').innerText=v+'px';if(drawMode==='pencil'&&canvas.freeDrawingBrush)canvas.freeDrawingBrush.width=v;});}
+function handleDrawMouseDown(ptr){if(drawMode==='rect'){isDrawing=true;drawStartPoint={x:ptr.x,y:ptr.y};let color=document.getElementById('draw-color').value,size=parseInt(document.getElementById('draw-size').value);drawPreviewObj=new fabric.Rect({left:ptr.x,top:ptr.y,width:1,height:1,fill:'transparent',stroke:color,strokeWidth:size,selectable:false,evented:false,id:'draw_'+Date.now(),customType:'drawing',originX:'left',originY:'top'});canvas.add(drawPreviewObj);}else if(drawMode==='ellipse'){isDrawing=true;drawStartPoint={x:ptr.x,y:ptr.y};let color=document.getElementById('draw-color').value,size=parseInt(document.getElementById('draw-size').value);drawPreviewObj=new fabric.Ellipse({left:ptr.x,top:ptr.y,rx:1,ry:1,fill:'transparent',stroke:color,strokeWidth:size,selectable:false,evented:false,id:'draw_'+Date.now(),customType:'drawing',originX:'left',originY:'top'});canvas.add(drawPreviewObj);}else if(drawMode==='erase'){erasePointerDown=true;eraseAt(ptr);}}
+function handleDrawMouseMove(ptr){if((drawMode==='rect'||drawMode==='ellipse')&&isDrawing&&drawPreviewObj&&drawStartPoint){let x=Math.min(ptr.x,drawStartPoint.x),y=Math.min(ptr.y,drawStartPoint.y),w=Math.abs(ptr.x-drawStartPoint.x),h=Math.abs(ptr.y-drawStartPoint.y);if(drawMode==='rect')drawPreviewObj.set({left:x,top:y,width:Math.max(1,w),height:Math.max(1,h)});else drawPreviewObj.set({left:x,top:y,rx:Math.max(1,w/2),ry:Math.max(1,h/2)});drawPreviewObj.setCoords();canvas.renderAll();}if(drawMode==='erase'&&erasePointerDown)eraseAt(ptr);}
+function handleDrawMouseUp(ptr){if((drawMode==='rect'||drawMode==='ellipse')&&isDrawing&&drawPreviewObj){isDrawing=false;let w=drawPreviewObj.width||(drawPreviewObj.rx*2)||0,h=drawPreviewObj.height||(drawPreviewObj.ry*2)||0;if(w>5&&h>5){drawPreviewObj.set({selectable:true,evented:true,hasControls:true});drawPreviewObj.setCoords();canvas.renderAll();snapshot();}else{canvas.remove(drawPreviewObj);canvas.renderAll();}drawPreviewObj=null;drawStartPoint=null;}erasePointerDown=false;}
+function eraseAt(ptr){let objs=canvas.getObjects().filter(o=>o.customType==='drawing');for(let i=objs.length-1;i>=0;i--){let o=objs[i];let b=o.getBoundingRect();if(ptr.x>=b.left&&ptr.x<=b.left+b.width&&ptr.y>=b.top&&ptr.y<=b.top+b.height){if(o.containsPoint({x:ptr.x,y:ptr.y})||isNearPath(o,ptr)){canvas.remove(o);canvas.renderAll();snapshot();return;}}}}
+function isNearPath(obj,ptr){let b=obj.getBoundingRect(),threshold=Math.max(10,(obj.strokeWidth||2)*2);return ptr.x>=b.left-threshold&&ptr.x<=b.left+b.width+threshold&&ptr.y>=b.top-threshold&&ptr.y<=b.top+b.height+threshold;}
+
+// ═══════════ LASSO ═══════════
+function startLasso(x,y){isLassoMode=true;lassoStart={x,y};lassoEl.style.cssText=`display:block;left:${x}px;top:${y}px;width:0;height:0;position:fixed;`;document.body.classList.add("lasso-mode");}
+function updateLasso(x,y){if(!isLassoMode||!lassoStart)return;let x0=Math.min(x,lassoStart.x),y0=Math.min(y,lassoStart.y);lassoEl.style.left=x0+'px';lassoEl.style.top=y0+'px';lassoEl.style.width=Math.abs(x-lassoStart.x)+'px';lassoEl.style.height=Math.abs(y-lassoStart.y)+'px';}
+function endLasso(x,y){if(!isLassoMode)return;let lx0=Math.min(x,lassoStart.x),ly0=Math.min(y,lassoStart.y),lw=Math.abs(x-lassoStart.x),lh=Math.abs(y-lassoStart.y);closeLasso();if(lw<5||lh<5)return;let zoom=canvas.getZoom(),vpt=canvas.viewportTransform;let cx0=(lx0-vpt[4])/zoom,cy0=(ly0-vpt[5])/zoom,cx1=cx0+lw/zoom,cy1=cy0+lh/zoom;let objs=canvas.getObjects().filter(o=>{if(!o.selectable||o.isLinkedText)return false;let p=getCp(o);return p.x>=cx0&&p.x<=cx1&&p.y>=cy0&&p.y<=cy1;});if(objs.length){canvas.discardActiveObject();canvas.setActiveObject(new fabric.ActiveSelection(objs,{canvas}));canvas.renderAll();}}
+function closeLasso(){isLassoMode=false;lassoStart=null;lassoEl.style.display="none";document.body.classList.remove("lasso-mode");}
+
+// ═══════════ CANVAS EVENTS ═══════════
+function setupCanvasEvents(){
+  canvas.upperCanvasEl.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();},true);
+  canvas.on('mouse:wheel',function(opt){let d=opt.e.deltaY,z=canvas.getZoom();z*=0.999**d;if(z>5)z=5;if(z<0.1)z=0.1;canvas.zoomToPoint({x:opt.e.offsetX,y:opt.e.offsetY},z);opt.e.preventDefault();opt.e.stopPropagation();updateLines();updateZoomUI();});
+  canvas.on('mouse:down',function(opt){
+    let evt=opt.e,btn=evt.button,ctxMenu=document.getElementById("ctx");
+    if(btn===2){
+      evt.preventDefault();evt.stopPropagation();
+      if(isPickingPresChain){let target=opt.target;if(target){if(target.isLinkedText&&target.shapeRef)target=target.shapeRef;if(target.id&&!target.isMadreToggle&&!target.isMadreBadge){addToPresChain(target);showToast('📽️ Bloque agregado');}}return;}
+      let target=opt.target;if(target&&target.isLinkedText&&target.shapeRef)target=target.shapeRef;
+      let hitIdx=null;
+      if(!target){let ptr=canvas.getPointer(evt);connections.forEach((c,idx)=>{if(!c.lineRef||c.lineRef.visible===false)return;let lines=c.orthoLines||c.braceLines||[c.lineRef];lines.forEach(l=>{if(distSeg(ptr,{x:l.x1,y:l.y1},{x:l.x2,y:l.y2})<12)hitIdx=idx;});});}
+      if(hitIdx!==null){rightClickedConnIdx=hitIdx;rightClickedObject=null;document.getElementById("ctx-conn-sec").style.display="block";document.getElementById("ctx-shape-sec").style.display="none";document.getElementById("ctx-text-sec").style.display="none";document.getElementById("ctx-conn-mi").style.display="none";document.getElementById("ctx-pres-chain-mi").style.display="none";showCtx(evt);}
+      else if(target){rightClickedConnIdx=null;let act=canvas.getActiveObjects();rightClickedObject=act.length>1?act:target;let isTO=target.customType==='text-only';document.getElementById("ctx-conn-sec").style.display="none";document.getElementById("ctx-shape-sec").style.display=isTO?"none":"block";document.getElementById("ctx-text-sec").style.display="block";document.getElementById("ctx-conn-mi").style.display="flex";document.getElementById("ctx-madre-mi").style.display=target.customType==='madre'?'flex':'none';document.getElementById("ctx-pres-chain-mi").style.display="flex";showCtx(evt);}
+      else{ctxMenu.style.display="none";rcStart={x:evt.clientX,y:evt.clientY};rcDragging=false;}
+      return;
+    }
+    ctxMenu.style.display="none";
+    if(isPickingPresChain){let target=opt.target;if(target){if(target.isLinkedText&&target.shapeRef)target=target.shapeRef;if(target.id&&!target.isMadreToggle&&!target.isMadreBadge){addToPresChain(target);showToast('📽️ Bloque agregado');}}return;}
+    if(drawMode&&drawMode!=='pencil'){let ptr=canvas.getPointer(evt);handleDrawMouseDown(ptr);return;}
+    if(drawMode==='erase'){let ptr=canvas.getPointer(evt);handleDrawMouseDown(ptr);return;}
+    let target=opt.target;if(target&&target.isLinkedText&&target.shapeRef)target=target.shapeRef;
+    let connectable=resolveConnectable(target);
+    if(isConnectMode&&connectable){if(!connectSourceObj){connectSourceObj=connectable;showConnectStatus(`Origen: "${getObjLabel(connectSourceObj)}" — click en DESTINO`);}else if(connectSourceObj.id!==connectable.id){createConn(connectSourceObj,connectable,currentConnectorType);cancelConnect();snapshot();}return;}
+    if(!target||evt.altKey){this.isDragging=true;this.selection=false;this.lastPosX=evt.clientX;this.lastPosY=evt.clientY;document.body.classList.add("panning");}
+  });
+  canvas.on('mouse:move',function(opt){
+    let evt=opt.e;
+    if((drawMode==='rect'||drawMode==='ellipse')&&isDrawing){let ptr=canvas.getPointer(evt);handleDrawMouseMove(ptr);return;}
+    if(drawMode==='erase'&&erasePointerDown){let ptr=canvas.getPointer(evt);eraseAt(ptr);return;}
+    if(rcStart){let dx=Math.abs(evt.clientX-rcStart.x),dy=Math.abs(evt.clientY-rcStart.y);if(!rcDragging&&(dx>6||dy>6)){rcDragging=true;startLasso(rcStart.x,rcStart.y);}if(rcDragging)updateLasso(evt.clientX,evt.clientY);return;}
+    if(isLassoMode){updateLasso(evt.clientX,evt.clientY);return;}
+    if(this.isDragging){let vpt=this.viewportTransform;vpt[4]+=evt.clientX-this.lastPosX;vpt[5]+=evt.clientY-this.lastPosY;this.requestRenderAll();this.lastPosX=evt.clientX;this.lastPosY=evt.clientY;updateLines();updateZoomUI();}
+  });
+  canvas.on('mouse:up',function(opt){
+    let evt=opt.e;
+    if((drawMode==='rect'||drawMode==='ellipse')&&isDrawing){let ptr=canvas.getPointer(evt);handleDrawMouseUp(ptr);return;}
+    erasePointerDown=false;
+    if(rcStart){if(rcDragging)endLasso(evt.clientX,evt.clientY);rcStart=null;rcDragging=false;return;}
+    if(isLassoMode){endLasso(evt.clientX,evt.clientY);return;}
+    if(this.isDragging){this.setViewportTransform(this.viewportTransform);this.isDragging=false;this.selection=true;document.body.classList.remove("panning");}
+  });
+  document.addEventListener('mouseup',function(evt){if(evt.button===2&&rcStart){if(rcDragging)endLasso(evt.clientX,evt.clientY);rcStart=null;rcDragging=false;}},true);
+  document.addEventListener('mousemove',function(evt){if(rcStart&&!isLassoMode){let dx=Math.abs(evt.clientX-rcStart.x),dy=Math.abs(evt.clientY-rcStart.y);if(!rcDragging&&(dx>6||dy>6)){rcDragging=true;startLasso(rcStart.x,rcStart.y);}if(rcDragging)updateLasso(evt.clientX,evt.clientY);}},true);
+  canvas.on('object:moving',function(opt){let o=opt.target;if(snapEnabled)o.set({left:sv(o.left),top:sv(o.top)});syncText();updateLines();});
+  canvas.on('object:scaling',()=>{syncText();updateLines();});
+  canvas.on('object:rotating',()=>{syncText();updateLines();});
+  canvas.on('object:modified',()=>snapshot());
+  canvas.on('path:created',onPathCreated);
+  canvas.on('mouse:dblclick',function(opt){
+    let target=opt.target;if(target)return;if(drawMode||isConnectMode||hoverConnectMode)return;
+    let ptr=canvas.getPointer(opt.e);let isDark=document.body.classList.contains("dark-mode");
+    let id="b_"+Date.now()+Math.floor(Math.random()*9999);
+    let t=new fabric.Textbox("",{width:180,fontSize:14,fontFamily:'Segoe UI',fill:isDark?'#ffffff':'#333333',textAlign:'left',originX:'center',originY:'center',left:ptr.x,top:ptr.y,selectable:true,evented:true,isLinkedText:false,id,customType:'text-only',splitByGrapheme:false});
+    t.on('editing:exited',()=>{if(!t.text.trim())canvas.remove(t);snapshot();});
+    canvas.add(t);canvas.setActiveObject(t);setTimeout(()=>t.enterEditing(),30);canvas.renderAll();
+  });
+  // ══ HOVER-CONNECT via mouse:over ══
+  canvas.on('mouse:over',function(opt){
+    if(!hoverConnectMode) return;
+    let target=opt.target;
+    if(!target||target.isLinkedText||target.isMadreToggle||target.isMadreBadge) return;
+    if(target.isLinkedText&&target.shapeRef) target=target.shapeRef;
+    let connectable=resolveConnectable(target);if(!connectable) return;
+    if(!hoverConnectSource){
+      hoverConnectSource=connectable;
+      hoverConnectSource._hadOrigShadow=hoverConnectSource.shadow||null;
+      hoverConnectSource.set('shadow',new fabric.Shadow({color:'#ff9800',blur:24,offsetX:0,offsetY:0}));
+      canvas.renderAll();updateEModeIndicator();
+    } else if(hoverConnectSource.id!==connectable.id){
+      hoverConnectSource.set('shadow',hoverConnectSource._hadOrigShadow||null);
+      let origDestShadow=connectable.shadow||null;
+      connectable.set('shadow',new fabric.Shadow({color:'#22c55e',blur:24,offsetX:0,offsetY:0}));
+      canvas.renderAll();
+      setTimeout(()=>{connectable.set('shadow',origDestShadow);canvas.renderAll();},500);
+      createConn(hoverConnectSource,connectable,currentConnectorType);snapshot();
+      hoverConnectSource=null;updateEModeIndicator();
+    }
+  });
+  document.addEventListener('click',e=>{if(!document.getElementById("ctx").contains(e.target))document.getElementById("ctx").style.display="none";});
+}
+
+function showCtx(evt){
+  let ctxMenu=document.getElementById("ctx");ctxMenu.style.display="flex";ctxMenu.style.left="-9999px";ctxMenu.style.top="-9999px";
+  requestAnimationFrame(()=>{let mw=ctxMenu.offsetWidth||225,mh=ctxMenu.offsetHeight||300;let mx=evt.clientX+mw>window.innerWidth?evt.clientX-mw:evt.clientX;let my=evt.clientY+mh>window.innerHeight?window.innerHeight-mh-8:evt.clientY;ctxMenu.style.left=Math.max(4,mx)+"px";ctxMenu.style.top=Math.max(4,my)+"px";});
+}
+function distSeg(p,a,b){let dx=b.x-a.x,dy=b.y-a.y;if(dx===0&&dy===0)return Math.hypot(p.x-a.x,p.y-a.y);let t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-(a.x+t*dx),p.y-(a.y+t*dy));}
+function syncText(){canvas.getObjects().forEach(o=>{if(o.textRef){o.textRef.set({left:o.left,top:o.top});o.textRef.setCoords();}});}
+
+// ═══════════ CTX ACTIONS ═══════════
+function updateSelectedShapeColor(v){let obj=rightClickedObject;if(!obj||Array.isArray(obj))return;if(obj.customType!=='text-only')obj.set('fill',v);canvas.renderAll();snapshot();}
+function updateSelectedStroke(v){let obj=rightClickedObject;if(!obj||Array.isArray(obj))return;obj.set('stroke',v);canvas.renderAll();snapshot();}
+function updateSelectedStrokeWidth(v){let obj=rightClickedObject;if(!obj||Array.isArray(obj))return;obj.set('strokeWidth',v);canvas.renderAll();snapshot();}
+function toggleGlowEffect(){let obj=rightClickedObject;if(!obj)return;let apply=o=>{o.shadow=o.shadow?null:new fabric.Shadow({color:'#2196F3',blur:25,offsetX:0,offsetY:0});};if(Array.isArray(obj))obj.forEach(o=>{if(!o.isLinkedText)apply(o);});else apply(obj);document.getElementById("ctx").style.display="none";canvas.renderAll();snapshot();}
+function updateSelectedTextProp(prop,val){let obj=rightClickedObject;if(!obj||Array.isArray(obj))return;let t=obj.customType==='text-only'?obj:obj.textRef;if(t){t.set(prop,val);canvas.renderAll();snapshot();}}
+function toggleStyle(prop,sv2){let obj=rightClickedObject;if(!obj||Array.isArray(obj))return;let t=obj.customType==='text-only'?obj:obj.textRef;if(t){t.set(prop,t.get(prop)===sv2?'normal':sv2);canvas.renderAll();snapshot();}}
+function deleteCurrentObject(){
+  if(!rightClickedObject)return;
+  let rm=target=>{connections=connections.filter(c=>{if(c.fromId===target.id||c.toId===target.id){removeConnVisuals(c);return false;}return true;});if(target.textRef)canvas.remove(target.textRef);if(target.customType==='madre'){if(target.toggleRef)canvas.remove(target.toggleRef);if(target.badgeRef)canvas.remove(target.badgeRef);delete madreBlocks[target.id];}canvas.remove(target);};
+  if(Array.isArray(rightClickedObject)){rightClickedObject.forEach(o=>rm(o));canvas.discardActiveObject();}else rm(rightClickedObject);
+  document.getElementById("ctx").style.display="none";canvas.renderAll();snapshot();
+}
+
+// ═══════════ NOTE FORMATS ═══════════
+function createNoteFormat(fmt){
+  let vpt=canvas.viewportTransform,z=canvas.getZoom();let ox=(canvas.getWidth()/2-vpt[4])/z,oy=(canvas.getHeight()/2-vpt[5])/z;
+  let c=FMT[fmt];let bl=(t,x,y,bg,shape)=>addBlock(shape||'square',{left:ox+x,top:oy+y,bg,text:t,noteFormat:fmt,fromLoad:true});
+  if(fmt==='mindmap'){let center=bl('Idea Central',0,0,c.center,'circle');[[-200,-120,'Rama 1'],[200,-120,'Rama 2'],[-200,120,'Rama 3'],[200,120,'Rama 4']].forEach(([dx,dy,t])=>{let br=bl(t,dx,dy,c.branch,'circle');if(br&&center)setTimeout(()=>createConn(center,br,'line'),60);});}
+  else if(fmt==='esquema'){let title=bl('Título Principal',0,-160,c.title);[[-120,0,'Item 1'],[-120,90,'Item 2'],[-120,180,'Item 3']].forEach(([dx,dy,t])=>{let b=bl(t,dx,dy,c.item);if(b&&title)setTimeout(()=>createConn(title,b,'brace'),60);});}
+  else if(fmt==='linea-tiempo'){let sh=[-300,-100,100,300].map((dx,i)=>bl(`Evento ${i+1}`,dx,0,c.node));setTimeout(()=>{for(let i=0;i<sh.length-1;i++)createConn(sh[i],sh[i+1],'arrow');},60);}
+  else if(fmt==='cornell'){bl('Preguntas / Palabras clave',-170,-60,c.cue);bl('Apuntes principales',80,-60,c.notes);bl('Resumen',0,130,c.summary);}
+  else if(fmt==='cuadro-comp'){['Aspecto','Opción A','Opción B'].forEach((h,i)=>bl(h,-160+i*160,-120,c.header));['Caract. 1','Caract. 2','Caract. 3'].forEach((r,ri)=>{bl(r,-160,-40+ri*80,c.header);[1,2].forEach(ci=>bl('—',-160+ci*160,-40+ri*80,c.cell));});}
+  else if(fmt==='flujo'){let s=bl('Inicio',0,-200,c.start,'circle'),p=bl('Proceso',0,-80,c.process),d=bl('¿Decisión?',0,60,c.decision,'diamond'),e=bl('Fin',0,210,c.end,'circle');setTimeout(()=>{[s,p,d,e].reduce((a,b)=>{if(a&&b)createConn(a,b,'arrow');return b;});},60);}
+  else if(fmt==='concept-map'){let main=bl('Concepto Central',0,0,c.main);[[-200,-100,'Concepto A'],[200,-100,'Concepto B'],[-200,100,'Concepto C'],[200,100,'Concepto D']].forEach(([dx,dy,t])=>{let sub=bl(t,dx,dy,c.secondary);if(sub&&main)setTimeout(()=>createConn(main,sub,'arrow'),60);let det=bl('Detalle',dx+(dx>0?120:-120),dy,c.detail);if(det&&sub)setTimeout(()=>createConn(sub,det,'dashed'),90);});}
+  canvas.renderAll();setTimeout(()=>snapshot(),500);
+}
+function openFormatModal(){if(canvas.getActiveObjects().length<2){alert("Seleccioná al menos 2 bloques primero.");return;}document.getElementById("format-modal").classList.add("vis");}
+function closeFormatModal(){document.getElementById("format-modal").classList.remove("vis");}
+function applyFormatToSelection(fmt){
+  closeFormatModal();let c=FMT[fmt],sel=canvas.getActiveObjects().filter(o=>!o.isLinkedText);if(!sel.length)return;
+  sel.forEach((obj,i)=>{obj.noteFormat=fmt;if(fmt==='mindmap')obj.set('fill',i===0?c.center:c.branch);else if(fmt==='esquema')obj.set('fill',i===0?c.title:c.item);else if(fmt==='linea-tiempo')obj.set('fill',c.node);else if(fmt==='flujo'){let cs=[c.start,c.process,c.decision,c.end];obj.set('fill',cs[Math.min(i,cs.length-1)]);}else if(fmt==='concept-map')obj.set('fill',i===0?c.main:c.secondary);if(fmt==='linea-tiempo'&&i>0&&sel[i-1])setTimeout(()=>createConn(sel[i-1],obj,'arrow'),60);if(fmt==='esquema'&&i>0&&sel[0])setTimeout(()=>createConn(sel[0],obj,'brace'),60);if(fmt==='mindmap'&&i>0&&sel[0])setTimeout(()=>createConn(sel[0],obj,'line'),60);if(fmt==='flujo'&&i>0&&sel[i-1])setTimeout(()=>createConn(sel[i-1],obj,'arrow'),60);});
+  canvas.renderAll();snapshot();
+}
+
+// ═══════════ BLOQUE MADRE ═══════════
+let madreBlocks={},pendingMadreId=null;
+function addMadreBlock(opts={}){
+  let left=opts.left!==undefined?opts.left:canvas.getWidth()/2,top=opts.top!==undefined?opts.top:canvas.getHeight()/2;
+  if(!opts.fromLoad){let vpt=canvas.viewportTransform;left=(left-vpt[4])/vpt[0];top=(top-vpt[5])/vpt[3];}
+  let id=opts.id||"madre_"+Date.now()+Math.floor(Math.random()*9999);let isDark=document.body.classList.contains("dark-mode");let label=opts.text||"Bloque Madre";let isCollapsed=opts.collapsed||false;
+  const LABEL_OY=-10,TOGGLE_OY=18,BADGE_OY=32;
+  let rect=new fabric.Rect({width:200,height:70,rx:14,ry:14,fill:isDark?'#1a2a3a':'#e8f4fd',stroke:'#2196F3',strokeWidth:2.5,originX:'center',originY:'center',left,top,id,customType:'madre',selectable:true,evented:true,shadow:new fabric.Shadow({color:'rgba(33,150,243,0.3)',blur:18,offsetX:0,offsetY:4})});
+  let labelText=new fabric.Textbox(label,{width:160,fontSize:13,fontFamily:'Segoe UI',fontWeight:'700',fill:isDark?'#90caf9':'#1565c0',textAlign:'center',originX:'center',originY:'center',left,top:top+LABEL_OY,selectable:false,evented:false,isLinkedText:true});
+  labelText.shapeRef=rect;rect.textRef=labelText;
+  let toggleBtn=new fabric.Text(isCollapsed?'▶ Abrir':'▼ Cerrar',{fontSize:11,fontFamily:'Segoe UI',fontWeight:'600',fill:'#2196F3',textAlign:'center',originX:'center',originY:'center',left,top:top+TOGGLE_OY,selectable:false,evented:true,hoverCursor:'pointer',isMadreToggle:true,madreId:id});
+  let childCount=(opts.childIds||[]).length;
+  let badge=new fabric.Text(childCount>0?`${childCount} bloques`:'Sin bloques',{fontSize:10,fontFamily:'Segoe UI',fill:isDark?'rgba(255,255,255,0.45)':'rgba(0,0,0,0.4)',textAlign:'center',originX:'center',originY:'center',left,top:top+BADGE_OY,selectable:false,evented:false,isLinkedText:true,isMadreBadge:true});
+  badge.shapeRef=rect;rect.badgeRef=badge;
+  function syncMadreParts(){labelText.set({left:rect.left,top:rect.top+LABEL_OY});toggleBtn.set({left:rect.left,top:rect.top+TOGGLE_OY});badge.set({left:rect.left,top:rect.top+BADGE_OY});labelText.setCoords();toggleBtn.setCoords();badge.setCoords();}
+  toggleBtn.on('mousedown',()=>toggleMadre(id));
+  rect.on('mousedblclick',()=>{labelText.selectable=true;labelText.evented=true;canvas.setActiveObject(labelText);labelText.enterEditing();});
+  labelText.on('editing:exited',()=>{labelText.selectable=false;labelText.evented=false;syncMadreParts();canvas.setActiveObject(rect);canvas.renderAll();snapshot();});
+  canvas.add(rect);canvas.add(labelText);canvas.add(toggleBtn);canvas.add(badge);canvas.setActiveObject(rect);syncMadreParts();
+  if(!madreBlocks[id]){madreBlocks[id]={childIds:opts.childIds?[...opts.childIds]:[],collapsed:isCollapsed,savedPositions:opts.savedPositions?{...opts.savedPositions}:{},toggleRef:toggleBtn,badgeRef:badge};}else{madreBlocks[id].toggleRef=toggleBtn;madreBlocks[id].badgeRef=badge;madreBlocks[id].collapsed=isCollapsed;}
+  rect.toggleRef=toggleBtn;
+  rect.on('moving',()=>{syncMadreParts();let m=madreBlocks[id];if(!m)return;let dx=rect.left-(rect._prevLeft||rect.left),dy=rect.top-(rect._prevTop||rect.top);rect._prevLeft=rect.left;rect._prevTop=rect.top;if(dx===0&&dy===0)return;m.childIds.forEach(cid=>{let child=findObj(cid);if(child){child.set({left:child.left+dx,top:child.top+dy});if(child.textRef){child.textRef.set({left:child.left,top:child.top});child.textRef.setCoords();}child.setCoords();if(m.savedPositions[cid]){m.savedPositions[cid].left+=dx;m.savedPositions[cid].top+=dy;}}});updateLines();canvas.renderAll();});
+  rect.on('mousedown',()=>{rect._prevLeft=rect.left;rect._prevTop=rect.top;});
+  if(opts.fromLoad&&isCollapsed){setTimeout(()=>hideMadreChildren(id),150);}
+  updateMadreBadge(id);return rect;
+}
+function updateMadreBadge(madreId){let m=madreBlocks[madreId];if(!m)return;let n=m.childIds.length;if(m.badgeRef)m.badgeRef.set('text',n>0?`${n} bloque${n!==1?'s':''}`:'Sin bloques');if(m.toggleRef)m.toggleRef.set('text',m.collapsed?'▶ Abrir':'▼ Cerrar');canvas.renderAll();}
+function toggleMadre(madreId){let m=madreBlocks[madreId];if(!m)return;if(m.collapsed)expandMadre(madreId);else collapseMadre(madreId);}
+function collapseMadre(madreId){let m=madreBlocks[madreId];if(!m)return;canvas.discardActiveObject();canvas.renderAll();m.childIds.forEach(cid=>{let child=findObj(cid);if(child){let cp=child.getCenterPoint();m.savedPositions[cid]={left:cp.x,top:cp.y};}});m.collapsed=true;hideMadreChildren(madreId);updateMadreBadge(madreId);snapshot();}
+function hideMadreChildren(madreId){let m=madreBlocks[madreId];if(!m)return;m.childIds.forEach(cid=>{let child=findObj(cid);if(child){child.set({visible:false,selectable:false,evented:false});if(child.textRef)child.textRef.set({visible:false});}});reapplyConnectorVisibility();canvas.renderAll();}
+function reapplyConnectorVisibility(){connections.forEach(c=>{let f=findObj(c.fromId),t=findObj(c.toId);let show=(!f||(f.visible!==false))&&(!t||(t.visible!==false));let setV=v=>{if(c.lineRef)c.lineRef.set('visible',v);if(c.arrowRef)c.arrowRef.set('visible',v);if(c.braceLines)c.braceLines.forEach(l=>l.set('visible',v));if(c.orthoLines)c.orthoLines.forEach(l=>l.set('visible',v));};setV(show);});}
+function expandMadre(madreId){let m=madreBlocks[madreId];if(!m)return;m.collapsed=false;m.childIds.forEach(cid=>{let child=findObj(cid);if(child){if(m.savedPositions[cid]){child.set({left:m.savedPositions[cid].left,top:m.savedPositions[cid].top});child.setCoords();if(child.textRef){child.textRef.set({left:child.left,top:child.top});child.textRef.setCoords();}}child.set({visible:true,selectable:true,evented:true});if(child.textRef)child.textRef.set({visible:true});}});updateMadreBadge(madreId);reapplyConnectorVisibility();updateLines();canvas.renderAll();snapshot();}
+function openMadreAssign(){if(!rightClickedObject||Array.isArray(rightClickedObject))return;if(rightClickedObject.customType!=='madre')return;document.getElementById("ctx").style.display="none";pendingMadreId=rightClickedObject.id;showToast('📦 Seleccioná los bloques hijos y presioná Enter');document.getElementById("madre-pick-bar").classList.add("vis");}
+function confirmMadrePickBar(){
+  if(!pendingMadreId)return;let m=madreBlocks[pendingMadreId];if(!m)return;
+  let activeObjs=canvas.getActiveObjects().filter(o=>!o.isLinkedText&&o.id&&o.id!==pendingMadreId&&o.customType!=='madre'&&!o.isMadreToggle&&!o.isMadreBadge);
+  let selWithPos=activeObjs.map(o=>{let cp=o.getCenterPoint();return{id:o.id,left:cp.x,top:cp.y};});
+  canvas.discardActiveObject();canvas.renderAll();
+  selWithPos=selWithPos.map(s=>{let obj=findObj(s.id);if(obj){let cp=obj.getCenterPoint();return{id:s.id,left:cp.x,top:cp.y};}return s;});
+  m.childIds=selWithPos.map(s=>s.id);m.savedPositions={};selWithPos.forEach(s=>{m.savedPositions[s.id]={left:s.left,top:s.top};});
+  document.getElementById("madre-pick-bar").classList.remove("vis");document.getElementById("madre-overlay").classList.remove("vis");
+  updateMadreBadge(pendingMadreId);showToast(`📦 ${selWithPos.length} bloque(s) asignados`);pendingMadreId=null;snapshot();
+}
+function convertirSeleccionEnMadre(){
+  let sel=canvas.getActiveObjects().filter(o=>!o.isLinkedText&&o.id&&o.customType!=='madre'&&!o.isMadreToggle&&!o.isMadreBadge);
+  if(!sel.length){showToast('Seleccioná al menos 1 bloque primero');return;}
+  if(sel.length===1&&sel[0].customType&&sel[0].customType!=='text-only'){let obj=sel[0],t=obj.textRef,label=t?t.text:'Bloque Madre',left=obj.left,top=obj.top;if(t)canvas.remove(t);canvas.remove(obj);addMadreBlock({left,top,text:label,fromLoad:true});showToast('📦 Bloque convertido en Madre');canvas.discardActiveObject();snapshot();return;}
+  let selWithPos=sel.map(o=>{let cp=o.getCenterPoint();return{id:o.id,left:cp.x,top:cp.y};});canvas.discardActiveObject();canvas.renderAll();
+  selWithPos=selWithPos.map(s=>{let obj=findObj(s.id);if(obj){let cp=obj.getCenterPoint();return{id:s.id,left:cp.x,top:cp.y};}return s;});
+  let xs=selWithPos.map(s=>s.left),ys=selWithPos.map(s=>s.top);let cx=(Math.min(...xs)+Math.max(...xs))/2,cy=Math.min(...ys)-90;
+  let newMadre=addMadreBlock({left:cx,top:cy,text:'Grupo',fromLoad:true});if(!newMadre)return;
+  let mid=madreBlocks[newMadre.id];mid.childIds=selWithPos.map(s=>s.id);selWithPos.forEach(s=>{mid.savedPositions[s.id]={left:s.left,top:s.top};});
+  updateMadreBadge(newMadre.id);showToast(`📦 ${selWithPos.length} bloques asignados`);snapshot();
+}
+
+// ═══════════ PRESENTATION ═══════════
+function openPresConfig(){renderPresChainUI();document.getElementById("pres-config-modal").classList.add("vis");}
+function closePresConfig(){document.getElementById("pres-config-modal").classList.remove("vis");}
+function renderPresChainUI(){
+  let c=document.getElementById("pres-chain-list");c.innerHTML="";
+  if(!presChain.length){c.innerHTML='<p style="opacity:.5;font-size:13px;text-align:center;padding:12px;">Sin bloques en la cadena.</p>';return;}
+  presChain.forEach((item,i)=>{
+    let div=document.createElement("div");div.className="pres-chain-item";
+    div.innerHTML=`<span style="background:#9c27b0;color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${i+1}</span><span>${item.label}</span>`;
+    if(i>0){let up=document.createElement("button");up.innerText="↑";up.onclick=()=>{let t=presChain[i];presChain[i]=presChain[i-1];presChain[i-1]=t;renderPresChainUI();};div.appendChild(up);}
+    if(i<presChain.length-1){let dn=document.createElement("button");dn.innerText="↓";dn.onclick=()=>{let t=presChain[i];presChain[i]=presChain[i+1];presChain[i+1]=t;renderPresChainUI();};div.appendChild(dn);}
+    let rm=document.createElement("button");rm.innerText="✕";rm.onclick=()=>{presChain.splice(i,1);renderPresChainUI();};div.appendChild(rm);c.appendChild(div);
+  });
+}
+function startPickingPresChain(){isPickingPresChain=true;closePresConfig();showToast('📽️ Click en los bloques para agregarlos.');}
+function addToPresChainFromMenu(){if(!rightClickedObject||Array.isArray(rightClickedObject))return;addToPresChain(rightClickedObject);document.getElementById("ctx").style.display="none";openPresConfig();}
+function addToPresChain(obj){if(!obj||!obj.id)return;if(presChain.find(i=>i.id===obj.id)){showToast('Ya está en la cadena');return;}presChain.push({id:obj.id,label:getObjLabel(obj)||obj.id});}
+function clearPresChain(){presChain=[];renderPresChainUI();}
+function enterPresentation(){
+  if(presChain.length===0){let objs=canvas.getObjects().filter(o=>o.id&&!o.isLinkedText&&o.selectable&&o.visible!==false);presChain=objs.map(o=>({id:o.id,label:getObjLabel(o)||o.id}));}
+  if(presChain.length===0){showToast('No hay bloques para presentar');return;}
+  closePresConfig();presBatchSize=parseInt(document.getElementById("pres-batch-size").value)||1;presStep=0;presMode=true;
+  document.getElementById("presentation-overlay").classList.add("vis");document.getElementById("toolbar").classList.add("hidden");
+  ['btn-preview','dark-toggle-btn','bg-color-btn','btn-center','zoom-indicator'].forEach(id=>{document.getElementById(id).style.display="none";});
+  renderPresStep();
+}
+function exitPresentation(){
+  presMode=false;document.getElementById("presentation-overlay").classList.remove("vis");document.getElementById("toolbar").classList.remove("hidden");
+  ['btn-preview','dark-toggle-btn','bg-color-btn','btn-center','zoom-indicator'].forEach(id=>{document.getElementById(id).style.display="";});
+  canvas.getObjects().forEach(o=>{if(o._presOpacity!==undefined){o.set('opacity',o._presOpacity);delete o._presOpacity;}if(o._presShadow!==undefined){o.set('shadow',o._presShadow);delete o._presShadow;}});canvas.renderAll();
+}
+function presNext(){if(presStep+presBatchSize>=presChain.length){showToast('Fin');return;}presStep=Math.min(presStep+presBatchSize,presChain.length-1);renderPresStep();}
+function presBack(){if(presStep===0){showToast('Ya estás al inicio');return;}presStep=Math.max(0,presStep-presBatchSize);renderPresStep();}
+function renderPresStep(){
+  let currentBatch=[];for(let i=presStep;i<Math.min(presStep+presBatchSize,presChain.length);i++)currentBatch.push(presChain[i].id);
+  let seen=new Set();for(let i=0;i<presStep;i++)seen.add(presChain[i].id);
+  canvas.getObjects().forEach(o=>{if(!o.id||o.isLinkedText||!o.selectable)return;let isCurrent=currentBatch.includes(o.id),wasSeen=seen.has(o.id);let targetOpacity=isCurrent?1:wasSeen?0.35:0.15;if(o._presOpacity===undefined)o._presOpacity=o.opacity||1;o.set('opacity',targetOpacity);if(o._presShadow===undefined)o._presShadow=o.shadow||null;if(isCurrent)o.set('shadow',new fabric.Shadow({color:'#9c27b0',blur:30,offsetX:0,offsetY:0}));else o.set('shadow',o._presShadow||null);});
+  canvas.renderAll();
+  if(currentBatch.length>0){let targets=currentBatch.map(id=>findObj(id)).filter(Boolean);if(targets.length>0){let pts=targets.map(t=>getCp(t));let cx=pts.reduce((s,p)=>s+p.x,0)/pts.length,cy=pts.reduce((s,p)=>s+p.y,0)/pts.length;let zoom=canvas.getZoom();canvas.setViewportTransform([zoom,0,0,zoom,canvas.getWidth()/2-cx*zoom,canvas.getHeight()/2-cy*zoom]);updateLines();canvas.renderAll();}}
+  let total=presChain.length,stepEnd=Math.min(presStep+presBatchSize,total);
+  document.getElementById("pres-step-info").innerText=`${presStep+1}–${stepEnd} / ${total}`;document.getElementById("pres-progress-fill").style.width=((stepEnd/total)*100)+'%';
+}
+
+// ═══════════ AI MODAL ═══════════
+function openAIModal(){document.getElementById("ai-modal").classList.add("vis");}
+function closeAIModal(){document.getElementById("ai-modal").classList.remove("vis");}
+async function sendAIMessage(){
+  let input=document.getElementById("ai-input");let msg=input.value.trim();if(!msg)return;input.value="";let btn=document.getElementById("ai-send-btn");btn.disabled=true;addAIChatMsg(msg,'user');
+  let sys=`Sos un asistente para crear diagramas en un tablero interactivo. Respondé SOLO con JSON válido (sin markdown):{"description":"texto","blocks":[{"id":"b1","type":"square|circle|diamond|post-it|text-only","text":"texto","x":0,"y":0,"bg":"#color"}],"connections":[{"from":"b1","to":"b2","type":"arrow|line|dashed|brace"}]}. Coordenadas relativas al centro. Separación 150-200px. Máx 20 bloques.`;
+  try{
+    let r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:sys,messages:[{role:"user",content:msg}]})});
+    let data=await r.json();let text=data.content.map(i=>i.text||"").join("").replace(/```json\s*/gi,"").replace(/```\s*/gi,"").trim();
+    let plan;try{plan=JSON.parse(text);}catch(e){addAIChatMsg("Error al interpretar la respuesta.",'ai');btn.disabled=false;return;}
+    aiPendingPlan=plan;addAIChatMsg(`✅ ${plan.description||"Plan listo"} — ${plan.blocks.length} bloques`,'ai');document.getElementById("ai-apply-btn").style.display="block";
+  }catch(e){addAIChatMsg("Error de conexión.",'ai');}
+  btn.disabled=false;
+}
+function addAIChatMsg(text,role){let h=document.getElementById("ai-chat-history");let div=document.createElement("div");div.className=`ai-msg-${role}`;let span=document.createElement("span");span.innerText=text;div.appendChild(span);h.appendChild(div);h.scrollTop=h.scrollHeight;}
+function applyAIPlan(){
+  if(!aiPendingPlan)return;let plan=aiPendingPlan;let vpt=canvas.viewportTransform,z=canvas.getZoom();let ox=(canvas.getWidth()/2-vpt[4])/z,oy=(canvas.getHeight()/2-vpt[5])/z;let idMap={};
+  plan.blocks.forEach(b=>{let newId="b_"+Date.now()+Math.floor(Math.random()*9999);idMap[b.id]=newId;addBlock(b.type||'square',{left:ox+(b.x||0),top:oy+(b.y||0),bg:b.bg||null,text:b.text||"",fromLoad:true,id:newId});});
+  setTimeout(()=>{(plan.connections||[]).forEach(c=>{let o1=findObj(idMap[c.from]),o2=findObj(idMap[c.to]);if(o1&&o2)createConn(o1,o2,c.type||'line');});canvas.renderAll();snapshot();},200);
+  aiPendingPlan=null;document.getElementById("ai-apply-btn").style.display="none";closeAIModal();showToast('🤖 ¡Estructura creada!');
+}
+
+// ═══════════ TOAST ═══════════
+function showToast(msg='💾 ¡Guardado!'){let t=document.getElementById("toast");t.innerText=msg;t.style.display="block";clearTimeout(window._tt);window._tt=setTimeout(()=>t.style.display="none",2500);}
+
+// ═══════════ SERIALIZE / SAVE / LOAD ═══════════
+function serializeObjects(){
+  let arr=[];
+  canvas.getObjects().forEach(o=>{
+    if(!o.id||o.isLinkedText)return;
+    if(o.customType==='straight-line'){arr.push({id:o.id,type:'straight-line',lineDir:o.lineDir,x1:o.x1,y1:o.y1,x2:o.x2,y2:o.y2});return;}
+    if(o.customType==='drawing'){arr.push({id:o.id,type:'drawing',fabricJson:JSON.stringify(o.toJSON(['id','customType'])),left:o.left,top:o.top,scaleX:o.scaleX||1,scaleY:o.scaleY||1,angle:o.angle||0});return;}
+    if(o.customType==='madre'){let m=madreBlocks[o.id]||{};arr.push({id:o.id,type:'madre',left:o.left,top:o.top,text:o.textRef?o.textRef.text:'Bloque Madre',childIds:m.childIds||[],collapsed:m.collapsed||false,savedPositions:m.savedPositions||{},fromLoad:true});return;}
+    let isTO=o.customType==='text-only',t=isTO?o:o.textRef;
+    arr.push({id:o.id,type:o.customType,left:o.left,top:o.top,scaleX:o.scaleX,scaleY:o.scaleY,bg:isTO?null:o.fill,text:t?t.text:"",fontSize:t?t.fontSize:14,fontFamily:t?t.fontFamily:'Segoe UI',textColor:t?t.fill:'#333',fontWeight:t?t.fontWeight:'normal',fontStyle:t?t.fontStyle:'normal',textAlign:t?t.textAlign:'center',hasGlow:!!o.shadow,noteFormat:o.noteFormat||null,stroke:o.stroke||null,strokeWidth:o.strokeWidth||0,fromLoad:true,width:o.width,height:o.height});
+  });
+  return arr;
+}
+function saveToDatabase(silent=false){
+  if(!currentProject)return;
+  db.users[currentUser].projects[currentProject]={objects:serializeObjects(),connections:connections.map(c=>({fromId:c.fromId,toId:c.toId,type:c.type||'line'})),canvasBg:canvasBgColor,madreBlocks:Object.fromEntries(Object.entries(madreBlocks).map(([k,v])=>([k,{childIds:v.childIds,collapsed:v.collapsed,savedPositions:v.savedPositions}]))),presChain};
+  saveFlowNotes();saveDB();if(!silent)showToast('💾 ¡Guardado!');
+}
+
+// ═══════════ HOVER-CONNECT [E] ═══════════
+let hoverConnectMode=false,hoverConnectSource=null;
+function toggleHoverConnect(){if(hoverConnectMode)turnOffHoverConnect();else turnOnHoverConnect();}
+function turnOnHoverConnect(){
+  hoverConnectMode=true;if(isConnectMode)cancelConnect();if(drawMode)stopDrawing();
+  canvas.defaultCursor='crosshair';document.getElementById('btn-hover-connect').classList.add('btn-active');
+  document.getElementById('e-mode-indicator').classList.add('vis');updateEModeIndicator();
+  showToast('🔗 [E] ON — pasá por ORIGEN luego DESTINO · se repite · [E] para apagar');
+}
+function turnOffHoverConnect(){
+  hoverConnectMode=false;
+  if(hoverConnectSource){hoverConnectSource.set('shadow',hoverConnectSource._hadOrigShadow||null);hoverConnectSource=null;canvas.renderAll();}
+  canvas.defaultCursor='default';document.getElementById('btn-hover-connect').classList.remove('btn-active');
+  document.getElementById('e-mode-indicator').classList.remove('vis');showToast('🔗 [E] Hover-Conectar OFF');
+}
+function updateEModeIndicator(){let txt=document.getElementById('e-mode-text');if(!txt)return;txt.innerText=hoverConnectSource?'🔗 Ahora pasá por el DESTINO':'🔗 [E] Hover-Conectar — pasá por ORIGEN';}
+
+// ═══════════ QUICK BLOCK [Q] ═══════════
+let _lastMousePos={x:0,y:0};
+const QUICK_BLOCK_TYPES=['square','circle','diamond','post-it','text-only'];
+let _quickBlockTypeIdx=0,_quickBlockTimer=null;
+document.addEventListener('mousemove',e=>{_lastMousePos={x:e.clientX,y:e.clientY};});
+function addQuickBlockAtMouse(){
+  if(!currentProject||drawMode||isConnectMode)return;
+  let zoom=canvas.getZoom(),vpt=canvas.viewportTransform;
+  let canvasEl=document.getElementById('mainCanvas'),rect=canvasEl.getBoundingClientRect();
+  let canvasX=(_lastMousePos.x-rect.left-vpt[4])/zoom,canvasY=(_lastMousePos.y-rect.top-vpt[5])/zoom;
+  canvasX=sv(canvasX);canvasY=sv(canvasY);
+  let type=QUICK_BLOCK_TYPES[_quickBlockTypeIdx];
+  addBlock(type,{left:canvasX,top:canvasY,fromLoad:false});snapshot();
+  let names={square:'🟦 Cuadrado',circle:'⚪ Círculo',diamond:'🔷 Rombo','post-it':'📝 Post-it','text-only':'🔤 Texto'};
+  showQuickBlockIndicator(names[type]);
+}
+function cycleQuickBlockType(){_quickBlockTypeIdx=(_quickBlockTypeIdx+1)%QUICK_BLOCK_TYPES.length;let names={square:'🟦 Cuadrado',circle:'⚪ Círculo',diamond:'🔷 Rombo','post-it':'📝 Post-it','text-only':'🔤 Texto'};showToast('[Q] ahora crea: '+names[QUICK_BLOCK_TYPES[_quickBlockTypeIdx]]+' · Shift+Q para cambiar');}
+function showQuickBlockIndicator(n){let ind=document.getElementById('quick-block-indicator');if(!ind)return;ind.innerText='[Q] '+n;ind.style.display='block';clearTimeout(_quickBlockTimer);_quickBlockTimer=setTimeout(()=>{ind.style.display='none';},1400);}
+
+function loadProjectData(){
+  batchSaving=true;canvas.clear();connections=[];history=[];historyIdx=-1;madreBlocks={};
+  let proj=db.users[currentUser].projects[currentProject];if(!proj)return;
+  if(proj.canvasBg){canvasBgColor=proj.canvasBg;canvas.setBackgroundColor(proj.canvasBg,()=>{});}
+  presChain=proj.presChain||[];
+  if(proj.objects)proj.objects.forEach(o=>{
+    if(o.type==='straight-line'){addStraightLineObj(o);return;}
+    if(o.type==='drawing'){fabric.util.enlivenObjects([JSON.parse(o.fabricJson)],function(objs){let obj=objs[0];obj.set({id:o.id,customType:'drawing',selectable:true,evented:true,left:o.left,top:o.top,scaleX:o.scaleX||1,scaleY:o.scaleY||1,angle:o.angle||0});canvas.add(obj);canvas.renderAll();});return;}
+    if(o.type==='madre'){addMadreBlock({...o,fromLoad:true});return;}
+    addBlock(o.type,o);
+  });
+  setTimeout(()=>{
+    if(proj.connections)proj.connections.forEach(c=>{let o1=findObj(c.fromId),o2=findObj(c.toId);if(o1&&o2)createConn(o1,o2,c.type||'line');});
+    canvas.renderAll();batchSaving=false;
+    Object.keys(madreBlocks).forEach(mid=>{if(madreBlocks[mid].collapsed)hideMadreChildren(mid);});
+    reapplyConnectorVisibility();canvas.renderAll();snapshot();
+  },300);
 }
 </script>
 </body>
